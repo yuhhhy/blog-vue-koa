@@ -1,0 +1,33 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    // cursor: url(../assets/norm.cur), auto;
+}
+
+html, body {
+    height: 100%;
+    font-size: 16px;
+    font-family: 'Lucida Console', monospace;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+@font-face {
+    font-family: 'iconfont';
+    src: url('//at.alicdn.com/t/c/font_4900987_jayk7he2wf9.woff2?t=1745242468401') format('woff2'),
+        url('//at.alicdn.com/t/c/font_4900987_jayk7he2wf9.woff?t=1745242468401') format('woff'),
+        url('//at.alicdn.com/t/c/font_4900987_jayk7he2wf9.ttf?t=1745242468401') format('truetype');
+}
+
+.iconfont {
+    font-family: "iconfont" !important;
+    font-size: 20px;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-stroke-width: 0.2px;
+    -moz-osx-font-smoothing: grayscale;
+}
