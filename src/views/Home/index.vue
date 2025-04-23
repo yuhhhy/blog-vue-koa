@@ -20,12 +20,14 @@ onMounted(() => {
 <template>
     <div class="home-container">
         <div class="home-main">
-            <RouterLink v-for="blog in blogList" to="/blog/123" class="blog">
-                <div class="blog-img" 
+            <RouterLink v-for="blog in blogList" :to="`/blog/${blog._id}`" class="blog">
+                <div class="blog-img"
                     :style="{ 'background-image': `url(${blog.coverImage || '/images/20171227.jpg'})` }">
                 </div>
                 <div class="blog-intro">
-                    <div class="blog-tags">{{ blog.tags }}</div>
+                    <div class="blog-tags">
+                        <span class="blog-tag" v-for="tag in blog.tags">{{ tag }}</span>
+                    </div>
                     <div class="blog-title">{{ blog.title }}</div>
                     <div class="blog-time">{{ blog.date.substring(0,10) }}</div>
                 </div>
@@ -34,39 +36,63 @@ onMounted(() => {
         <div class="home-sidebar">
             <div class="author">
                 <div class="avatar">
-                   <img src="https://avatars.githubusercontent.com/u/148607309?v=4" alt="my avatar">
+                    <img src="https://avatars.githubusercontent.com/u/148607309?v=4" alt="my avatar">
                 </div>
                 <span id="name">一曝十寒</span>
                 <span id="motto">你好！我叫一曝十寒，欢迎来到我的博客！！！</span>
             </div>
             <div class="archive">
                 <div class="archive-tags">
-                    <a href="#"><div class="tag">CSS</div></a>
-                    <a href="#"><div class="tag">JavaScript</div></a>
-                    <a href="#"><div class="tag">HTML</div></a>
-                    <a href="#"><div class="tag">Vue</div></a>
-                    <a href="#"><div class="tag">Webpack</div></a>
-                    <a href="#"><div class="tag">工程化</div></a>
-                    <a href="#"><div class="tag">音乐</div></a>
-                    <a href="#"><div class="tag">游戏</div></a>
+                    <a href="#">
+                        <div class="tag">CSS</div>
+                    </a>
+                    <a href="#">
+                        <div class="tag">JavaScript</div>
+                    </a>
+                    <a href="#">
+                        <div class="tag">HTML</div>
+                    </a>
+                    <a href="#">
+                        <div class="tag">Vue</div>
+                    </a>
+                    <a href="#">
+                        <div class="tag">Webpack</div>
+                    </a>
+                    <a href="#">
+                        <div class="tag">工程化</div>
+                    </a>
+                    <a href="#">
+                        <div class="tag">音乐</div>
+                    </a>
+                    <a href="#">
+                        <div class="tag">游戏</div>
+                    </a>
                 </div>
                 <div class="archives-month">
-                    <a href="#"><div class="archive-month first">
-                        <div class="date">2025 四月</div>
-                        <div class="number">1篇</div>
-                    </div></a>
-                    <a href="#"><div class="archive-month">
-                        <div class="date">2025 四月</div>
-                        <div class="number">1篇</div>
-                    </div></a>
-                    <a href="#"><div class="archive-month">
-                        <div class="date">2025 六月</div>
-                        <div class="number">0篇</div>
-                    </div></a>
-                    <a href="#"><div class="archive-month">
-                        <div class="date">2025 七月</div>
-                        <div class="number">0篇</div>
-                    </div></a>
+                    <a href="#">
+                        <div class="archive-month first">
+                            <div class="date">2025 四月</div>
+                            <div class="number">1篇</div>
+                        </div>
+                    </a>
+                    <a href="#">
+                        <div class="archive-month">
+                            <div class="date">2025 四月</div>
+                            <div class="number">1篇</div>
+                        </div>
+                    </a>
+                    <a href="#">
+                        <div class="archive-month">
+                            <div class="date">2025 六月</div>
+                            <div class="number">0篇</div>
+                        </div>
+                    </a>
+                    <a href="#">
+                        <div class="archive-month">
+                            <div class="date">2025 七月</div>
+                            <div class="number">0篇</div>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -110,6 +136,14 @@ onMounted(() => {
                     font-size: 14px;
                     color: #666;
                     margin-bottom: 10px;
+
+                    .blog-tag {
+                        padding: 5px 10px;
+                        // margin-right: 10px;
+                        &::before {
+                            content: '# ';
+                        }
+                    }
                 }
                 .blog-title {
                     font-size: 20px;

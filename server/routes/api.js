@@ -16,15 +16,15 @@ router.get('/bloglist', async (ctx) => {
 // 获取单个博客文章
 router.get('/blog/:id', async (ctx) => {
     const { id } = ctx.request.params
-    ctx.status = 200
-    ctx.body = {
-        id,
-        title: '我的博客',
-        author: 'author',
-        date: '2025-04-21',
-        wordCount: 100000,
-        content: '这是我的博客内容 ![](/images/shanshui.jpg)',
+    // 从数据库获取单个博客文章
+    const blog = await Blog.findById(id)
+    if (!blog) {
+        ctx.status= 404
+        ctx.body = { message: 'Blog not found' }
+        return  
     }
+    ctx.status = 200
+    ctx.body = blog
 })
 
 // 创建新博客文章

@@ -5,42 +5,37 @@ import { apiFetchBlogData } from '@/api/index.js'
 import MarkdownIt from 'markdown-it'
 
 const route = useRoute()
-
-// ref() 参数最好是是 0 或 {}，而不是 null或 undefined
-const blogData = ref(0)
+const blogData = ref(0) // ref() 参数最好是是 0 或 {}，而不是 null或 undefined
 const html = ref(0)
-
-const fetchBlogData = async (blogId) => {
-    await apiFetchBlogData(blogId)
-        .then((data) => {
-            // 只处理成功返回的数据
-            blogData.value = data
-        }).catch((error) => {
-            console.error(error)
-        })
-}
-
-const renderBlogContent = async () => {
-    // 获取博客数据
-    await fetchBlogData(route.params.id)
-
-    // 使用 Markdown-it 解析器将 Markdown 转换为 HTML
-    const md = new MarkdownIt()
-    html.value = md.render(blogData.value.content)
-
-    // 监听变化，重新渲染 HTML
-    watch(blogData.value, (newBlogData) => {
-        html.value = md.render(newBlogData.content)
-    }, { immediate: true })
-}
 
 
 // 组件挂载完成后，再渲染数据，实现更快的页面加载
-onMounted(() => {
-    // 渲染博客内容
+onMounted(async () => {
+    await fetchBlogData(route.params.id)
+    await handleBlogData()
     renderBlogContent()
-
 })
+
+// 获取博客数据
+const fetchBlogData = async (blogId) => {
+    await apiFetchBlogData(blogId).then((data) => { blogData.value = data})
+}
+
+// 处理博客数据
+const handleBlogData = () => {
+    blogData.value.date = blogData.value.date.substring(0, 10)
+}
+
+// 渲染博客内容
+const renderBlogContent = () => {
+    const md = new MarkdownIt() // 使用 Markdown-it 解析器将 Markdown 转换为 HTML
+    html.value = md.render(blogData.value.content)
+}
+
+// 监听变化，重新渲染 HTML
+// watch(blogData.value, (newBlogData) => {
+//     html.value = md.render(newBlogData.content)
+// }, { immediate: true })
 
 // 路由 id 变化时，组件不会重载
 // watch(() => route.params.id,
@@ -56,7 +51,6 @@ onMounted(() => {
         <!-- 博客头部banner区域 -->
         <div class="blog-header">
             <div class="banner">
-                <!-- <img src="@/assets/1260864.jpg" alt="blog-image"> -->
             </div>
             <!-- 遮罩层 -->
             <div class="mask">
@@ -112,8 +106,7 @@ onMounted(() => {
             <div class="blog-sidebar">
                 <!-- 文章标签区域 -->
                 <div class="article-tags">
-                    <span class="tag">Vue</span>
-                    <span class="tag">JavaScript</span>
+                    <span class="tag" v-for="tag in blogData.tags">{{ tag }}</span>
                 </div> 
                 <!-- toc: Table of Content 文章目录 -->
                 <div class="toc-header">文章目录</div>
@@ -251,8 +244,6 @@ img {
             .article-content {
                 padding: 20px 40px;
                 line-height: 1.6;
-                font-size: 28px;
-
             }
             .artivle-footer {
                 padding: 20px;
@@ -275,7 +266,7 @@ img {
                     padding: 5px 10px;
 
                     &::before {
-                        content: '#';
+                        content: '# ';
                     }
                 }
             }
