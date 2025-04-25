@@ -28,7 +28,7 @@ defineProps(['blogData'])
 </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .article-header {
     padding: 10px 20px 5px 20px;
     border-bottom: 1px solid #eee;

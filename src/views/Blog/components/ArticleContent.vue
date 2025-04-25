@@ -16,6 +16,7 @@ defineProps(['blogData', 'html'])
 </div>
 </template>
 
+<!-- 这个不能加scoped，因为是全局的html样式 -->
 <style lang="scss">
 .article-content {
     padding: 0 30px;

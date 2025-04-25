@@ -52,7 +52,7 @@ const submitComment = () => {
 <div class="article-footer">
   <div class="comment-form">
     <div class="comment-form-input-row">
-      <input 
+      <el-input
         v-model="newComment.username" 
         placeholder="昵称*" 
         class="input-item"
@@ -62,7 +62,7 @@ const submitComment = () => {
         placeholder="电子邮箱*" 
         class="input-item"
       />
-      <input 
+      <el-input
         v-model="newComment.website" 
         placeholder="网站" 
         class="input-item"
@@ -120,7 +120,8 @@ const submitComment = () => {
 </div>
 </template>
 
-<style lang="scss">
+<!-- 这里必须加scoped，因为深度选择器:deep()要求配合scoped用，以改变ElementPlus原始样式 -->
+<style lang="scss" scoped>
 .article-footer {
   font-family: 'Helvetica Neue', Arial, sans-serif;
   color: #333;
@@ -129,6 +130,7 @@ const submitComment = () => {
   overflow: hidden;
 
   .comment-form {
+    margin-top: 10px;
     margin-bottom: 40px;
     padding: 0 20px;
 
@@ -143,41 +145,48 @@ const submitComment = () => {
         grid-template-columns: 1fr;
       }
 
-      .input-item {
-        min-height: 32px;
-            width: 100%;
-            height: 100%;
-            border: 2px solid #dcdfe6;
-            border-radius: 4px;
-            outline: none;
-            transition: all 0.3s ease;
-            text-indent: 0.7em;
-            color: #757575;
-            font-size: 16px;
+      .el-input {
+        all: unset;
+        :deep(.el-input__wrapper) {
+          all: unset;
+        }
+        :deep(.el-input__inner) {
+          min-height: 32px;
+          width: 100%;
+          height: 100%;
+          border: 2px solid #dcdfe6;
+          border-radius: 4px;
+          text-indent: 0.7em;
+          transition: all 0.3s ease;
+          font-size: 15px;
 
-        &:focus {
+          &:focus {
             border: 2px solid transparent;
             background: linear-gradient(white, white) padding-box, 
-            linear-gradient(135deg, #ff33b4, #c8ff00, #00ffff, #4400ff) border-box;
-        }
-        &::placeholder {
-            color: #aeaeae;
-            opacity: 1;
-        }
-
-        :deep(.el-input__wrapper) {
-            all: unset;
+                        linear-gradient(135deg, #ff33b4, #c8ff00, #00ffff, #4400ff) border-box;
+          }
         }
       }
     }
-    
-    .comment-form-textarea {
+      .el-textarea {
+        margin-bottom: 15px;
+        
         :deep(.el-textarea__inner) {
-            all: unset;
-        }
+          // el-textarea的边框是box-shadow
+          box-shadow:none;
+          border: 2px solid #dcdfe6;
+          font-size: 15px;
 
-      margin-bottom: 15px;
-    }
+          &:focus {
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box, 
+            linear-gradient(135deg, #5bc9f8, #c7e9fb, #00c9a7, #a6defa, #35bef7);
+          }
+        }
+        &::placeholder {
+            color: #aeaeae;
+        }
+      }
     
     .comment-form-submit {
       float: right;
