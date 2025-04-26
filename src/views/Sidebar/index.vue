@@ -48,5 +48,10 @@ const currentComponent = computed(() => {
     width: 300px;
     min-width: 280px;
     height: 100%;
+    margin-left: 40px;
+
+    @media (max-width: 768px) {
+        display: none;
+    }
 }
 </style>

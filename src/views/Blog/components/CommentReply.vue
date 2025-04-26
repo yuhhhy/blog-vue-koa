@@ -58,7 +58,7 @@ const showReplyForm = (comment) => {
 <style lang="scss" scoped>
 .comment-replies {
     margin-top: 15px;
-    padding-left: 30px;
+    padding-left: 20px;
     border-left: 2px solid #e5e5e5;
 
     :deep(.el-avatar) {

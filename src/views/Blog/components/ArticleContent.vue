@@ -81,4 +81,19 @@ defineProps(['blogData', 'html'])
         }
     }
 }
+@media (max-width: 768px) {
+    .article-content {
+        padding: 0 15px;
+        .markdown-content {
+            h1, h2, h3, h4 {
+                font-size: 20px;
+            }
+            p, ul, ol, li, code, pre, blockquote { 
+                font-size: 14px;
+            }
+        }
+
+    }
+}
+
 </style>

@@ -26,16 +26,21 @@ onMounted(() => {
         <div class="home-content">
             <!-- 博客列表 -->
             <div class="home-main">
-                <RouterLink v-for="blog in blogList" :to="`/blog/${blog._id}`" class="blog">
+                <RouterLink 
+                    v-for="blog in blogList" 
+                    :to="`/blog/${blog._id}`" 
+                    class="blog"
+                >
                     <div class="blog-img"
-                        :style="{ 'background-image': `url(${blog.coverImage || '/images/20171227.jpg'})` }">
+                        :style="{ 'background-image': `url(${'/images/browser.jpg' || blog.coverImage})` }">
                     </div>
                     <div class="blog-intro">
-                        <div class="blog-tags">
+
+                        <div class="blog-title">{{ blog.title }}</div>
+                        <div class="blog-time-tags">
+                            <span class="blog-time">{{ blog.date.substring(0, 10) }}</span>
                             <span class="blog-tag" v-for="tag in blog.tags">{{ tag }}</span>
                         </div>
-                        <div class="blog-title">{{ blog.title }}</div>
-                        <div class="blog-time">{{ blog.date.substring(0, 10) }}</div>
                     </div>
                 </RouterLink>
             </div>
@@ -56,24 +61,34 @@ onMounted(() => {
     .home-banner {
         width: 100%;
         height: 400px;
-        background-image: url(../../assets/homeImg.jpg);
+        background: linear-gradient(135deg, #c850c0, #4158d0);
         background-size: cover;
         background-position: center;
         color: #FFF;
         font-size: 64px;
         font-weight: 700;
         font-family: "Google Sans", arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;  // 文字居中
+        @media (max-width: 768px) {
+            height: 200px;
+            font-size: 32px;
+        }
     }
 
     .home-content{
         background-color: #F5F5FA;
         padding: 40px 60px;
         display: flex;
-
+        @media (max-width: 768px) {
+            padding: 20px 20px;
+        }
+    
         .home-main {
             flex: 1;
             height: 100%;
-            margin-right: 40px;
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
@@ -81,10 +96,13 @@ onMounted(() => {
             .blog {
                 flex: 1;
                 border-radius: 10px;
-                min-height: 300px;
-                min-width: 400px;
                 overflow: hidden;
                 background-color: #fff;
+                min-width: 400px;
+
+                @media (max-width: 768px) {
+                    min-width: 100%;
+                }
     
                 .blog-img {
                     width: 100%;
@@ -94,36 +112,32 @@ onMounted(() => {
                 }
     
                 .blog-intro {
-                    padding: 20px;
+                    padding: 0 20px;
     
-                    .blog-tags {
+                    .blog-time-tags {
                         font-size: 14px;
                         color: #666;
-                        margin-bottom: 10px;
-    
+                        margin-bottom: 6px;
+                        .blog-time {
+                            margin-right: 10px;
+                        }
                         .blog-tag {
-                            padding: 5px 10px;
-    
-                            // margin-right: 10px;
+                            padding-right: 10px;
                             &::before {
                                 content: '# ';
                             }
                         }
                     }
-    
                     .blog-title {
-                        font-size: 20px;
+                        font-size: 18px;
                         font-weight: bold;
-                        margin-bottom: 10px;
+                        margin-bottom: 6px;
+                        margin-top: 10px;
+                        @media (max-width: 768px) {
+                            font-size: 16px;
+                        }
                     }
-    
-                    .blog-time {
-                        font-size: 14px;
-                        color: #666;
-                    }
-    
                 }
-    
             }
         }
     }

@@ -27,7 +27,8 @@ const comments = reactive([
         time: '2025.04.16',
         isReply: false,
         firstLevel: false,
-        replies: [{
+        replies: [
+        {
             id: 4,
             avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
             username: 'Zephurs',
@@ -38,7 +39,8 @@ const comments = reactive([
             isReply: false,
             firstLevel: false,
             replies: []
-          }]
+          }
+        ]
       }
     ]
   },

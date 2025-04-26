@@ -59,7 +59,6 @@ const renderBlogContent = () => {
             </div>
             <!-- 遮罩层 -->
             <div class="mask">
-
             </div>
                 <!-- 相关信息 -->
                 <div class="blog-title">{{ blogData.title }}</div>
@@ -102,6 +101,7 @@ img {
     background-color: #F5F5FA;
     margin-top: 64px;
     min-height: calc(100vh - 75px);
+    width: 100%;
 
     .blog-header {
         position: relative;
@@ -151,18 +151,44 @@ img {
                 line-height: 30px;
             }
         }
+        @media (max-width: 768px) {
+            .banner {
+                height: 200px;
+            }
+            .mask {
+                height: 200px;
+            }
+            .blog-title {
+                font-size: 30px;
+                bottom: 80px;
+            }
+           .blog-info {
+                bottom: 10px;
+                > div {
+                    height: 20px;
+                    line-height: 20px;
+                }
+           }
+        }
     }
 
     .blog-main {
         padding: 40px calc(7vw + 10px);
         display: flex;
         height: 100%;
-
         .blog-aritcle {
             flex: 1;
             background-color: #fff;
             margin-right: 45px;
             border-radius: 15px;
+        }
+        @media (max-width: 768px) {
+            padding: 0;
+            flex-direction: column;
+           .blog-aritcle {
+                margin-right: 0;
+                margin-bottom: 20px;
+           }
         }
     }
 }
