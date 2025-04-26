@@ -133,10 +133,10 @@ img {
             font-weight: bold;
             position: absolute;
             left: 50%;
-            transform: translateX(-50%);  // 添加这行
+            transform: translateX(-50%);
             bottom: 120px;
-            text-align: center;          // 添加这行
-            width: 80%;                  // 添加这行，控制标题宽度
+            text-align: center;
+            width: 80%;
         }
         .blog-info {
             display: flex;
