@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch} from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiFetchBlogData } from '@/api/index.js'
 import MarkdownIt from 'markdown-it'
