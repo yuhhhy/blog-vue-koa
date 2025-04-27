@@ -26,10 +26,18 @@
     justify-content: space-between;
     padding: 0 50px;
     z-index: 999;
+    font-size: 0.875rem;
 
     .right-footer {
         display: flex;
         gap: 50px;
+    }
+
+    @media (max-width: 768px) {
+        padding: 0 20px;
+        .right-footer {
+            gap: 20px;
+        }
     }
     
 }

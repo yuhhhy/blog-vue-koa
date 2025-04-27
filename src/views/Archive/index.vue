@@ -64,5 +64,6 @@ const deleteBlog = (id) => {
 <style lang="scss" scoped>
 .container {
     margin-top: 64px;
+    font-size: 0.875rem;
 }
 </style>

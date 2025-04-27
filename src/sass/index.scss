@@ -8,7 +8,7 @@
 html, body {
     height: 100%;
     font-size: 16px;
-    font-family: monospace;
+    font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial !important;
 }
 
 a {
@@ -16,13 +16,26 @@ a {
     color: inherit;
 }
 
-@font-face {
-    font-family: 'iconfont';
-    src: url('//at.alicdn.com/t/c/font_4900987_jayk7he2wf9.woff2?t=1745242468401') format('woff2'),
-        url('//at.alicdn.com/t/c/font_4900987_jayk7he2wf9.woff?t=1745242468401') format('woff'),
-        url('//at.alicdn.com/t/c/font_4900987_jayk7he2wf9.ttf?t=1745242468401') format('truetype');
+@media screen and (max-width: 768px) {
+    html, body {
+        font-size: 14px;
+    }
 }
-
+// no-color
+@font-face {
+    font-family: 'iconfont';  /* Project id 4900987 */
+    src: url('//at.alicdn.com/t/c/font_4900987_ot8ny9ozxah.woff2?t=1745674006433') format('woff2'),
+         url('//at.alicdn.com/t/c/font_4900987_ot8ny9ozxah.woff?t=1745674006433') format('woff'),
+         url('//at.alicdn.com/t/c/font_4900987_ot8ny9ozxah.ttf?t=1745674006433') format('truetype');
+  }
+// colored
+@font-face {
+    font-family: 'iconfont';  /* Project id 4906641 */
+    src: 
+         url('//at.alicdn.com/t/c/font_4906641_4zshyxj9ctj.woff2?t=1745673965580') format('woff2'),
+         url('//at.alicdn.com/t/c/font_4906641_4zshyxj9ctj.woff?t=1745673965580') format('woff'),
+         url('//at.alicdn.com/t/c/font_4906641_4zshyxj9ctj.ttf?t=1745673965580') format('truetype');
+  }
 .iconfont {
     font-family: "iconfont" !important;
     font-size: 20px;

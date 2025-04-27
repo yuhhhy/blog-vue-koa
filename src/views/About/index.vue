@@ -1,12 +1,11 @@
 <script setup>
 import Sidebar from "@/views/Sidebar/index.vue"
-</script>
+import ArticleContent from "../Blog/components/ArticleContent.vue";
+import ArticleFooter from "../Blog/components/ArticleFooter.vue";
 
-<template>
-    <div class="about">
-        <div class="about-main">
-            <p>嘿，欢迎来到这里</p>
+const html = `
             <h1>## 关于我</h1>
+            <p>嘿，欢迎来到这里</p>
             <ul>
                 <li>中南大学在读，大二生</li>
                 <li>喜欢听音乐、Vocaloid，会弹一点点吉他，研究一点作曲</li>
@@ -20,9 +19,15 @@ import Sidebar from "@/views/Sidebar/index.vue"
                 <li>看过的番剧：《Lain》、《MyGo》、《无职转生》、《Rick and Morty》、《龙与虎》、SSSS系列、《Just Because!》、《月色真美》</li>
                 <li>正在看漫画：《火之鸟》...</li>
                 <li>老家是江西的，喜欢吃热腾腾的烫粉</li>
-                <li></li>
-                <li></li>
-            </ul>
+                <li>...</li>
+            </ul>`
+</script>
+
+<template>
+    <div class="about">
+        <div class="about-article">
+            <ArticleContent :html="html"></ArticleContent>
+            <ArticleFooter></ArticleFooter>
         </div>
         <Sidebar class="about-sidebar"></Sidebar>
     </div>
@@ -32,17 +37,22 @@ import Sidebar from "@/views/Sidebar/index.vue"
 .about {
     background-color: #f5f5fA;
     margin-top: 64px;
-    padding: 40px 60px;
+    padding: 40px calc(7vw + 10px);
     display: flex;
+    height: 100%;
 
-    .about-main {
+    .about-article {
         background-color: #FFF;
-        margin-right: 40px;
         border-radius: 10px;
         flex: 1;
     }
-    .about-sidebar {
-
-    }
+    @media (max-width: 768px) {
+            padding: 0;
+            flex-direction: column;
+           .about-aritcle {
+                margin-right: 0;
+                margin-bottom: 20px;
+           }
+        }
 }
 </style>

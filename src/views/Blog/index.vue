@@ -69,6 +69,7 @@ const renderBlogContent = () => {
                 </div>
         </div>
 
+        <!-- 除了头部banner的主体和侧边栏区域 -->
         <div class="blog-main">
 
             <!-- 博客页面文章主体 -->
@@ -76,7 +77,7 @@ const renderBlogContent = () => {
                 <!-- 文章上部分交互区域 -->
                 <ArticleHeader></ArticleHeader>
                 <!-- 文章主体内容区域 -->
-                <ArticleContent :blogData="blogData" :html="html"></ArticleContent>
+                <ArticleContent :html="html"></ArticleContent>
                 <!-- 文章底部相关信息和评论区域 -->
                 <ArticleFooter></ArticleFooter>
             </div>
@@ -129,7 +130,7 @@ img {
         }
 
         .blog-title {
-            font-size: 50px;
+            font-size: 3.125rem;
             font-weight: bold;
             position: absolute;
             left: 50%;
@@ -159,7 +160,7 @@ img {
                 height: 200px;
             }
             .blog-title {
-                font-size: 30px;
+                font-size: 1.875rem;
                 bottom: 80px;
             }
            .blog-info {
@@ -179,7 +180,6 @@ img {
         .blog-aritcle {
             flex: 1;
             background-color: #fff;
-            margin-right: 45px;
             border-radius: 15px;
         }
         @media (max-width: 768px) {

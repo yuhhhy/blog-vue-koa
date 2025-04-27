@@ -10,14 +10,22 @@ const props = defineProps({
 <template>
     <RouterLink to="#">
         <div class="tag">
-            <div class="black-box"></div>
-            <img :src="tag.tagImg" class="tag-img" alt="tag-background-image">
+             <!-- 用v-html把{{ '&#xe632;' }}变成{{ &#xe632; }} -->
+            <div class="iconfont tag-img" style="font-size: 56px;" v-html="props.tag.tagImg"></div>
             <div class="tag-info">
                 <div class="tag-info-left">
                     <div class="tag-name">{{ tag.tagName }}</div>
                     <div class="tag-process">
-                        <div class="tag-process-hours">{{ tag.tagHours }}</div>
-                        <div class="tag-process-bar">{{ tag.tagProcess }}</div>
+                        <div class="tag-process-hours">{{ tag.tagHours }} h</div>
+                        <div class="tag-process-bar">
+                            <el-progress 
+                                :percentage="tag.tagProgress" 
+                                :text-inside="true" 
+                                :stroke-width="8" 
+                                :show-text="false"
+                                :color="tag.progressColor"
+                            />
+                        </div>
                     </div>
                 </div>
                 <div class="tag-info-right">
@@ -36,6 +44,7 @@ const props = defineProps({
     align-items: center;
     padding-left: 5px;
     position: relative;
+    font-size: 0.875rem;
 
     &:hover {
         .tag-img {
@@ -53,27 +62,12 @@ const props = defineProps({
             transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
     }
-
-    .black-box {
-        position: absolute;
-        left: -120px;
-        top: 0;
-        width: 120px;
-        height: 100%;
-        background-image: url(../../assets/fire1.png);
-        background-size: cover;
-        z-index: 1;
-        transform: translateX(0);
-        transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    }
-
     .tag-img {
-        height: 85%;
-        width: 65px;
+        height: 80%;
+        width: 56px;
         border-radius: 4px;
         object-fit: cover;  // 保持图片比例
     }
-
     .tag-info {
         flex: 1;
         height: 100%;
@@ -86,6 +80,7 @@ const props = defineProps({
             flex-basis: 90px;
             display: flex;
             flex-direction: column;
+            padding-right: 40px;
 
             .tag-name {
                 margin-top: 6px;
@@ -98,6 +93,8 @@ const props = defineProps({
                     height: 60%;
                     display: flex;
                     align-items: end;
+                    margin-bottom: 5px;
+                    font-size: 0.8rem;
                 }
                 .tag-process-bar {
                     height: 40%;
@@ -106,7 +103,6 @@ const props = defineProps({
         }
 
         .tag-info-right {
-            flex: 1;
             position: relative;
 
             .tag-achievements {

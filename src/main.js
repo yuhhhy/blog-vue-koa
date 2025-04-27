@@ -5,7 +5,6 @@ import 'element-plus/dist/index.css'
 import router from './router'
 import './sass/index.scss'
 
-
 const app = createApp(App)
 
 app.use(ElementPlus)

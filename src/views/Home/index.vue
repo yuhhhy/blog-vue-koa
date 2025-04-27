@@ -65,7 +65,7 @@ onMounted(() => {
         background-size: cover;
         background-position: center;
         color: #FFF;
-        font-size: 64px;
+        font-size: 4rem;
         font-weight: 700;
         font-family: "Google Sans", arial, sans-serif;
         display: flex;
@@ -74,7 +74,7 @@ onMounted(() => {
         text-align: center;  // 文字居中
         @media (max-width: 768px) {
             height: 200px;
-            font-size: 32px;
+            font-size: 2rem;
         }
     }
 
@@ -115,8 +115,8 @@ onMounted(() => {
                     padding: 0 20px;
     
                     .blog-time-tags {
-                        font-size: 14px;
                         color: #666;
+                        font-size: 0.875rem;
                         margin-bottom: 6px;
                         .blog-time {
                             margin-right: 10px;
@@ -129,12 +129,12 @@ onMounted(() => {
                         }
                     }
                     .blog-title {
-                        font-size: 18px;
+                        font-size: 1.125rem;
                         font-weight: bold;
                         margin-bottom: 6px;
                         margin-top: 10px;
                         @media (max-width: 768px) {
-                            font-size: 16px;
+                            font-size: 1rem;
                         }
                     }
                 }

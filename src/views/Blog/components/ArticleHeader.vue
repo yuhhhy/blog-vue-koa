@@ -42,7 +42,7 @@ defineProps(['blogData'])
         align-items: center;
         
         .view-count {
-            font-size: 14px;
+            font-size: 0.875rem;
             color: #666;
         }
     }
@@ -56,7 +56,7 @@ defineProps(['blogData'])
             display: flex;
             align-items: center;
             gap: 5px;
-            font-size: 14px;
+            font-size: 0.875rem;
             color: #666;
             cursor: pointer;
             transition: all 0.3s;

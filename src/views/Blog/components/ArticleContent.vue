@@ -1,5 +1,5 @@
 <script setup>
-defineProps(['blogData', 'html'])
+    defineProps(['html'])
 </script>
 
 <template>

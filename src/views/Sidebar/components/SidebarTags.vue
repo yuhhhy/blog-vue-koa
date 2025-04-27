@@ -3,39 +3,44 @@ import Tag from '@/views/Tag/index.vue'
 
 const tagList = [
     {
-        tagImg: new URL('@/assets/HTML5.jpg', import.meta.url).href,
+        tagImg: '&#xe632;',
         tagName: 'HTML',
         tagHours: 100,
-        tagProcess: 90,
-        tagNumber: 19
+        tagProgress: 90,
+        tagNumber: 19,
+        progressColor: '#03A7FA'
     },
     {
-        tagImg: new URL('@/assets/CSS.jpg', import.meta.url).href,
+        tagImg: '&#xe61e;',
         tagName: 'CSS',
         tagHours: 99,
-        tagProcess: 60,
-        tagNumber: 10
+        tagProgress: 78,
+        tagNumber: 10,
+        progressColor: '#E101FB'
     },
     {
-        tagImg: new URL('@/assets/js.jpg', import.meta.url).href,
+        tagImg: '&#xe704;',
         tagName: 'JavaScript',
         tagHours: 66,
-        tagProcess: 40,
-        tagNumber: 1
+        tagProgress: 60,
+        tagNumber: 1,
+        progressColor: '#FD9E02'
     },
     {
-        tagImg: new URL('@/assets/Vue.png', import.meta.url).href,
+        tagImg: '&#xe79a;',
         tagName: 'Vue',
         tagHours: 65,
-        tagProcess: 30,
-        tagNumber: 3
+        tagProgress: 55,
+        tagNumber: 3,
+        progressColor: '#8ED320'
     },
       {
-        tagImg: new URL('@/assets/webpack.jpg', import.meta.url).href,
+        tagImg: '&#xe799;',
         tagName: 'Webpack',
         tagHours: 2,
-        tagProcess: 5,
-        tagNumber: 2
+        tagProgress: 25,
+        tagNumber: 2,
+        progressColor: '#FD9E02'
     },
 ]
 </script>
