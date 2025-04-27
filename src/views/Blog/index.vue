@@ -3,7 +3,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiFetchBlogData } from '@/api/index.js'
 import MarkdownIt from 'markdown-it'
-import Sidebar from '../Sidebar/index.vue'
+import Sidebar from '@/components/Sidebar/index.vue'
 import ArticleHeader from './components/ArticleHeader.vue'
 import ArticleContent from './components/ArticleContent.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
@@ -99,7 +99,7 @@ img {
 
 <style lang="scss" scoped>
 .blog-container {
-    background-color: #F5F5FA;
+    background-color: var(--light);
     margin-top: 64px;
     min-height: calc(100vh - 75px);
     width: 100%;
@@ -111,7 +111,7 @@ img {
         .banner {
             width: 100%;
             height: 500px;
-            background-image: url('@/assets/1260864.jpg');
+            background-image: url('@/assets/images/blog-banner.jpg');
             background-attachment: fixed;
             background-size: cover;
         }
@@ -179,7 +179,7 @@ img {
         height: 100%;
         .blog-aritcle {
             flex: 1;
-            background-color: #fff;
+            background-color: var(--white);
             border-radius: 15px;
         }
         @media (max-width: 768px) {

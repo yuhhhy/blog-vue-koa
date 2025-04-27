@@ -22,11 +22,11 @@
     padding: 0 30px;
     line-height: 1.8;
     font-family: 'Helvetica Neue', Arial, sans-serif;
-    color: #333;
+    color: var(--dark);
 
     .markdown-content {
         h1, h2, h3, h4 {
-            color: #2c3e50;
+            color: var(--sapphire);
             margin: 1.5em 0 0.8em;
             font-weight: 600;
         }
@@ -47,7 +47,7 @@
         }
 
         a {
-            color: #3498db;
+            color: var(--skyblue);
             text-decoration: none;
             &:hover {
                 text-decoration: underline;
@@ -55,14 +55,14 @@
         }
 
         code {
-            background: #f5f5f5;
+            background: var(--light);
             padding: 0.2em 0.4em;
             border-radius: 3px;
             font-family: 'Courier New', monospace;
         }
 
         pre {
-            background: #f8f8f8;
+            background: var(--light);
             padding: 1em;
             border-radius: 5px;
             overflow-x: auto;
@@ -73,9 +73,9 @@
         }
 
         blockquote {
-            border-left: 4px solid #ddd;
+            border-left: 3px solid var(--quote-color);
             padding-left: 1em;
-            color: #666;
+            color: var(--quote-color);
             margin: 1em 0;
             font-style: italic;
         }

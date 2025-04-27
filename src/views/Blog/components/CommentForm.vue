@@ -152,7 +152,7 @@ const doSubmit = () => {
           min-height: 32px;
           width: 100%;
           height: 100%;
-          border: 2px solid #dcdfe6;
+          border: 2px solid var(--lightgrey);
           border-radius: 4px;
           text-indent: 0.7em;
           transition: all 0.3s ease;
@@ -173,7 +173,7 @@ const doSubmit = () => {
       
       :deep(.el-textarea__inner) {
         box-shadow:none;  // el-textarea的边框是box-shadow
-        border: 2px solid #dcdfe6;
+        border: 2px solid var(--lightgrey);
         font-size: 15px;
         resize: none;  // 禁用手动调整大小
 
@@ -184,7 +184,7 @@ const doSubmit = () => {
         }
       }
       &::placeholder {
-          color: #aeaeae;
+          color: var(--quote-color);
       }
     }
 
@@ -192,7 +192,7 @@ const doSubmit = () => {
       .comment-form-submit {
         width: 100px;
         height: 30px;
-        background: linear-gradient(135deg, #c850c0, #4158d0);
+        background: linear-gradient(135deg, var(--grape), var(--skyblue));
         border: none;
         color: white;
         font-weight: bold;
@@ -211,26 +211,6 @@ const doSubmit = () => {
       100% {
         transform: scale(1);
       }
-    }
-
-    /* 表单验证错误提示样式 */
-    .el-form-item {
-        margin-bottom: 0;
-      :deep(.el-form-item__error) {
-        color: #ff4757;
-        font-size: 12px;
-        padding: 4px 0;
-        animation: shake 0.5s ease;
-        background: linear-gradient(to right, #fff0f0, #ffebee);
-        border-radius: 4px;
-        padding: 5px 10px;
-      }
-    }
-    /* 表单验证错误提示动画 */
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-5px); }
-      40%, 80% { transform: translateX(5px); }
     }
   }
 

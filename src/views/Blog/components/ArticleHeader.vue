@@ -31,10 +31,10 @@ defineProps(['blogData'])
 <style lang="scss" scoped>
 .article-header {
     padding: 10px 20px 5px 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    background: #fff;
+    background: var(--white);
     border-radius: 8px 8px 0 0;
 
     .header-left {
@@ -43,7 +43,7 @@ defineProps(['blogData'])
         
         .view-count {
             font-size: 0.875rem;
-            color: #666;
+            color: var(--quote-color);
         }
     }
     
@@ -57,7 +57,7 @@ defineProps(['blogData'])
             align-items: center;
             gap: 5px;
             font-size: 0.875rem;
-            color: #666;
+            color: var(--quote-color);
             cursor: pointer;
             transition: all 0.3s;
 
@@ -71,13 +71,13 @@ defineProps(['blogData'])
                 }
             }
             &.like:hover {
-                color: #ff4757;
+                color: var(--red);
             }
             &.comment:hover {
-                color: #1e90ff;
+                color: var(--blue);
             }
             &.share:hover {
-                color: #ffa502;
+                color: var(--orange);
             }
         }
     }

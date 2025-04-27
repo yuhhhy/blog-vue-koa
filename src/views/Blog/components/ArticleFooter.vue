@@ -123,7 +123,7 @@ const showReplyForm = (comment) => {
 <style lang="scss">
 .article-footer {
   font-family: 'Helvetica Neue', Arial, sans-serif;
-  color: #333;
+  color: var(--dark);
   line-height: 1.6;
   border-radius: 8px;
   overflow: hidden;
@@ -132,7 +132,7 @@ const showReplyForm = (comment) => {
   .comment-list {
     .comment-item {
       padding: 20px;
-      background: #fff;
+      background: var(--white);
       border-top: 1px solid rgba(0, 0, 0, 0.05);
       
       .comment-header {
@@ -164,7 +164,7 @@ const showReplyForm = (comment) => {
             align-items: center;
             gap: 10px;
             .reply-btn {
-              color: #409eff;
+              color: var(--blue);
               font-size: 13px;
               padding: 0;
             }

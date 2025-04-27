@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { apiGetBlogList } from '@/api/index.js'
 import { ElMessage } from 'element-plus'
-import Sidebar from '@/views/Sidebar/index.vue'
+import Sidebar from '@/components/Sidebar/index.vue'
 
 const blogList = ref([])
 
@@ -79,7 +79,7 @@ onMounted(() => {
     }
 
     .home-content{
-        background-color: #F5F5FA;
+        background-color: var(--light);
         padding: 40px 60px;
         display: flex;
         @media (max-width: 768px) {
@@ -97,7 +97,7 @@ onMounted(() => {
                 flex: 1;
                 border-radius: 10px;
                 overflow: hidden;
-                background-color: #fff;
+                background-color: var(--white);
                 min-width: 400px;
 
                 @media (max-width: 768px) {
@@ -115,7 +115,7 @@ onMounted(() => {
                     padding: 0 20px;
     
                     .blog-time-tags {
-                        color: #666;
+                        color: var(--quote-color);
                         font-size: 0.875rem;
                         margin-bottom: 6px;
                         .blog-time {

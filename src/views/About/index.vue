@@ -1,5 +1,5 @@
 <script setup>
-import Sidebar from "@/views/Sidebar/index.vue"
+import Sidebar from "@/components/Sidebar/index.vue"
 import ArticleContent from "../Blog/components/ArticleContent.vue";
 import ArticleFooter from "../Blog/components/ArticleFooter.vue";
 
@@ -35,14 +35,14 @@ const html = `
 
 <style lang="scss" scoped>
 .about {
-    background-color: #f5f5fA;
+    background-color: var(--light);
     margin-top: 64px;
     padding: 40px calc(7vw + 10px);
     display: flex;
     height: 100%;
 
     .about-article {
-        background-color: #FFF;
+        background-color: var(--white);
         border-radius: 10px;
         flex: 1;
     }

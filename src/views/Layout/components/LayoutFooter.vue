@@ -18,7 +18,7 @@
 
 <style lang="scss" scoped>
 .footer-info {
-    background-color: #fff;
+    background-color: var(--white);
     width: 100%;
     height: 64px;
     display: flex;

@@ -4,7 +4,7 @@
 <template>
     <div class="nav">
         <div class="nav-links">
-            <RouterLink to="/">主页</RouterLink>
+            <RouterLink to="/home">主页</RouterLink>
             <RouterLink to="/archive">归档</RouterLink>
             <RouterLink to="/about">关于</RouterLink>
         </div>
@@ -13,7 +13,7 @@
 
 <style lang="scss" scoped>
 .nav {
-    background-color: #fff;
+    background-color: var(--white);
     width: 100%;
     height: 64px;
     position: fixed;
@@ -31,16 +31,14 @@
     }
 
     a {
-        color: #000;
+        color: var(--dark);
 
         &:hover {
-            color: #409eff;
+            color: var(--blue);
         }
-
         &.active {
-            color: #409eff;
+            color: var(--blue);
         }
-
     }
 }
 </style>

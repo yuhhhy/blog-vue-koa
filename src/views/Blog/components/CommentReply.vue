@@ -59,7 +59,7 @@ const showReplyForm = (comment) => {
 .comment-replies {
     margin-top: 15px;
     padding-left: 20px;
-    border-left: 2px solid #e5e5e5;
+    border-left: 2px solid var(--border-color);
 
     :deep(.el-avatar) {
         width: 40px !important;

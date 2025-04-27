@@ -8,6 +8,11 @@ const routes = [
         children: [
             {
                 path: '',
+                name: 'Redirect',
+                redirect: '/home'
+            },
+            {
+                path: '/home',
                 name: 'Home',
                 component: () => import('@/views/Home/index.vue'),
             },
@@ -15,6 +20,18 @@ const routes = [
                 path: 'archive',
                 name: 'Archive',
                 component: () => import('@/views/Archive/index.vue'),
+                children: [
+                    {
+                        path: '',
+                        name: 'ByDate',
+                        component: () => import('@/views/Archive/components/ByDate/index.vue'),
+                    },
+                    {
+                        path: ':tagName',
+                        name: 'ByTag',
+                        component: () => import('@/views/Archive/components/ByTag/index.vue'),
+                    },
+                ]
             },
             {
                 path: 'about',
@@ -25,6 +42,12 @@ const routes = [
                 path: 'blog/:id',
                 name: 'Blog',
                 component: () => import('@/views/Blog/index.vue')
+            },
+            {
+                path: 'test',
+                name: 'Test',
+                component: () => import('@/views/Test/index.vue'),
+                meta: { title: '测试' }
             }
         ]
     }
@@ -32,7 +55,7 @@ const routes = [
 
 const router = createRouter({
     history: createWebHistory(),
-    linkExactActiveClass: 'active', // 设置全局的精确匹配类名
+    linkActiveClass: 'active', // 设置Vue Router模糊匹配类名
     routes
 })
 

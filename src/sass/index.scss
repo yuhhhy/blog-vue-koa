@@ -11,25 +11,44 @@ html, body {
     font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial !important;
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
 @media screen and (max-width: 768px) {
     html, body {
         font-size: 14px;
     }
 }
-// no-color
-@font-face {
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+:root {
+    --white: #fff;
+    --light: #f5f5fa;
+    --lightgrey: #dcdfe6;
+    --darkgrey : #d3d3d3;
+    --dark: #333;
+    --black: #000;
+    --sapphire: #163375; // 蓝宝石色
+    --skyblue: #3498db;
+    --blue: #409eff;
+    --red: #ff4757;
+    --orange: #ffa502;
+    --cyan: #1abc9c;
+    --grape: #c850c0;
+
+    --border-color: #eee;
+    --quote-color: #666;
+}
+
+// iconfont
+@font-face {  // no-color
     font-family: 'iconfont';  /* Project id 4900987 */
     src: url('//at.alicdn.com/t/c/font_4900987_ot8ny9ozxah.woff2?t=1745674006433') format('woff2'),
          url('//at.alicdn.com/t/c/font_4900987_ot8ny9ozxah.woff?t=1745674006433') format('woff'),
          url('//at.alicdn.com/t/c/font_4900987_ot8ny9ozxah.ttf?t=1745674006433') format('truetype');
   }
-// colored
-@font-face {
+@font-face { // colored
     font-family: 'iconfont';  /* Project id 4906641 */
     src: 
          url('//at.alicdn.com/t/c/font_4906641_4zshyxj9ctj.woff2?t=1745673965580') format('woff2'),

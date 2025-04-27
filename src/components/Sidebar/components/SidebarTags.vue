@@ -1,5 +1,5 @@
 <script setup>
-import Tag from '@/views/Tag/index.vue'
+import Tag from '@/components/Tag/index.vue'
 
 const tagList = [
     {
