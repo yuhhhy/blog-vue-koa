@@ -1,4 +1,5 @@
-<script setup>
+<!-- 前后端不分离代码已经注释掉 -->
+<!-- <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiFetchBlogData } from '@/api/index.js'
@@ -22,6 +23,7 @@ onMounted(async () => {
 // 获取博客数据
 const fetchBlogData = async (blogId) => {
     await apiFetchBlogData(blogId).then((data) => { blogData.value = data})
+    console.log(blogData)
 }
 
 // 处理博客数据
@@ -49,13 +51,55 @@ const renderBlogContent = () => {
 
 //     }
 // )
+</script> -->
+<!-- 静态页面代码 -->
+<script setup>
+import MarkdownIt from 'markdown-it'
+import Sidebar from '@/components/Sidebar/index.vue'
+import ArticleHeader from './components/ArticleHeader.vue'
+import ArticleContent from './components/ArticleContent.vue'
+import ArticleFooter from './components/ArticleFooter.vue'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute()
+const router = useRouter()
+let htmlContent = ref('')
+let blogData = ref({})
+
+// 获取当前路由博客的相关数据blogData
+const searchBlogList = async (blogId) => {
+    const response = await fetch('/data/posts.json')
+    const blogList = await response.json()
+    const blog = blogList.find(item => item.id === blogId)
+    
+    if (!blog) {
+      router.push('/404')
+      return
+    }
+    return blog
+}
+
+// 获取文章内容htmlContent
+const fetchBlogContent = async (blogId) => {
+  const response = await fetch(`/posts/id${blogId}.md`)
+  const content = await response.text()
+  const md = new MarkdownIt()
+  htmlContent.value = md.render(content)
+}
+
+onMounted(async () => {
+  const blogId = parseInt(route.params.id)
+  blogData.value = await searchBlogList(blogId)
+  await fetchBlogContent(blogId)
+})
 </script>
 
 <template>
     <div class="blog-container">
         <!-- 博客头部banner区域 -->
         <div class="blog-header">
-            <div class="banner">
+            <div class="banner" :style="{ backgroundImage: `url(${blogData.coverImage})` }">
             </div>
             <!-- 遮罩层 -->
             <div class="mask">
@@ -77,7 +121,7 @@ const renderBlogContent = () => {
                 <!-- 文章上部分交互区域 -->
                 <ArticleHeader></ArticleHeader>
                 <!-- 文章主体内容区域 -->
-                <ArticleContent :html="html"></ArticleContent>
+                <ArticleContent :htmlContent="htmlContent"></ArticleContent>
                 <!-- 文章底部相关信息和评论区域 -->
                 <ArticleFooter></ArticleFooter>
             </div>
@@ -111,7 +155,6 @@ img {
         .banner {
             width: 100%;
             height: 500px;
-            background-image: url('@/assets/images/blog-banner.jpg');
             background-attachment: fixed;
             background-size: cover;
         }

@@ -1,6 +1,5 @@
 <script setup>
 import Sidebar from '@/components/Sidebar/index.vue'
-
 </script>
 
 <template>

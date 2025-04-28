@@ -42,23 +42,23 @@ const props = defineProps({
     height: 70px;
     display: flex;
     align-items: center;
-    padding-left: 5px;
+    padding-left: 15px;
     position: relative;
     font-size: 0.875rem;
 
     &:hover {
         .tag-img {
-            transform: translateX(120px);
+            transform: translateX(110px);
             transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
                 
         }
         .tag-info {
-            transform: translateX(120px);
+            transform: translateX(110px);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
         .black-box {
-            transform: translateX(120px);
+            transform: translateX(110px);
             transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
     }
@@ -72,6 +72,7 @@ const props = defineProps({
         flex: 1;
         height: 100%;
         display: flex;
+        padding-left: 10px;
         border-bottom: 1px solid #F5F5FA;
 
         .tag-info-left {

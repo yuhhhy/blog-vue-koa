@@ -1,4 +1,5 @@
-<script setup>
+<!-- 前后端不分离代码已经注释掉 -->
+<!-- <script setup>
 import { onMounted, ref } from 'vue'
 import { apiGetBlogList } from '@/api/index.js'
 import { ElMessage } from 'element-plus'
@@ -14,25 +15,59 @@ onMounted(() => {
         ElMessage.error('获取博客列表失败')
     })
 })
+</script> -->
+<!-- 静态页面代码 -->
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import Sidebar from '@/components/Sidebar/index.vue'
 
+const textParts = ref([
+  { left: "内容", middle: "形式", right:"重要" },
+  { left: "做到", middle: "说到", right:"困难" }
+])
+const currentIndex = ref(0)
+let intervalId = null
+const blogList = ref([])
+
+
+onMounted(async () => {
+  const response = await fetch('/data/posts.json')
+  blogList.value = await response.json()
+
+  intervalId = setInterval(() => {
+    currentIndex.value = (currentIndex.value + 1) % textParts.value.length
+  }, 5000)
+})
+
+onBeforeUnmount(() => {
+  if (intervalId) clearInterval(intervalId)
+})
 </script>
 
 <template>
     <div class="home-container">
         <!-- banner -->
         <div class="home-banner">
-            该博客还不知道放点什么
+            <div class="animated-text">
+                <transition name="slide" mode="out-in">
+                    <span :key="currentIndex" class="text-part">{{ textParts[currentIndex].left }}</span>
+                </transition>比<transition name="slide" mode="out-in">
+                    <span :key="currentIndex" class="text-part">{{ textParts[currentIndex].middle }}</span>
+                </transition>更<transition name="slide" mode="out-in">
+                    <span :key="currentIndex" class="text-part">{{ textParts[currentIndex].right }}</span>
+                </transition>
+            </div>
         </div>
         <div class="home-content">
             <!-- 博客列表 -->
             <div class="home-main">
                 <RouterLink 
                     v-for="blog in blogList" 
-                    :to="`/blog/${blog._id}`" 
+                    :to="`/blog/${blog.id}`" 
                     class="blog"
                 >
                     <div class="blog-img"
-                        :style="{ 'background-image': `url(${'/images/browser.jpg' || blog.coverImage})` }">
+                        :style="{ 'background-image': `url(${ blog.coverImage})` }">
                     </div>
                     <div class="blog-intro">
 
@@ -69,6 +104,7 @@ onMounted(() => {
         font-weight: 700;
         font-family: "Google Sans", arial, sans-serif;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;  // 文字居中
@@ -140,6 +176,55 @@ onMounted(() => {
                 }
             }
         }
+    }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.home-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+.text-part {
+    display: inline-block;
+    min-width: 100px;
+    text-align: center;
+}
+.slide-enter-active {
+    animation: slideIn 0.5s ease-out;
+}
+.slide-leave-active {
+    animation: slideOut 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-30px);
+        opacity: 0;
     }
 }
 </style>

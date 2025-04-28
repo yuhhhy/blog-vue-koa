@@ -1,20 +1,19 @@
+<script setup>
+import { RouterLink } from 'vue-router';
+</script>
+
 <template>
     <div class="footer-info">
         <div class="left-footer">
                 <p>© 2025 一曝十寒. All rights reserved.</p>
         </div>
         <div class="right-footer">
-            <a href="#">关于</a>
-            <a href="#">归档</a>
+            <RouterLink to="/about">关于</RouterLink>
+            <RouterLink to="/archive">归档</RouterLink>
             <a href="#">联系</a>
         </div>
     </div>
-
 </template>
-
-<script setup>
-
-</script>
 
 <style lang="scss" scoped>
 .footer-info {

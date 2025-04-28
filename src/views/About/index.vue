@@ -3,7 +3,7 @@ import Sidebar from "@/components/Sidebar/index.vue"
 import ArticleContent from "../Blog/components/ArticleContent.vue";
 import ArticleFooter from "../Blog/components/ArticleFooter.vue";
 
-const html = `
+const htmlContent = `
             <h1>## 关于我</h1>
             <p>嘿，欢迎来到这里</p>
             <ul>
@@ -26,7 +26,7 @@ const html = `
 <template>
     <div class="about">
         <div class="about-article">
-            <ArticleContent :html="html"></ArticleContent>
+            <ArticleContent :htmlContent="htmlContent"></ArticleContent>
             <ArticleFooter></ArticleFooter>
         </div>
         <Sidebar class="about-sidebar"></Sidebar>

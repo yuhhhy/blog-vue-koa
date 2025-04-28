@@ -24,12 +24,12 @@ const routes = [
                     {
                         path: '',
                         name: 'ByDate',
-                        component: () => import('@/views/Archive/components/ByDate/index.vue'),
+                        component: () => import('@/views/Archive/components/ByDate.vue'),
                     },
                     {
                         path: ':tagName',
                         name: 'ByTag',
-                        component: () => import('@/views/Archive/components/ByTag/index.vue'),
+                        component: () => import('@/views/Archive/components/ByTag.vue'),
                     },
                 ]
             },

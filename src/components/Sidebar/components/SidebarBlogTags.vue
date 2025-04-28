@@ -1,7 +1,5 @@
 <script setup>
-// 接收父组件传递的标签数组
-defineProps(['tags'])
-
+    defineProps(['tags'])
 </script>
 
 <template>

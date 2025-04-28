@@ -7,13 +7,15 @@
     "dev": "vite",
     "server": "nodemon server/app.js",
     "start": "concurrently \"npm:server\" \"npm:dev\"",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "concurrently \"vite build\" \"node scripts/generatePosts.js\"",
+    "preview": "vite preview",
+    "generate-posts": "node scripts/generatePosts.js"
   },
   "dependencies": {
     "@koa/router": "^13.1.0",
     "axios": "^1.8.4",
     "element-plus": "^2.9.7",
+    "gray-matter": "^4.0.3",
     "koa": "^2.16.1",
     "koa-bodyparser": "^4.4.1",
     "koa-static": "^5.0.0",

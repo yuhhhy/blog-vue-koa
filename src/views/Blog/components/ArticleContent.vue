@@ -1,5 +1,5 @@
 <script setup>
-    defineProps(['html'])
+    defineProps(['htmlContent'])
 </script>
 
 <template>
@@ -10,7 +10,7 @@
         style="height: 200px; width: 400px;"
     ></textarea> -->
     <div 
-        v-html="html"
+        v-html="htmlContent"
         class="markdown-content"
     > </div>
 </div>
