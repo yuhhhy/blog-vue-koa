@@ -7,7 +7,7 @@
     "dev": "vite",
     "server": "nodemon server/app.js",
     "start": "concurrently \"npm:server\" \"npm:dev\"",
-    "build": "concurrently \"vite build\" \"node scripts/generatePosts.js\"",
+    "build": "concurrently \"node scripts/generate-posts.js\" \"node scripts/preprocess-md.js\" \"vite build\"",
     "preview": "vite preview",
     "generate-posts": "node scripts/generate-posts.js",
     "preprocess-md": "node scripts/preprocess-md.js"
