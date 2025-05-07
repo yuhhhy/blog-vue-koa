@@ -120,7 +120,6 @@ const doSubmit = () => {
     </el-form-item>
   </el-form>
 </template>
-
 <!-- 这里必须加scoped，因为深度选择器:deep()要求配合scoped用，以改变ElementPlus原始样式 -->
 <style lang="scss" scoped>
 /* 评论表单样式 */

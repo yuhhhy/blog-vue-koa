@@ -1,43 +1,50 @@
 [
   {
-    "id": 3,
-    "title": "测试Markdown3",
+    "title": "数字时代的注意力漂流记​",
     "author": "一曝十寒",
-    "coverImage": "/images/shanshui.jpg",
-    "date": "2025-04-24",
+    "coverImage": "/images/attention-4.jpg",
+    "date": "2025-05-07",
     "tags": [
-      "Test",
-      "测试"
+      "生活成长"
     ],
-    "wordCount": 832,
-    "link": "/blog/3"
+    "id": 2,
+    "link": "/blog/2",
+    "wordCount": 1417
   },
   {
-    "id": 1,
-    "title": "Web 时代的前因后果",
+    "title": "怎么实现一个颜色渐变的输入框边框？",
     "author": "一曝十寒",
-    "coverImage": "/images/browser.jpg",
+    "coverImage": "/images/border-gradient-1.jpg",
+    "date": "2025-05-03",
+    "tags": [
+      "CSS"
+    ],
+    "id": 1,
+    "link": "/blog/1",
+    "wordCount": 1232
+  },
+  {
+    "title": "项目开发中遇到的前端字数统计问题",
+    "author": "一曝十寒",
+    "coverImage": "/images/emoji.jpg",
+    "date": "2025-05-02",
+    "tags": [
+      "JavaScript"
+    ],
+    "id": 3,
+    "link": "/blog/3",
+    "wordCount": 2123
+  },
+  {
+    "title": "关于 Web 与浏览器，你未了解的历史",
+    "author": "一曝十寒",
+    "coverImage": "/images/browser_www.jpg",
     "date": "2025-04-23",
     "tags": [
-      "Web",
-      "互联网",
       "浏览器"
     ],
-    "wordCount": 4032,
-    "link": "/blog/1"
-  },
-  {
-    "id": 2,
-    "title": "测试Markdown2",
-    "author": "一曝十寒",
-    "coverImage": "/images/browser.jpg",
-    "date": "2025-04-22",
-    "tags": [
-      "Test",
-      "测试",
-      "Markdown"
-    ],
-    "wordCount": 1002,
-    "link": "/blog/2"
+    "id": 0,
+    "link": "/blog/0",
+    "wordCount": 3009
   }
 ]

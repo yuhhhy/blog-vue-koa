@@ -55,6 +55,7 @@ const renderBlogContent = () => {
 <!-- 静态页面代码 -->
 <script setup>
 import MarkdownIt from 'markdown-it'
+import markdownItTocAndAnchor from 'markdown-it-toc-and-anchor'
 import Sidebar from '@/components/Sidebar/index.vue'
 import ArticleHeader from './components/ArticleHeader.vue'
 import ArticleContent from './components/ArticleContent.vue'
@@ -64,8 +65,11 @@ import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
-let htmlContent = ref('')
-let blogData = ref({})
+let content = ref('') // markdown格式文章内容
+let htmlContent = ref('') // html格式文章内容
+let blogData = ref({}) // data/posts.json
+let tocHtml = ref('') // toc生成的html
+
 
 // 获取当前路由博客的相关数据blogData
 const searchBlogList = async (blogId) => {
@@ -81,17 +85,28 @@ const searchBlogList = async (blogId) => {
 }
 
 // 获取文章内容htmlContent
-const fetchBlogContent = async (blogId) => {
-  const response = await fetch(`/posts/id${blogId}.md`)
-  const content = await response.text()
-  const md = new MarkdownIt()
-  htmlContent.value = md.render(content)
+const fetchBlogContent = async () => {
+  const response = await fetch(`/processed_posts/${blogData.value.title}.md`)
+  content.value = await response.text()
+
+  // 生成文章HTML、Toc
+  const md = new MarkdownIt({
+    html: true,
+    linkify: true,
+    typographer: true
+  }).use(markdownItTocAndAnchor, {
+    tocCallback: function(tocMarkdown, tocArray, tocHtmlResult) {
+      tocHtml.value = tocHtmlResult
+    }
+  })
+  htmlContent.value = md.render(content.value)
 }
+
 
 onMounted(async () => {
   const blogId = parseInt(route.params.id)
   blogData.value = await searchBlogList(blogId)
-  await fetchBlogContent(blogId)
+  await fetchBlogContent()
 })
 </script>
 

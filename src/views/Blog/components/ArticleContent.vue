@@ -1,14 +1,12 @@
 <script setup>
-    defineProps(['htmlContent'])
+const props = defineProps(['htmlContent'])
+
+console.log(props.htmlContent);
+
 </script>
 
 <template>
 <div class="article-content">
-    <!-- <textarea 
-        type="text" 
-        v-model="blogData.content" 
-        style="height: 200px; width: 400px;"
-    ></textarea> -->
     <div 
         v-html="htmlContent"
         class="markdown-content"
