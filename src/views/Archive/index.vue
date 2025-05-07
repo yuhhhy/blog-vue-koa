@@ -1,5 +1,14 @@
 <script setup>
 import Sidebar from '@/components/Sidebar/index.vue'
+import TagList from './components/TagList.vue';
+import { ref } from 'vue'
+
+const posts = ref([])
+
+fetch('/data/posts.json').then(response => response.json()).then(posts => {
+    posts.value = posts;
+})
+
 </script>
 
 <template>
@@ -7,7 +16,9 @@ import Sidebar from '@/components/Sidebar/index.vue'
     <div class="archive-main">
         <!-- 归档页面文章列表 -->
         <div class="archive-list">
-            <!-- 不同排序方式 -->
+            <!-- 归档页面标签列表 -->
+            <TagList :posts="posts"></TagList>
+            <!-- 路由决定不同排序方式 -->
             <RouterView></RouterView>
         </div>
         <!-- 归档页面侧边栏 -->
@@ -19,6 +30,7 @@ import Sidebar from '@/components/Sidebar/index.vue'
 <style lang="scss" scoped>
 .archive-container {
     background-color: var(--light);
+    color: var(--black);
     margin-top: 64px;
     min-height: calc(100vh - 75px);
     
@@ -30,13 +42,23 @@ import Sidebar from '@/components/Sidebar/index.vue'
             flex: 1;
             background-color: var(--white);
             border-radius: 15px;
+            padding: 20px 0;
         }
-        @media (max-width: 768px) {
+    }
+}
+@media (max-width: 768px) {
+    .archive-container{
+        background-color: var(--white);
+        .archive-main {
+            padding: 20px 10px;
+            .archive-list{
                 padding: 0;
                 flex-direction: column;
-            .archive-list {
+                .archive-list {
                     margin-right: 0;
                     margin-bottom: 20px;
+                    border-radius: 0;
+                }
             }
         }
     }
