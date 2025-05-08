@@ -96,7 +96,7 @@ const fetchBlogContent = async () => {
     typographer: true
   }).use(markdownItTocAndAnchor, {
     tocCallback: function(tocMarkdown, tocArray, tocHtmlResult) {
-      tocHtml.value = tocHtmlResult
+        tocHtml.value = tocHtmlResult
     }
   })
   htmlContent.value = md.render(content.value)
@@ -136,13 +136,13 @@ onMounted(async () => {
                 <!-- 文章上部分交互区域 -->
                 <ArticleHeader></ArticleHeader>
                 <!-- 文章主体内容区域 -->
-                <ArticleContent :htmlContent="htmlContent" :tocHtml="tocHtml"></ArticleContent>
+                <ArticleContent :htmlContent="htmlContent"></ArticleContent>
                 <!-- 文章底部相关信息和评论区域 -->
                 <ArticleFooter></ArticleFooter>
             </div>
 
             <!-- 博客页面右侧边栏 -->
-            <Sidebar :tags="blogData.tags"></Sidebar>
+            <Sidebar :tags="blogData.tags" :tocHtml="tocHtml"></Sidebar>
         </div>
     </div>
 </template>
