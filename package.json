@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "@koa/router": "^13.1.0",
+    "@vueuse/core": "^13.1.0",
     "axios": "^1.8.4",
     "element-plus": "^2.9.7",
     "gray-matter": "^4.0.3",
+    "highlight.js": "^11.11.1",
     "koa": "^2.16.1",
     "koa-bodyparser": "^4.4.1",
     "koa-static": "^5.0.0",

@@ -1,14 +1,56 @@
 <script setup>
+import { onMounted } from 'vue'
+import { useWindowScroll } from '@vueuse/core'
+import { useThemeStore } from '@/stores/themeStore.js'
+
+const { y } = useWindowScroll()
+const themeStore = useThemeStore()
+
+const toggleTheme = () => {
+    document.documentElement.classList.remove(themeStore.theme)
+    themeStore.toggleTheme();
+    document.documentElement.classList.add(themeStore.theme)
+}
+
+onMounted(() => {
+    // document.documentElement 指向根元素 <html>
+    document.documentElement.classList.add(themeStore.theme)
+})
+
 </script>
 
 <template>
-    <div class="nav">
+    <div class="nav" :class="{ unshow: y >= 64 }">
         <div class="nav-links">
             <RouterLink to="/home">主页</RouterLink>
             <RouterLink to="/archive">归档</RouterLink>
             <RouterLink to="/about">关于</RouterLink>
         </div>
+        <button @click="toggleTheme" class="theme-toggle">
+            <span class="iconfont themeIcon" v-if="themeStore.theme === 'light'">&#xe886;</span>
+            <span class="iconfont themeIcon" v-else style="color: #fff;">&#xea26;</span>
+        </button>
+        <div class="el-drop-down">
+            <el-dropdown placement="top-start">
+                <span class="iconfont drop-down-icon">&#xe61b;</span>
+                <template #dropdown>
+                    <el-dropdown-menu>
+                        <el-dropdown-item>
+                            <RouterLink to="/home">主页</RouterLink>
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <RouterLink to="/archive">归档</RouterLink>
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <RouterLink to="/about">关于</RouterLink>
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </template>
+            </el-dropdown>
+        </div>
     </div>
+    <!-- 回到顶部 -->
+    <el-backtop :right="16" :bottom="100" style="color: var(--white); background-color: rgba(88, 183, 255, 0.8)" />
 </template>
 
 <style lang="scss" scoped>
@@ -23,11 +65,15 @@
     z-index: 1000;
 
     .nav-links {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-        gap: 50px;
+        display: none;
+
+        @media (min-width: 768px) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            gap: 50px;
+        }
     }
 
     a {
@@ -36,9 +82,46 @@
         &:hover {
             color: var(--blue);
         }
+
         &.active {
             color: var(--blue);
         }
     }
+
+    .el-drop-down {
+        display: none;
+
+        @media (max-width: 768px) {
+            display: block;
+            position: absolute;
+            top: 22px;
+            left: 30px;
+        }
+
+        .iconfont {
+            color: var(--black);
+            font-size: 15px;
+        }
+    }
+
+    .themeIcon {
+        position: absolute;
+        top: 22px;
+        right: 30px;
+    }
+}
+
+.unshow {
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: transform 0.3s ease-in-out;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 10px;
 }
 </style>

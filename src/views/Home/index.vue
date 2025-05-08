@@ -148,6 +148,7 @@ onBeforeUnmount(() => {
                 }
     
                 .blog-intro {
+                    color: var(--black);
                     padding: 0 20px;
     
                     .blog-time-tags {
