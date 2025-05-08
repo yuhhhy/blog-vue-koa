@@ -119,13 +119,13 @@ onMounted(async () => {
             <!-- 遮罩层 -->
             <div class="mask">
             </div>
-                <!-- 相关信息 -->
-                <div class="blog-title">{{ blogData.title }}</div>
-                <div class="blog-info">
-                    <div class="blog-date">{{ blogData.date }}</div>
-                    <div class="blog-author">作者 {{ blogData.author }}</div>
-                    <div class="blog-word-count">字数 {{ blogData.wordCount }}</div>
-                </div>
+            <!-- 相关信息 -->
+            <div class="blog-title">{{ blogData.title }}</div>
+            <div class="blog-info">
+                <div class="blog-date">{{ blogData.date }}</div>
+                <div class="blog-author">作者 {{ blogData.author }}</div>
+                <div class="blog-word-count">字数 {{ blogData.wordCount }}</div>
+            </div>
         </div>
 
         <!-- 除了头部banner的主体和侧边栏区域 -->
@@ -136,7 +136,7 @@ onMounted(async () => {
                 <!-- 文章上部分交互区域 -->
                 <ArticleHeader></ArticleHeader>
                 <!-- 文章主体内容区域 -->
-                <ArticleContent :htmlContent="htmlContent"></ArticleContent>
+                <ArticleContent :htmlContent="htmlContent" :tocHtml="tocHtml"></ArticleContent>
                 <!-- 文章底部相关信息和评论区域 -->
                 <ArticleFooter></ArticleFooter>
             </div>

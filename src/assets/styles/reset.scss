@@ -7,9 +7,9 @@
 html, body {
     height: 100%;
     font-size: 16px;
-    font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial !important;
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
 }
-
 
 a {
     text-decoration: none;

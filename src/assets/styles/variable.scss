@@ -1,18 +1,52 @@
+// :root.light {
 :root {
     --white: #fff;
     --light: #f5f5fa;
     --lightgrey: #dcdfe6;
     --darkgrey : #d3d3d3;
+    --light-dark: #444;
     --dark: #333;
     --black: #000;
     --sapphire: #163375; // 蓝宝石色
-    --skyblue: #3498db;
-    --blue: #409eff;
-    --red: #ff4757;
-    --orange: #ffa502;
-    --cyan: #1abc9c;
-    --grape: #c850c0;
 
     --border-color: #eee;
     --quote-color: #666;
+
+    // 固定色
+    --skyblue: #3498db;
+    --blue: #409eff;
+    --light-blue: #51c7f9;
+    --lake: #A7CAFD;
+    --red: #ff4757;
+    --orange: #ffa502;
+    --gold: #ffff18;
+    --cyan: #68aa9d;
+    --grape: #c850c0;
+    --lavender: #c792ff;
+}
+
+:root.dark {
+    --white: #333;
+    --light: #222;
+    --lightgrey: #1a1a1a;
+    --darkgrey : #000;
+    --light-dark: #dcdfe6;
+    --dark: #fff;
+    --black: #f5f5fa;
+    --sapphire: #2aadb2;
+    
+    --border-color: #333;
+    --quote-color: #999;
+
+    // 固定色
+    --skyblue: #3498db;
+    --blue: #409eff;
+    --light-blue: #51c7f9;
+    --lake: #A7CAFD;
+    --red: #ff4757;
+    --orange: #ffa502;
+    --gold: #ffff18;
+    --cyan: #68aa9d;
+    --grape: #c850c0;
+    --lavender: #c792ff;
 }

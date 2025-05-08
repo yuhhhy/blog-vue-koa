@@ -4,30 +4,34 @@ import SidebarArchive from './components/SidebarArchive.vue';
 import SidebarTags from './components/SidebarTags.vue';
 import SidebarToc from './components/SidebarToc.vue';
 import SidebarBlogTags from './components/SidebarBlogTags.vue';
+import SidebarWebsiteInfo from './components/SidebarWebsiteInfo.vue';
 
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-const props = defineProps(['tags'])
+const props = defineProps(['tags','tocHtml'])
+
 
 // 根据路由动态加载组件
 const currentComponent = computed(() => {
     if (route.path.startsWith('/blog/')) {
         return [
-            { component: SidebarAuthor },
-            { component: SidebarToc },
+            { component: SidebarArchive },
             { component: SidebarBlogTags, props: { tags: props.tags } },
-            { component: SidebarArchive }
+            { component: SidebarToc, props: { tocHtml: props.tocHtml } }
         ];
     } else {
         return [
             { component: SidebarAuthor },
             { component: SidebarArchive },
-            { component: SidebarTags }
+            { component: SidebarTags },
+            { component: SidebarWebsiteInfo }
         ];
     }
 })
+
+
 </script>
 
 <template>
@@ -37,12 +41,14 @@ const currentComponent = computed(() => {
             :is="item.component"
             :key="index"
             v-bind="item.props || {}"
+            class="sidebar-item"
         />
     </div>
 </template>
 
 <style lang="scss" scoped>
 .sidebar {
+    font-family: var(--font-serif);
     display: flex;
     flex-direction: column;
     width: 300px;
@@ -50,7 +56,12 @@ const currentComponent = computed(() => {
     height: 100%;
     margin-left: 40px;
 
-    @media (max-width: 768px) {
+    .sidebar-item:not(:last-child) {
+        margin-bottom: 20px;
+    }
+}
+@media (max-width: 768px){
+    .sidebar {
         display: none;
     }
 }
