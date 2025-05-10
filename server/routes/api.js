@@ -2,6 +2,7 @@ import Router from '@koa/router'
 import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, deleteAllBlogContents, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate } from '../controllers/WebsiteDataController.js'
+import { getComments, createComment } from '../controllers/CommentController.js'
 
 const router = new Router({ prefix: '/api' })
 /*
@@ -42,7 +43,7 @@ router.put('/blogcontent/like/:id', updateBlogLikeCount)
 
 
 /*
-* Website Visit API
+* Website Data API
 */
 // 获取网站访问量
 router.get('/website', getWebsiteData)
@@ -55,5 +56,15 @@ router.put('/website/view', updateWebsiteView)
 
 // 更新网站最后更新时间
 router.put('/website/lastupdate', updateWebsiteLastUpdate)
+
+
+/*
+* Comment API
+*/
+// 获取博客的所有评论
+router.get('/comment/:id', getComments)
+
+// 创建新评论
+router.post('/comment', createComment)
 
 export default router

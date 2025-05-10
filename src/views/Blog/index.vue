@@ -1,16 +1,17 @@
 <script setup>
+import Sidebar from '@/components/Sidebar/index.vue'
+import ArticleHeader from './components/ArticleHeader.vue'
+import ArticleContent from './components/ArticleContent.vue'
+import ArticleFooter from './components/ArticleFooter.vue'
 import MarkdownIt from 'markdown-it'
 import markdownItTocAndAnchor from 'markdown-it-toc-and-anchor'
 import hljs from 'highlight.js'
 import 'highlight.js/scss/tokyo-night-dark.scss'
 
-import Sidebar from '@/components/Sidebar/index.vue'
-import ArticleHeader from './components/ArticleHeader.vue'
-import ArticleContent from './components/ArticleContent.vue'
-import ArticleFooter from './components/ArticleFooter.vue'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { apiGetBlogContent, apiUpdateBlogViewCount, apiUpdateWebsiteView } from '@/api/index.js'
+import { apiGetBlogContent, apiUpdateBlogViewCount } from '@/api/blogContent.js'
+import { apiUpdateWebsiteView } from '@/api/websiteData.js'
 
 const route = useRoute()
 const router = useRouter()

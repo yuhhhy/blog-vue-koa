@@ -1,7 +1,8 @@
 <script setup>
 import Sidebar from '@/components/Sidebar/index.vue'
 import { ref, onMounted } from 'vue'
-import { apiGetBlogList, apiUpdateWebsiteView } from '@/api/index.js'
+import { apiGetBlogList } from '@/api/blog.js'
+import { apiUpdateWebsiteView } from '@/api/websiteData.js'
 
 const blogList = ref([])
 

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { apiUpdateBlogLikeCount } from '@/api/index.js'
+import { apiUpdateBlogLikeCount } from '@/api/blogContent.js'
 import { useLikeStore } from '@/stores/likeStore.js'
 
 const props = defineProps(['blogData'])

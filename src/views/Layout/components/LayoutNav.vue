@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useThemeStore } from '@/stores/themeStore.js'
-import { apiUpdateWebsiteVisit } from '@/api/index.js'
+import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 
 const { y } = useWindowScroll()
 const themeStore = useThemeStore()

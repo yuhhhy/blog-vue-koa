@@ -2,16 +2,17 @@
 import Sidebar from '@/components/Sidebar/index.vue'
 import TagList from './components/TagList.vue';
 import { ref, } from 'vue'
-import { apiGetBlogList, apiUpdateWebsiteView } from '@/api/index.js'
+import { apiGetBlogList } from '@/api/blog.js'
+import { apiUpdateWebsiteView } from '@/api/websiteData.js'
 
-const posts = ref([])
+// const posts = ref([])
 
-async function getBlogList() {
-    const response = await apiGetBlogList()
-    posts.value = response
-}
+// async function getBlogList() {
+//     const response = await apiGetBlogList()
+//     posts.value = response
+// }
 
-getBlogList()
+// getBlogList()
 apiUpdateWebsiteView()
 
 </script>
@@ -22,7 +23,8 @@ apiUpdateWebsiteView()
         <!-- 归档页面文章列表 -->
         <div class="archive-list">
             <!-- 归档页面标签列表 -->
-            <TagList :posts="posts"></TagList>
+            <!-- <TagList :posts="posts"></TagList> -->
+            <TagList></TagList>
             <!-- 路由决定不同排序方式 -->
             <RouterView></RouterView>
         </div>

@@ -3,7 +3,7 @@ import Sidebar from "@/components/Sidebar/index.vue"
 import ArticleContent from "../Blog/components/ArticleContent.vue";
 import ArticleFooter from "../Blog/components/ArticleFooter.vue";
 import { onMounted } from "vue";
-import { apiUpdateWebsiteView } from "@/api/index.js";
+import { apiUpdateWebsiteView } from "@/api/websiteData.js";
 
 const htmlContent = `
             <h1>关于我</h1>

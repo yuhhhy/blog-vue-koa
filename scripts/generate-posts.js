@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { fileURLToPath } from 'url'
-import { apiCreateBlog, apiDeleteAllBlogs, apiCreateBlogContent, apiDeleteAllBlogContent } from '../src/api/index.js'
+import { apiCreateBlog, apiDeleteAllBlogs, apiCreateBlogContent, apiDeleteAllBlogContent, apiUpdateWebsiteLastUpdate } from '../src/api/index.js'
 
 // 获取当前模块路径
 const __filename = fileURLToPath(import.meta.url)
@@ -99,5 +99,7 @@ async function updateAllPosts(posts) {
   }
 }
 
+// 更新网站最后更新时间
+apiUpdateWebsiteLastUpdate()
 // 调用更新函数
-await updateAllPosts(posts)
+updateAllPosts(posts)

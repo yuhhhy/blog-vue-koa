@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { apiGetBlogList } from '../../../api/index.js'
+import { apiGetBlogList } from '@/api/blog.js'
 
 const route = useRoute()
 const postsByDate = ref([])
