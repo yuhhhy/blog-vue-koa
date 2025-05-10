@@ -11,7 +11,7 @@ connectDB()
 
 // 解决跨域问题
 app.use(cors({
-    origin: '*',
+    origin: '*'
 }))
 
 // 对所有请求进行打印

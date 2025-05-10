@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { apiGetBlogList } from '../../../api/index.js'
+
 
 // 网站运行天数
 const runTime = ref(getrunTime('2025-05-04'))
@@ -14,11 +16,11 @@ function getrunTime(startTime) {
 // 网站文章总数
 const totalPosts = ref(0)
 onMounted(() => {
-    fetch('/data/posts.json')
-    .then(response => response.json())
-    .then(data => {
-        totalPosts.value = data.length
-    })
+  apiGetBlogList().then(response => {
+    const posts = response
+    // 文章总数
+    totalPosts.value = posts.length
+  })
 })
 
 // 网站访问量

@@ -17,8 +17,9 @@ router.get('/bloglist', async (ctx) => {
 router.get('/blog/:id', async (ctx) => {
     const { id } = ctx.request.params
     // 从数据库获取单个博客文章
-    const blog = await Blog.findById(id)
+    const blog = await Blog.findOne({ id: id })
     if (!blog) {
+        console.log('Blog not found')
         ctx.status= 404
         ctx.body = { message: 'Blog not found' }
         return  
@@ -52,6 +53,18 @@ router.delete('/blog/:id', async (ctx) => {
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: 'Error deleting blog', error: error.message }
+    }
+})
+
+// 删除所有博客文章
+router.delete('/posts', async (ctx) => {
+    try {
+        await Blog.deleteMany({})
+        ctx.status = 200
+        ctx.body = { message: 'All blogs deleted successfully' }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: 'Error deleting blogs', error: error.message }
     }
 })
 

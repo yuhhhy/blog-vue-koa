@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { apiGetBlogList } from '../../../api/index.js'
 
 const route = useRoute()
 const postsByDate = ref([])
@@ -21,14 +22,14 @@ const filterPostsByTag = () => {
 }
 
 // 页面挂载
-onMounted(async () => {
+onMounted(() => {
+  apiGetBlogList().then(response => {
+    postsByDate.value = response
 
-  const response = await fetch('/data/posts.json')
-  postsByDate.value = await response.json()
-
-  if(route.params.tagName){
-    filterPostsByTag()
-  }
+    if(route.params.tagName){
+      filterPostsByTag()
+    }
+  })
 })
 
 // 当前页面切换Tag

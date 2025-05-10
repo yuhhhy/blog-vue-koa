@@ -1,7 +1,8 @@
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import matter from 'gray-matter'
+import { fileURLToPath } from 'url'
+import { apiCreateBlog, apiDeleteAllBlogs } from '../src/api/index.js'
 
 // 获取当前模块路径
 const __filename = fileURLToPath(import.meta.url)
@@ -9,21 +10,22 @@ const __dirname = path.dirname(__filename)
 
 // 配置路径
 const POSTS_DIR = path.join(__dirname, '../public/posts')
-const OUTPUT_FILE = path.join(__dirname, '../public/data/posts.json')
 
 // 读取所有Markdown文件
 const files = fs.readdirSync(POSTS_DIR).filter(file => file.endsWith('.md'))
 
+
 let count = 0; // 用于给每个文件生成唯一的ID
-// 提取Frontmatter数据
+
 const posts = files.map(file => {
   const filePath = path.join(POSTS_DIR, file)
   const fileContent = fs.readFileSync(filePath, 'utf8')
   const { data, content } = matter(fileContent)
 
-  // 确保有必需的id和link字段
+  // 确保有必需的字段
   if (!data.id) data.id = count++;
   if (!data.link) data.link = `/blog/${data.id}`
+  if (!data.content) data.content = content
   // 字数统计
   if (!data.wordCount) {
     let eTotal = 0 // 字母数
@@ -51,6 +53,29 @@ const posts = files.map(file => {
 // 按日期排序
 posts.sort((a, b) => new Date(b.date) - new Date(a.date))
 
-// 写入JSON文件
-fs.writeFileSync(OUTPUT_FILE, JSON.stringify(posts, null, 2))
-console.log(`成功生成 ${posts.length} 篇文章索引到 ${OUTPUT_FILE}`)
+// 在发送新文章前，先清空所有文章
+async function updateAllPosts(posts) {
+  try {
+    // 1. 先删除所有文章
+    console.log('正在清空旧文章...')
+    await apiDeleteAllBlogs()
+    console.log('旧文章清空完成')
+
+    // 2. 重新创建所有文章
+    console.log('开始创建新文章...')
+    for (const post of posts) {
+      try {
+        await apiCreateBlog(post)
+        console.log(`创建文章成功:《${post.title}》`)
+      } catch (error) {
+        console.error(`创建文章失败:《${post.title}》- ${error.message}`)
+      }
+    }
+    console.log(`全部文章更新完成，共更新 ${posts.length} 篇文章`)
+  } catch (error) {
+    console.error('更新文章失败:', error.message)
+  }
+}
+
+// 调用更新函数
+await updateAllPosts(posts)

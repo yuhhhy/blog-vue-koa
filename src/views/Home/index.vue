@@ -1,46 +1,14 @@
-<!-- 前后端不分离代码已经注释掉 -->
-<!-- <script setup>
-import { onMounted, ref } from 'vue'
-import { apiGetBlogList } from '@/api/index.js'
-import { ElMessage } from 'element-plus'
-import Sidebar from '@/components/Sidebar/index.vue'
-
-const blogList = ref([])
-
-onMounted(() => {
-    apiGetBlogList().then((data) => {
-        console.log('获取博客列表成功', data)
-        blogList.value = data
-    }).catch((e) => {
-        ElMessage.error('获取博客列表失败')
-    })
-})
-</script> -->
-<!-- 静态页面代码 -->
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
 import Sidebar from '@/components/Sidebar/index.vue'
+import { ref, onMounted } from 'vue'
+import { apiGetBlogList } from '../../api/index.js'
 
-const textParts = ref([
-  { left: "内容", middle: "形式", right:"重要" },
-  { left: "做到", middle: "说到", right:"困难" }
-])
-const currentIndex = ref(0)
-let intervalId = null
 const blogList = ref([])
-
 
 onMounted(async () => {
-  const response = await fetch('/data/posts.json')
-  blogList.value = await response.json()
-
-  intervalId = setInterval(() => {
-    currentIndex.value = (currentIndex.value + 1) % textParts.value.length
-  }, 5000)
-})
-
-onBeforeUnmount(() => {
-  if (intervalId) clearInterval(intervalId)
+    // 获取后台数据
+    const response = await apiGetBlogList()
+    blogList.value = response
 })
 </script>
 
@@ -48,26 +16,13 @@ onBeforeUnmount(() => {
     <div class="home-container">
         <!-- banner -->
         <div class="home-banner">
-            <div class="animated-text">
-                <transition name="slide" mode="out-in">
-                    <span :key="currentIndex" class="text-part">{{ textParts[currentIndex].left }}</span>
-                </transition>比<transition name="slide" mode="out-in">
-                    <span :key="currentIndex" class="text-part">{{ textParts[currentIndex].middle }}</span>
-                </transition>更<transition name="slide" mode="out-in">
-                    <span :key="currentIndex" class="text-part">{{ textParts[currentIndex].right }}</span>
-                </transition>
-            </div>
+            <span>少说漂亮话，多做平凡事。</span>
         </div>
         <div class="home-content">
             <!-- 博客列表 -->
             <div class="home-main">
-                <RouterLink 
-                    v-for="blog in blogList" 
-                    :to="`/blog/${blog.id}`" 
-                    class="blog"
-                >
-                    <div class="blog-img"
-                        :style="{ 'background-image': `url(${ blog.coverImage})` }">
+                <RouterLink v-for="blog in blogList" :to="`/blog/${blog.id}`" class="blog">
+                    <div class="blog-img" :style="{ 'background-image': `url(${blog.coverImage})` }">
                     </div>
                     <div class="blog-intro">
 
@@ -82,7 +37,6 @@ onBeforeUnmount(() => {
             <!-- 个人展示 -->
             <Sidebar></Sidebar>
         </div>
-
     </div>
 </template>
 
@@ -97,38 +51,37 @@ onBeforeUnmount(() => {
         width: 100%;
         height: 400px;
         background: linear-gradient(135deg, #c850c0, #4158d0);
-        background-size: cover;
-        background-position: center;
         color: #FFF;
         font-size: 4rem;
         font-weight: 700;
         font-family: "Google Sans", arial, sans-serif;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        text-align: center;  // 文字居中
+        text-align: center; // 文字居中
+
         @media (max-width: 768px) {
             height: 200px;
             font-size: 2rem;
         }
     }
 
-    .home-content{
+    .home-content {
         background-color: var(--light);
         padding: 40px 60px;
         display: flex;
+
         @media (max-width: 768px) {
             padding: 20px 20px;
         }
-    
+
         .home-main {
             flex: 1;
             height: 100%;
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
-    
+
             .blog {
                 flex: 1;
                 border-radius: 10px;
@@ -136,40 +89,50 @@ onBeforeUnmount(() => {
                 background-color: var(--white);
                 min-width: 400px;
 
+                &:hover {
+                    box-shadow: 0 0 10px var(--lake);
+                    transition: 0.4s;
+                }
+
                 @media (max-width: 768px) {
                     min-width: 100%;
                 }
-    
+
                 .blog-img {
                     width: 100%;
                     height: 200px;
                     background-size: cover;
                     background-position: center;
                 }
-    
+
                 .blog-intro {
-                    color: var(--black);
                     padding: 0 20px;
-    
+                    color: var(--black);
+
                     .blog-time-tags {
                         color: var(--quote-color);
                         font-size: 0.875rem;
                         margin-bottom: 6px;
+
                         .blog-time {
                             margin-right: 10px;
                         }
+
                         .blog-tag {
                             padding-right: 10px;
+
                             &::before {
                                 content: '# ';
                             }
                         }
                     }
+
                     .blog-title {
                         font-size: 1.125rem;
                         font-weight: bold;
                         margin-bottom: 6px;
                         margin-top: 10px;
+
                         @media (max-width: 768px) {
                             font-size: 1rem;
                         }
@@ -177,55 +140,6 @@ onBeforeUnmount(() => {
                 }
             }
         }
-    }
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-.home-banner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-}
-.text-part {
-    display: inline-block;
-    min-width: 100px;
-    text-align: center;
-}
-.slide-enter-active {
-    animation: slideIn 0.5s ease-out;
-}
-.slide-leave-active {
-    animation: slideOut 0.5s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(30px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOut {
-    from {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateY(-30px);
-        opacity: 0;
     }
 }
 </style>

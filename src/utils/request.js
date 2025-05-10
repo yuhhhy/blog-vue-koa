@@ -1,8 +1,8 @@
 import axios from "axios"
 
 const request = axios.create({
-    baseURL: 'http://localhost:3000/',
-    timeout: 8000
+    baseURL: 'http://localhost:3000', // 后端API地址
+    timeout: 8000,
 })
 
 request.interceptors.request.use(
@@ -16,7 +16,7 @@ request.interceptors.request.use(
 
 request.interceptors.response.use(
     (res) => {
-        if (res.status >= 200 && res.status < 300) {
+        if (res.status >= 200 && res.status < 400) {
             return res.data
         } else {
             return Promise.reject(res.data)

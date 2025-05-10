@@ -1,65 +1,8 @@
-<!-- 前后端不分离代码已经注释掉 -->
-<!-- <script setup>
-import { onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { apiFetchBlogData } from '@/api/index.js'
-import MarkdownIt from 'markdown-it'
-import Sidebar from '@/components/Sidebar/index.vue'
-import ArticleHeader from './components/ArticleHeader.vue'
-import ArticleContent from './components/ArticleContent.vue'
-import ArticleFooter from './components/ArticleFooter.vue'
-
-const route = useRoute()
-const blogData = ref(0) // ref() 参数最好是是 0 或 {}，而不是 null或 undefined
-const html = ref(0)
-
-// 组件挂载完成后，再渲染数据，实现更快的页面加载
-onMounted(async () => {
-    await fetchBlogData(route.params.id)
-    handleBlogData()
-    renderBlogContent()
-})
-
-// 获取博客数据
-const fetchBlogData = async (blogId) => {
-    await apiFetchBlogData(blogId).then((data) => { blogData.value = data})
-    console.log(blogData)
-}
-
-// 处理博客数据
-const handleBlogData = () => {
-    blogData.value.date = blogData.value.date.substring(0, 10)
-    console.log('handleBlogData')
-}
-
-// 渲染博客内容
-const renderBlogContent = () => {
-    const md = new MarkdownIt() // 使用 Markdown-it 解析器将 Markdown 转换为 HTML
-    html.value = md.render(blogData.value.content)
-    console.log('renderBlogContent')
-}
-
-// 监听变化，重新渲染 HTML
-// watch(blogData.value, (newBlogData) => {
-//     html.value = md.render(newBlogData.content)
-// }, { immediate: true })
-
-// 路由 id 变化时，组件不会重载
-// watch(() => route.params.id,
-//     (newId) => {
-//         // 获取新的博客数据
-
-//     }
-// )
-</script> -->
-<!-- 静态页面代码 -->
 <script setup>
 import MarkdownIt from 'markdown-it'
 import markdownItTocAndAnchor from 'markdown-it-toc-and-anchor'
 import hljs from 'highlight.js'
 import 'highlight.js/scss/tokyo-night-dark.scss'
-import javascript from 'highlight.js/lib/languages/javascript';
-hljs.registerLanguage('javascript', javascript);
 
 import Sidebar from '@/components/Sidebar/index.vue'
 import ArticleHeader from './components/ArticleHeader.vue'
@@ -67,32 +10,16 @@ import ArticleContent from './components/ArticleContent.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { apiFetchBlogData } from '../../api/index.js'
 
 const route = useRoute()
 const router = useRouter()
-let content = ref('') // markdown格式文章内容
 let htmlContent = ref('') // html格式文章内容
 let blogData = ref({}) // data/posts.json
 let tocHtml = ref('') // toc生成的html
 
-// 获取当前路由博客的相关数据blogData
-const searchBlogList = async (blogId) => {
-    const response = await fetch('/data/posts.json')
-    const blogList = await response.json()
-    const blog = blogList.find(item => item.id === blogId)
-
-    if (!blog) {
-        router.push('/404')
-        return
-    }
-    return blog
-}
-
-// 获取文章内容htmlContent
-const fetchBlogContent = async () => {
-    const response = await fetch(`/processed_posts/${blogData.value.title}.md`)
-    content.value = await response.text()
-
+// 渲染文章内容 Markdown -> HTML
+const renderBlogContent = () => {
     // 生成文章HTML、Toc、highlight.js代码高亮
     const md = new MarkdownIt({
         html: true,
@@ -112,15 +39,18 @@ const fetchBlogContent = async () => {
             tocHtml.value = tocHtmlResult
         }
     })
-
-    htmlContent.value = md.render(content.value)
+    htmlContent.value = md.render(blogData.value.content)
 }
 
-
-onMounted(async () => {
-    const blogId = parseInt(route.params.id)
-    blogData.value = await searchBlogList(blogId)
-    await fetchBlogContent()
+onMounted(() => {
+    // 获取博客数据
+    apiFetchBlogData(parseInt(route.params.id)).then((data) => {
+        blogData.value = data
+        renderBlogContent()
+    }).catch((error) => {
+        console.error('获取博客数据失败', error)
+        router.push('/404')
+    })
 })
 </script>
 

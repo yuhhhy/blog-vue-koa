@@ -1,26 +1,25 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { apiGetBlogList } from '../../../api/index.js'
 
 const route = useRoute()
 const posts = ref([])
 const tags = ref([])
-const props = defineProps(['posts'])
-console.log("taglist",props.posts)
 
 // 获取当前活跃标签
 const activeTag = computed(() => {
   return route.params.tagName
 })
 
-onMounted(async () => {
-    const response = await fetch('/data/posts.json')
-    posts.value = await response.json()
-
-    tags.value = [...new Set(
-        posts.value.flatMap(post => post.tags)
-    )]
-
+onMounted(() => {
+    apiGetBlogList().then(response => {
+        posts.value = response
+        // 获取所有标签
+        tags.value = [...new Set(
+            posts.value.flatMap(post => post.tags)
+        )]
+    })
 })
 </script>
 

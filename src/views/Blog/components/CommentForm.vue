@@ -148,6 +148,8 @@ const doSubmit = () => {
           all: unset;
         }
         :deep(.el-input__inner) {
+          color: var(--light-dark);
+          background-color: var(--white);
           min-height: 32px;
           width: 100%;
           height: 100%;
@@ -159,7 +161,7 @@ const doSubmit = () => {
 
           &:focus {
             border: 2px solid transparent;
-            background: linear-gradient(white, white) padding-box, 
+            background: linear-gradient(var(--white), var(--white)) padding-box, 
                         linear-gradient(135deg, #ff33b4, #c8ff00, #00ffff, #4400ff) border-box;
             }
         }
@@ -171,6 +173,8 @@ const doSubmit = () => {
       margin-bottom: 15px;
       
       :deep(.el-textarea__inner) {
+        color: var(--light-dark);
+        background-color: var(--white);
         box-shadow:none;  // el-textarea的边框是box-shadow
         border: 2px solid var(--lightgrey);
         font-size: 15px;
@@ -178,7 +182,7 @@ const doSubmit = () => {
 
         &:focus {
           border: 2px solid transparent;
-          background: linear-gradient(white, white) padding-box, 
+          background: linear-gradient(var(--white), var(--white)) padding-box, 
           linear-gradient(135deg, #5bc9f8, #c7e9fb, #00c9a7, #a6defa, #35bef7);
         }
       }

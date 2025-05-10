@@ -1,9 +1,7 @@
 <script setup>
 const props = defineProps(['htmlContent'])
-
-console.log(props.htmlContent);
-
 </script>
+
 <template>
     <div class="article-content">
         <div v-html="htmlContent" class="markdown-content"></div>

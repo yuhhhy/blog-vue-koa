@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { apiGetBlogList } from '../../../api/index.js'
 
 const route = useRoute()
 const postsDividedByMonth = ref({})
@@ -11,17 +12,19 @@ const activeMonth = computed(() => {
 })
 
 onMounted(async () => {
-    const response = await fetch('/data/posts.json')
-    const posts = await response.json()
-    // 按月份分组
-    postsDividedByMonth.value = posts.reduce((acc, post) => {
-        const date = post.date.split('-').slice(0, 2).join('-')
-        if (!acc[date]) {
-            acc[date] = []
-        }
-        acc[date].push(post)
-        return acc
-    }, {})
+    apiGetBlogList().then(response => {
+        const posts = response
+        
+        // 按月份分组
+        postsDividedByMonth.value = posts.reduce((acc, post) => {
+            const date = post.date.split('-').slice(0, 2).join('-')
+            if (!acc[date]) {
+                acc[date] = []
+            }
+            acc[date].push(post)
+            return acc
+        }, {})
+    })
 })
 </script>
 

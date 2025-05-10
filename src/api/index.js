@@ -1,4 +1,4 @@
-import request from "@/utils/request"
+import request from "../utils/request.js"
 
 export function apiGetBlogList() {
     return request({
@@ -27,5 +27,12 @@ export function apiDeleteBlog(blogId) {
         url: `/api/blog/${blogId}`,
         method: 'DELETE'
     })
+}
+
+export const apiDeleteAllBlogs = () => {
+  return request({
+    url: '/api/posts',
+    method: 'DELETE'
+  })
 }
 

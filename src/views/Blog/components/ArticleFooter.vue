@@ -123,7 +123,7 @@ const showReplyForm = (comment) => {
 <style lang="scss">
 .article-footer {
   font-family: 'Helvetica Neue', Arial, sans-serif;
-  color: var(--dark);
+  color: var(--light-dark);
   line-height: 1.6;
   border-radius: 8px;
   overflow: hidden;

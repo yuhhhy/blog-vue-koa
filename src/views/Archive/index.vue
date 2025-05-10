@@ -2,11 +2,12 @@
 import Sidebar from '@/components/Sidebar/index.vue'
 import TagList from './components/TagList.vue';
 import { ref } from 'vue'
+import { apiGetBlogList } from '../../api/index.js'
 
 const posts = ref([])
 
-fetch('/data/posts.json').then(response => response.json()).then(posts => {
-    posts.value = posts;
+apiGetBlogList().then(response => {
+    posts.value = response
 })
 
 </script>
