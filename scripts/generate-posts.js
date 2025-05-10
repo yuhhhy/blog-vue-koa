@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { fileURLToPath } from 'url'
-import { apiCreateBlog, apiDeleteAllBlogs } from '../src/api/index.js'
+import { apiCreateBlog, apiDeleteAllBlogs, apiCreateBlogContent, apiDeleteAllBlogContent } from '../src/api/index.js'
 
 // 获取当前模块路径
 const __filename = fileURLToPath(import.meta.url)
@@ -59,13 +59,35 @@ async function updateAllPosts(posts) {
     // 1. 先删除所有文章
     console.log('正在清空旧文章...')
     await apiDeleteAllBlogs()
+    await apiDeleteAllBlogContent()
     console.log('旧文章清空完成')
 
     // 2. 重新创建所有文章
     console.log('开始创建新文章...')
     for (const post of posts) {
       try {
-        await apiCreateBlog(post)
+        // 3. 创建文章信息
+        await apiCreateBlog({
+          id: post.id,
+          title: post.title,
+          coverImage: post.coverImage,
+          date: post.date,
+          tags: post.tags,
+          link: post.link,
+        })
+        // 4. 创建文章内容
+        await apiCreateBlogContent({
+          id: post.id,
+          title: post.title,
+          author: post.author,
+          coverImage: post.coverImage,
+          date: post.date,
+          tags: post.tags,
+          content: post.content,
+          wordCount: post.wordCount,
+          viewCount: 1,
+          likeCount: 1
+        })
         console.log(`创建文章成功:《${post.title}》`)
       } catch (error) {
         console.error(`创建文章失败:《${post.title}》- ${error.message}`)

@@ -10,7 +10,7 @@ import ArticleContent from './components/ArticleContent.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { apiFetchBlogData } from '../../api/index.js'
+import { apiGetBlogContent } from '../../api/index.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -43,12 +43,12 @@ const renderBlogContent = () => {
 }
 
 onMounted(() => {
-    // 获取博客数据
-    apiFetchBlogData(parseInt(route.params.id)).then((data) => {
+    // 获取博客内容
+    apiGetBlogContent(parseInt(route.params.id)).then((data) => {
         blogData.value = data
         renderBlogContent()
     }).catch((error) => {
-        console.error('获取博客数据失败', error)
+        console.error('获取博客内容失败', error)
         router.push('/404')
     })
 })
@@ -75,7 +75,7 @@ onMounted(() => {
             <!-- 博客页面文章主体 -->
             <div class="blog-aritcle">
                 <!-- 文章上部分交互区域 -->
-                <ArticleHeader></ArticleHeader>
+                <ArticleHeader :blogData="blogData" ></ArticleHeader>
                 <!-- 文章主体内容区域 -->
                 <ArticleContent :htmlContent="htmlContent"></ArticleContent>
                 <!-- 文章底部相关信息和评论区域 -->

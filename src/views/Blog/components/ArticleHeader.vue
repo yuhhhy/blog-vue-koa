@@ -6,14 +6,14 @@ defineProps(['blogData'])
     <div class="article-header">
         <div class="header-left">
             <div class="view-count">
-                <span>阅读 {{ 10 }}</span>
+                <span>阅读 {{ blogData.viewCount }}</span>
                 <!-- <span>{{ blogData.views || 10 }} 阅读</span> -->
             </div>
         </div>
         <div class="header-right">
             <div class="action-btn like">
                 <div class="iconfont">&#xe707;</div>
-                <span>{{ 2 }}</span>
+                <span>{{ blogData.likeCount }}</span>
                 <!-- <span>{{ blogData.likes || 2 }}</span> -->
             </div>
             <div class="action-btn comment">

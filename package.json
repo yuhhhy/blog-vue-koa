@@ -7,10 +7,9 @@
     "dev": "vite",
     "server": "nodemon server/app.js",
     "start": "concurrently \"npm:server\" \"npm:dev\"",
-    "build": "concurrently \"node scripts/generate-posts.js\" \"node scripts/preprocess-md.js\" \"vite build\"",
+    "build": "concurrently \"node scripts/generate-posts.js\" \"vite build\"",
     "preview": "vite preview",
-    "generate-posts": "node scripts/generate-posts.js",
-    "preprocess-md": "node scripts/preprocess-md.js"
+    "generate-posts": "node scripts/generate-posts.js"
   },
   "dependencies": {
     "@koa/router": "^13.1.0",
