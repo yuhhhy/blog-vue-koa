@@ -1,6 +1,7 @@
 import Router from '@koa/router'
 import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, deleteAllBlogContents, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
+import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate } from '../controllers/WebsiteDataController.js'
 
 const router = new Router({ prefix: '/api' })
 /*
@@ -38,5 +39,21 @@ router.put('/blogcontent/view/:id', updateBlogViewCount)
 
 // 更新博客的点赞量
 router.put('/blogcontent/like/:id', updateBlogLikeCount)
+
+
+/*
+* Website Visit API
+*/
+// 获取网站访问量
+router.get('/website', getWebsiteData)
+
+// 更新网站访问量
+router.put('/website/visit', updateWebsiteVisit)
+
+// 更新网站浏览量
+router.put('/website/view', updateWebsiteView)
+
+// 更新网站最后更新时间
+router.put('/website/lastupdate', updateWebsiteLastUpdate)
 
 export default router

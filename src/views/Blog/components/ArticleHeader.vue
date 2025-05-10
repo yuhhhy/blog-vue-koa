@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiUpdateBlogLikeCount } from '@/api/index.js'
 import { useLikeStore } from '@/stores/likeStore.js'
@@ -6,6 +7,9 @@ import { useLikeStore } from '@/stores/likeStore.js'
 const props = defineProps(['blogData'])
 const route = useRoute()
 const likeStore = useLikeStore()
+const liked = computed(() => {
+    return likeStore.likedInfo[route.params.id] || false
+})
 
 const handleLike = () => {
     // 如果没有点过任何赞，或这个文章没点过赞
@@ -27,8 +31,8 @@ const handleLike = () => {
             </div>
         </div>
         <div class="header-right">
-            <div class="action-btn like" @click="handleLike">
-                <div class="iconfont">&#xe707;</div>
+            <div class="action-btn like">
+                <div class="iconfont" :class="{ liked: liked }" @click="handleLike" >&#xe707;</div>
                 <span>{{ blogData.likeCount }}</span>
                 <!-- <span>{{ blogData.likes || 2 }}</span> -->
             </div>
@@ -83,6 +87,9 @@ const handleLike = () => {
             &.like {
                 .iconfont {
                     font-size: 20px !important; // 保持span图标大小不变
+                }
+                .liked {
+                    color: var(--red);
                 }
             }
 

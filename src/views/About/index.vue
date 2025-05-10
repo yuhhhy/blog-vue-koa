@@ -2,6 +2,8 @@
 import Sidebar from "@/components/Sidebar/index.vue"
 import ArticleContent from "../Blog/components/ArticleContent.vue";
 import ArticleFooter from "../Blog/components/ArticleFooter.vue";
+import { onMounted } from "vue";
+import { apiUpdateWebsiteView } from "@/api/index.js";
 
 const htmlContent = `
             <h1>关于我</h1>
@@ -18,6 +20,11 @@ const htmlContent = `
                 <li>正在看漫画：《火之鸟》</li>
                 <li>...</li>
             </ul>`
+
+onMounted(() => {
+    // 获取后台数据
+    apiUpdateWebsiteView()
+})
 </script>
 
 <template>

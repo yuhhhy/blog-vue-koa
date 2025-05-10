@@ -23,11 +23,9 @@ app.use(async (ctx, next) => {
 // 解析 request.body
 app.use(bodyParser())
 
-
 // 注册路由
 app.use(router.routes())
 app.use(router.allowedMethods())
-
 
 app.listen(3000)
 

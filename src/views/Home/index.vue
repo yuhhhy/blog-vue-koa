@@ -1,14 +1,19 @@
 <script setup>
 import Sidebar from '@/components/Sidebar/index.vue'
 import { ref, onMounted } from 'vue'
-import { apiGetBlogList } from '../../api/index.js'
+import { apiGetBlogList, apiUpdateWebsiteView } from '@/api/index.js'
 
 const blogList = ref([])
 
-onMounted(async () => {
-    // 获取后台数据
+async function getBlogList() {
     const response = await apiGetBlogList()
     blogList.value = response
+}
+
+onMounted(() => {
+    // 获取后台数据
+    getBlogList()
+    apiUpdateWebsiteView()
 })
 </script>
 

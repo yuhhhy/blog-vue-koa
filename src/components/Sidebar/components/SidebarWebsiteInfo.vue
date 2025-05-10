@@ -1,10 +1,12 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { apiGetBlogList } from '../../../api/index.js'
+import { ref } from 'vue'
+import { apiGetBlogList, apiGetWebsiteData } from '../../../api/index.js'
 
+const runTime = ref(0) // 网站运行天数
+const totalPosts = ref(0) // 网站文章总数
+const websiteVisits = ref(0) // 网站访问量
+const websiteViews = ref(0) // 网站浏览量
 
-// 网站运行天数
-const runTime = ref(getrunTime('2025-05-04'))
 function getrunTime(startTime) {
     let date1 = new Date(startTime)
     let date2 = new Date()
@@ -12,18 +14,20 @@ function getrunTime(startTime) {
     const diffDate =  Math.round(diff / (24 * 60 * 60 * 1000))
     return diffDate
 }
+async function getBlogList() {
+    const posts = await apiGetBlogList()
+    totalPosts.value = posts.length // 写入文章总数
+}
+async function getWebsiteData() {
+    const websitedata = await apiGetWebsiteData() // 获取网站数据
+    websiteVisits.value = websitedata.visit
+    websiteViews.value = websitedata.view
+}
 
-// 网站文章总数
-const totalPosts = ref(0)
-onMounted(() => {
-  apiGetBlogList().then(response => {
-    const posts = response
-    // 文章总数
-    totalPosts.value = posts.length
-  })
-})
-
-// 网站访问量
+// 执行函数，初始化网站数据
+runTime.value = getrunTime('2025-05-04')
+getBlogList()
+getWebsiteData()
 
 </script>
 
@@ -40,11 +44,15 @@ onMounted(() => {
         <span class="stat-label">文章总数</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value">1,000</span>
+        <span class="stat-value">{{ websiteVisits }}</span>
         <span class="stat-label">访问量</span>
       </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ websiteViews }}</span>
+        <span class="stat-label">浏览量</span>
+      </div>
     </div>
-    <div class="last-updated">最后更新: 2025-05-06</div>
+    <div class="last-updated">最后更新: 2025-05-10</div>
   </div>
 </template>
 

@@ -1,7 +1,8 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useThemeStore } from '@/stores/themeStore.js'
+import { apiUpdateWebsiteVisit } from '@/api/index.js'
 
 const { y } = useWindowScroll()
 const themeStore = useThemeStore()
@@ -15,6 +16,9 @@ const toggleTheme = () => {
 onMounted(() => {
     // document.documentElement 指向根元素 <html>
     document.documentElement.classList.add(themeStore.theme)
+    
+    // 每次打开网站，即Nav挂载，访问量增加
+    apiUpdateWebsiteVisit()
 })
 
 </script>

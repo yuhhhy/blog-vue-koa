@@ -9,8 +9,8 @@ export const useThemeStore = defineStore('theme',() => {
 
     // 切换主题
     function toggleTheme() {
-        theme = theme === 'light' ? 'dark' : 'light'
-        localStorage.setItem('theme', theme)
+        theme.value = theme.value === 'light' ? 'dark' : 'light'
+        localStorage.setItem('theme', theme.value)
     }
 
     return { theme, toggleTheme }

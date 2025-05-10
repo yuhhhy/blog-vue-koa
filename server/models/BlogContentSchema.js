@@ -9,7 +9,7 @@ export const BlogContentSchema = new mongoose.Schema({
     date: { type: String, required: true },
     tags: { type: [String], default: [] },
     content: { type: String, required: true },
-    wordCount: { type: Number, default: 0 },
+    wordCount: { type: Number, required: true },
     viewCount: { type: Number, default: 0 },
     likeCount: { type: Number, default: 0 },
 })

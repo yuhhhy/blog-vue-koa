@@ -10,7 +10,7 @@ import ArticleContent from './components/ArticleContent.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { apiGetBlogContent, apiUpdateBlogViewCount } from '../../api/index.js'
+import { apiGetBlogContent, apiUpdateBlogViewCount, apiUpdateWebsiteView } from '@/api/index.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -42,18 +42,28 @@ const renderBlogContent = () => {
     htmlContent.value = md.render(blogData.value.content)
 }
 
-onMounted(() => {
-    // 获取博客内容
-    apiGetBlogContent(parseInt(route.params.id)).then((data) => {
+async function getBlogContent() {
+    try {
+        const data = await apiGetBlogContent(parseInt(route.params.id))
         blogData.value = data
         renderBlogContent()
-    }).catch((error) => {
+    }
+    catch (error) {
         console.error('获取博客内容失败', error)
         router.push('/404')
-    })
-    apiUpdateBlogViewCount(parseInt(route.params.id)).then((data) => {
+    }
+}
+
+async function updateBlogViewCount() {
+        const data = await apiUpdateBlogViewCount(parseInt(route.params.id))
         blogData.value.viewCount = data.viewCount
-    })
+}
+
+
+onMounted(() => {
+    getBlogContent()
+    updateBlogViewCount()
+    apiUpdateWebsiteView()
 })
 </script>
 

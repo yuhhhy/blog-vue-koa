@@ -5,7 +5,7 @@ import { ref } from 'vue'
 export const useLikeStore = defineStore('liked', () => {
 
     // 存储用户点赞信息的对象，键为博客 ID，值为 true 或 false，表示是否点赞
-    const likedInfo = ref({} || JSON.parse(localStorage.getItem('likedInfo')) )
+    const likedInfo = ref(JSON.parse(localStorage.getItem('likedInfo')) || {})
 
     // 切换点赞状态
     function like(id) {

@@ -1,14 +1,18 @@
 <script setup>
 import Sidebar from '@/components/Sidebar/index.vue'
 import TagList from './components/TagList.vue';
-import { ref } from 'vue'
-import { apiGetBlogList } from '../../api/index.js'
+import { ref, } from 'vue'
+import { apiGetBlogList, apiUpdateWebsiteView } from '@/api/index.js'
 
 const posts = ref([])
 
-apiGetBlogList().then(response => {
+async function getBlogList() {
+    const response = await apiGetBlogList()
     posts.value = response
-})
+}
+
+getBlogList()
+apiUpdateWebsiteView()
 
 </script>
 
