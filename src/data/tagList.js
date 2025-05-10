@@ -37,6 +37,6 @@ export default [
         tagHours: 2,
         tagProgress: 25,
         tagNumber: 2,
-          progressColor: '#8ED6FB'
+        progressColor: '#8ED6FB'
     },
 ]

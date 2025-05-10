@@ -1,5 +1,21 @@
 <script setup>
-defineProps(['blogData'])
+import { useRoute } from 'vue-router'
+import { apiUpdateBlogLikeCount } from '@/api/index.js'
+import { useLikeStore } from '@/stores/likeStore.js'
+
+const props = defineProps(['blogData'])
+const route = useRoute()
+const likeStore = useLikeStore()
+
+const handleLike = () => {
+    // 如果没有点过任何赞，或这个文章没点过赞
+    if(Object.keys(likeStore.likedInfo).length === 0 || !likeStore.likedInfo[route.params.id]){
+        apiUpdateBlogLikeCount(route.params.id).then((data) => {
+            props.blogData.likeCount = data.likeCount
+        })
+        likeStore.like(route.params.id)
+    }
+}
 </script>
 
 <template>
@@ -11,7 +27,7 @@ defineProps(['blogData'])
             </div>
         </div>
         <div class="header-right">
-            <div class="action-btn like">
+            <div class="action-btn like" @click="handleLike">
                 <div class="iconfont">&#xe707;</div>
                 <span>{{ blogData.likeCount }}</span>
                 <!-- <span>{{ blogData.likes || 2 }}</span> -->

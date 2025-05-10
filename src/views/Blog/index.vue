@@ -10,7 +10,7 @@ import ArticleContent from './components/ArticleContent.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { apiGetBlogContent } from '../../api/index.js'
+import { apiGetBlogContent, apiUpdateBlogViewCount } from '../../api/index.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -50,6 +50,9 @@ onMounted(() => {
     }).catch((error) => {
         console.error('获取博客内容失败', error)
         router.push('/404')
+    })
+    apiUpdateBlogViewCount(parseInt(route.params.id)).then((data) => {
+        blogData.value.viewCount = data.viewCount
     })
 })
 </script>
