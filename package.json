@@ -1,6 +1,7 @@
 {
-    "type": "module",
     "name": "blog-vue-koa",
+    "type": "module",
+    "version": "1.0.0",
     "devDependencies": {
         "gray-matter": "^4.0.3"
     }
