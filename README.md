@@ -14,14 +14,22 @@
 - mongoose
 - nodemon
 
+## 项目预览
+
+### 首页
+![home](/public/images/docs1.jpg)
+### 归档页
+![archive](/public/images/docs2.jpg)
+### 文章详情页
+![blog](/public/images/docs3.jpg)
+
 ## 实现功能
 ### 整体
-- 文章列表
-- 文章详情
-- 写文章
-- 文章评论功能
+- 博客
+- 博客列表
+- 博客归档
+- 发表和显示评论
 - 通用Sidebar组件
-- Tag组件动画效果
 
 ### 后端
 - 博客API
@@ -32,7 +40,6 @@
 ## 项目结构
 ```
 blog-vue-koa/
-├─ node_modules/        // 依赖包
 ├─ client/              // Vue3 + Vite 前端项目
 │   ├─ src/                 // 项目源码
 │   │   ├─ api/                 // 前端api接口
@@ -69,18 +76,28 @@ blog-vue-koa/
 
 
 ## 开发指南
-1. 安装依赖
+1. 克隆项目
 ```bash
-blog-vue-koa> npm install
-blog-vue-koa>server npm install
-blog-vue-koa>client npm install
+git clone https://github.com/yuhhhy/blog-vue-koa.git
 ```
-2. 启动项目
+
+2. 安装依赖
+- 下载MongoDB并启动MongoDB服务
+（https://www.mongodb.com/try/download/community）
+
+- 安装项目依赖
+```
+cd blog-vue-koa
+npm run install-all
+```
+
+3. 启动项目
 ```bash
-blog-vue-koa>server npm nodemon app.js
-blog-vue-koa>client npm run dev
+npm run start
 ```
-3. 访问项目
+
+4. 访问项目
 ```bash
 http://localhost:8080/
 ```
+

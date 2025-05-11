@@ -2,6 +2,9 @@
   "name": "backend",
   "type": "module",
   "version": "1.0.0",
+  "scripts": {
+    "serve": "nodemon app.js"
+  },
   "dependencies": {
     "@koa/router": "^13.1.0",
     "koa": "^3.0.0",

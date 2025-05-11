@@ -56,7 +56,8 @@ onMounted(() => {
     .home-banner {
         width: 100%;
         height: 400px;
-        background: linear-gradient(135deg, #c850c0, #4158d0);
+        background: linear-gradient(to top, #B1EAFB, #4158d0);
+        // background: linear-gradient(135deg, #c850c0, #4158d0);
         color: #FFF;
         font-size: 4rem;
         font-weight: 700;
