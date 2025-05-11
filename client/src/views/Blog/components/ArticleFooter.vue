@@ -61,12 +61,9 @@ const comments = reactive([
 const showReplyForm = (comment) => {
   // 显示回复表单
   comment.isReply = true
-
   // comment.replies.push({})
-
   // 隐藏回复表单
   // comment.isReply = false
-
 }
 
 
@@ -74,11 +71,13 @@ const showReplyForm = (comment) => {
 
 <template>
 <div class="article-footer">
+  <!-- 顶部的评论表单 -->
   <CommentForm :comments="comments" :firstLevel="true"></CommentForm>
+  <!-- 一级评论列表 -->
   <div class="comment-list">
-    <!-- 所有评论列表 -->
+    <!-- 遍历所有一级评论 -->
     <div v-for="comment in comments" :key="comment.id" class="comment-item">
-      <!-- 评论展示 -->
+      <!-- 一级评论头部信息 -->
       <div class="comment-header">
         <el-avatar :src="comment.avatar" :size="48" />
         <div class="comment-info">
@@ -107,12 +106,13 @@ const showReplyForm = (comment) => {
           </div>
         </div>
       </div>
+      <!-- 一级评论内容 -->
       <div class="comment-content">
         {{ comment.content }}
       </div>
-      <!-- 回复表单区域 -->
+      <!-- 点击显示的回复表单区域 -->
       <CommentForm v-if="comment.isReply" :comments="comment.replies" :firstLevel="comment.firstLevel"></CommentForm>
-      <!-- 递归的回复展示 -->
+      <!-- 非一级评论组件 -->
       <CommentReply :comment="comment">
       </CommentReply>
     </div>

@@ -3,6 +3,12 @@ import cors from 'koa2-cors'
 import { connectDB } from './config/db.js'
 import bodyParser from 'koa-bodyparser'
 import router from './routes/api.js'
+import serve from 'koa-static'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = new Koa()
 
@@ -22,6 +28,8 @@ app.use(async (ctx, next) => {
 
 // 解析 request.body
 app.use(bodyParser())
+// 代理静态资源目录，让前端可以访问到public目录下的文件
+app.use(serve(path.join(__dirname, '../public')))
 
 // 注册路由
 app.use(router.routes())

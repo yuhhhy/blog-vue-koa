@@ -9,7 +9,6 @@ const showReplyForm = (comment) => {
 
   // 隐藏回复表单
   // comment.isReply = false
-
 }
 </script>
 
@@ -64,6 +63,10 @@ const showReplyForm = (comment) => {
     :deep(.el-avatar) {
         width: 40px !important;
         height: 40px !important;
+    }
+
+    .comment-reply {
+        margin-bottom: 15px;
     }
 }
 </style>

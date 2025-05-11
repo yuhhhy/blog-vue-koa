@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { apiCreateBlog, apiDeleteBlog } from '@/api/index.js';
+import { apiCreateBlog, apiDeleteBlog } from '@/api/blog.js';
 import { ElMessage } from 'element-plus';
 
 const blogId = ref('')

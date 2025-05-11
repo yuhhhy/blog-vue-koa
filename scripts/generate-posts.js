@@ -2,7 +2,9 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { fileURLToPath } from 'url'
-import { apiCreateBlog, apiDeleteAllBlogs, apiCreateBlogContent, apiDeleteAllBlogContent, apiUpdateWebsiteLastUpdate } from '../src/api/index.js'
+import { apiCreateBlog, apiDeleteAllBlogs } from '../client/src/api/blog.js'
+import { apiCreateBlogContent, apiDeleteAllBlogContent } from '../client/src/api/blogContent.js'
+import { apiUpdateWebsiteLastUpdate } from '../client/src/api/websiteData.js'
 
 // 获取当前模块路径
 const __filename = fileURLToPath(import.meta.url)

@@ -60,11 +60,15 @@ const onSubmit = () => {
 // 校验成功后的逻辑
 const doSubmit = () => {
     // 生成评论
+
+
     const newComment = { 
         id: Date.now(),
         avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
         ...form,
         time: new Date().toLocaleString().replace(/\//g, '.').slice(0, 10),
+        isReply: false,
+        firstLevel: !props.firstLevel,
         replies: []
     }
 
