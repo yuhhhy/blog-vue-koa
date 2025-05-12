@@ -30,6 +30,7 @@
 - 博客归档
 - 发表和显示评论
 - 通用Sidebar组件
+- 适配移动端
 
 ### 后端
 - 博客API
@@ -48,7 +49,7 @@ blog-vue-koa/
 │   │   ├─ router/              // 前端路由
 │   │   ├─ stores/              // Pinia
 │   │   ├─ utils/               // 工具函数
-│   │   ├─ views/               // Vue页面组件
+│   │   ├─ views/               // Vue页面
 │   │   ├─ App.vue              // 根组件
 │   │   └─ main.js              // 初始化Vue实例的入口文件
 │   ├─ index.html           // 项目入口文件
@@ -83,7 +84,7 @@ git clone https://github.com/yuhhhy/blog-vue-koa.git
 
 2. 安装依赖
 - 下载MongoDB并启动MongoDB服务
-（https://www.mongodb.com/try/download/community）
+https://www.mongodb.com/try/download/community
 
 - 安装项目依赖
 ```

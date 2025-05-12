@@ -1,29 +1,38 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { apiCreateComment } from '@/api/comment.js'
+import { getGravatarHash, getGravatar } from '@/utils/avatar';
 
+const route = useRoute()
 const props = defineProps({
+  // 这一评论的回复数组
   comments: {
     type: Array,
     required: true
   },
-  firstLevel: {
+  // 是否是一级评论
+  hasParent: {
     type: Boolean,
-    default: true
+    required: true
+  },
+  // 这一评论的父级评论ID，如果没有父级则为空串
+  parentId: {
+    type: String,
+    default: ''
   }
 })
 
-// 新增评论的表单校验相关
+// 表单收集四个数据：username、email、website、content
 const formRef = ref(null)
 const form = reactive({
-  username: '',
-  email: '',
-  website: '',
-  content: '',
-  isReply: false,
-  firstLevel: true,
-  replies: []
+  username: '一曝十寒',
+  email: '281423846@qq.com',
+  website: 'www.yuhhhy.cn',
+  content: '今天是2025年5月12日，星期一。',
 })
+// 表单校验规则、校验失败的ElMessage提示信息
 const rules = {
   username: [
     { required: true, message: '请输入昵称', trigger: 'submit' },
@@ -37,7 +46,7 @@ const rules = {
   ]
 }
 
-// 提交评论表单校验
+// 提交表单的校验操作 校验三个数据：username、email、content
 const onSubmit = () => {
   formRef.value.validate((valid, fields) => {
     if (!valid) {
@@ -58,31 +67,46 @@ const onSubmit = () => {
 }
 
 // 校验成功后的逻辑
-const doSubmit = () => {
-    // 生成评论
-
-
-    const newComment = { 
-        id: Date.now(),
-        avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-        ...form,
-        time: new Date().toLocaleString().replace(/\//g, '.').slice(0, 10),
-        isReply: false,
-        firstLevel: !props.firstLevel,
-        replies: []
-    }
-
-    // 根据是否是firstLevel一级评论，决定将评论添加到哪个数组中
-  if(!props.firstLevel){
-    props.comments.unshift(newComment)
-  }else{
-    props.comments.unshift(newComment)
+const doSubmit = async () => {
+  // 生成评论
+  const newComment = { 
+      ...form,
+      id: Date.now().toString(36),
+      blogId: route.params.id || '-1',
+      parentId: props.parentId,
+      // avatar: `https://0.gravatar.com/avatar/${getGravatarHash(form.email)}`,
+      avatar: await getAvatar(form.email),
+      // avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
+      createTime: new Date(),
+      showForm: false,
+      hasParent: props.hasParent,
+      replies: []
   }
-  
+
+  // props.comments.unshift(newComment)
+  // 创建评论数据
+  const response = await apiCreateComment(newComment)
+
+  // 提交完成后清空表单数据
   form.username = ''
   form.email = ''
   form.website = ''
   form.content = ''
+}
+
+async function getAvatar(email) {
+  return 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+  // 获取 Gravatar 的哈希值
+  const hash = getGravatarHash(email)
+  // 异步请求获取头像地址
+  getGravatar(hash).then(res => {
+    console.log(res);
+    if( JSON.stringify(res) === '{}' ){
+      return 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+    } else {
+      return res.avatar_url
+    }
+  })
 }
 </script>
 

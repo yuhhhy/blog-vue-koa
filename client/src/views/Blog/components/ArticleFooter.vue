@@ -1,43 +1,45 @@
 <script setup>
 import { ElButton } from 'element-plus'
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import CommentForm from './CommentForm.vue'
 import CommentReply from './CommentReply.vue'
+import { getFormatDate } from '@/utils/date';
 
 // 假数据
 const comments = reactive([
   {
-    id: 1,
+    id: 'makmow24',
+    // avatar: `https://0.gravatar.com/avatar/${getGravatarHash('281423846@qq.com')}`,
     avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
     username: '小浣熊饼干',
     email: 'user1@example.com',
     website: 'https://www.example.com',
     content: '这是一条测试评论',
-    time: '2025.04.15',
-    isReply: false, // 是否显示回复表单
-    firstLevel: true, // 是否是一级评论
+    createTime: new Date('2025-04-14T03:24:00'),
+    showForm: false, // 是否显示回复表单
+    hasParent: false, // 是否有父级评论
     replies: [
       {
-        id: 3,
+        id: 'makmow26',
         avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
         username: '章鱼小丸子',
         email: 'user3@example.com',
         website: 'https://www.example.com',
         content: '这是一条测试回复',
-        time: '2025.04.16',
-        isReply: false,
-        firstLevel: false,
+        createTime: new Date('2025-04-16T03:24:00'),
+        showForm: false,
+        hasParent: true,
         replies: [
         {
-            id: 4,
+            id: 'makmow27',
             avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
             username: 'Zephurs',
             email: 'user4@example.com',
             website: '',
             content: '这是一条测试回复的回复',
-            time: '2025.04.15',
-            isReply: false,
-            firstLevel: false,
+            createTime: new Date('2025-04-17T03:24:00'),
+            showForm: false,
+            hasParent: true,
             replies: []
           }
         ]
@@ -45,34 +47,33 @@ const comments = reactive([
     ]
   },
   {
-    id: 2,
+    id: 'makmow25',
     avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
     username: '樱桃小丸子',
     email: 'user1@example.com',
     website: '',
     content: '这是测试评论，你好啊！',
-    time: '2025.04.15',
-    isReply: false,
-    firstLevel: true,
+    createTime: new Date('2025-04-15'),
+    showForm: false,
+    hasParent: false,
     replies: []
   }
 ])
 
 const showReplyForm = (comment) => {
   // 显示回复表单
-  comment.isReply = true
+  comment.showForm = true
   // comment.replies.push({})
   // 隐藏回复表单
-  // comment.isReply = false
+  // comment.showForm = false
 }
-
 
 </script>
 
 <template>
 <div class="article-footer">
-  <!-- 顶部的评论表单 -->
-  <CommentForm :comments="comments" :firstLevel="true"></CommentForm>
+  <!-- 顶部评论表单 -->
+  <CommentForm :comments="comments" :hasParent="false" :parentId="'0'"></CommentForm>
   <!-- 一级评论列表 -->
   <div class="comment-list">
     <!-- 遍历所有一级评论 -->
@@ -81,26 +82,15 @@ const showReplyForm = (comment) => {
       <div class="comment-header">
         <el-avatar :src="comment.avatar" :size="48" />
         <div class="comment-info">
-          <a 
-            v-if="comment.website" 
-            :href="comment.website" 
-            target="_blank"
-            class="comment-name"
-            :style="{ color: '#409eff' }"
-          >
+          <a v-if="comment.website" :href="comment.website" target="_blank" class="comment-name" :style="{ color: '#409eff' }">
             {{ comment.username }}
           </a>
           <span v-else class="comment-name">
             {{ comment.username }}
           </span>
           <div class="comment-meta">
-            <span class="comment-time">{{ comment.time }}</span>
-            <el-button 
-              link
-              type="primary"
-              class="reply-btn"
-              @click="showReplyForm(comment)"
-            >
+            <span class="comment-time">{{ getFormatDate(comment.createTime) }}</span>
+            <el-button link type="primary" class="reply-btn" @click="showReplyForm(comment)">
               回复
             </el-button>
           </div>
@@ -110,8 +100,8 @@ const showReplyForm = (comment) => {
       <div class="comment-content">
         {{ comment.content }}
       </div>
-      <!-- 点击显示的回复表单区域 -->
-      <CommentForm v-if="comment.isReply" :comments="comment.replies" :firstLevel="comment.firstLevel"></CommentForm>
+      <!-- 一级评论回复表单 -->
+      <CommentForm v-if="comment.showForm" :comments="comment.replies" :hasParent="true" :parentId="comment.id"></CommentForm>
       <!-- 非一级评论组件 -->
       <CommentReply :comment="comment">
       </CommentReply>
