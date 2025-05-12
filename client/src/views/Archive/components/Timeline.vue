@@ -88,7 +88,7 @@ watch(() => route.params.tagName, () => {
 
     :deep(.timeline-item__title){
       font-size: 1rem;
-      color: var(--black);
+      color: var(--light-dark);
     }
     :deep(.el-timeline-item__node){
       background-color: var(--cyan);

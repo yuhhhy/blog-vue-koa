@@ -5,8 +5,6 @@ import ArticleContent from './components/ArticleContent.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
 import MarkdownIt from 'markdown-it'
 import markdownItTocAndAnchor from 'markdown-it-toc-and-anchor'
-import hljs from 'highlight.js'
-import 'highlight.js/scss/tokyo-night-dark.scss'
 
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -21,20 +19,11 @@ let tocHtml = ref('') // toc生成的html
 
 // 渲染文章内容 Markdown -> HTML
 const renderBlogContent = () => {
-    // 生成文章HTML、Toc、highlight.js代码高亮
+    // 生成文章HTML、Toc
     const md = new MarkdownIt({
         html: true,
         linkify: true,
         typographer: true,
-        highlight: function (str, lang) {
-            if (lang && hljs.getLanguage(lang)) {
-                try {
-                    return hljs.highlight(lang, str).value;
-                } catch (__) { }
-            }
-
-            return ''; // 使用额外的默认转义
-        }
     }).use(markdownItTocAndAnchor, {
         tocCallback: function (tocMarkdown, tocArray, tocHtmlResult) {
             tocHtml.value = tocHtmlResult
@@ -43,6 +32,7 @@ const renderBlogContent = () => {
     htmlContent.value = md.render(blogData.value.content)
 }
 
+// 获取文章内容
 async function getBlogContent() {
     try {
         const data = await apiGetBlogContent(parseInt(route.params.id))

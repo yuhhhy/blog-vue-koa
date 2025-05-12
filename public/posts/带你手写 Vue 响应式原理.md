@@ -1,5 +1,5 @@
 ---
-title: "带你手写Vue响应式原理"
+title: "带你手写 Vue 响应式原理"
 author: "一曝十寒"
 coverImage: "/images/vue-reactivity-1.jpg"
 date: "2025-05-11"

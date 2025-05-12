@@ -44,18 +44,19 @@ onMounted(() => {
     display: flex;
     flex-wrap: wrap;
     row-gap: 20px;
+    column-gap: 0;
 
     @media screen and (max-width: 768px) {
         padding: 0;
     }
 
     .tag {
-        border: 2px dashed var(--cyan);
+        border: 2px none var(--cyan);
         color: var(--cyan);
         border-radius: 5px;
         cursor: pointer;
         margin: 30px 10px;
-        padding: 5px 10px;
+        padding: 4px 10px;
         
         .iconfont {
             font-size: 12px;
@@ -63,6 +64,12 @@ onMounted(() => {
        }
         
         &.active {
+            background-color: var(--cyan);
+            color: var(--white);
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        &:hover {
             background-color: var(--cyan);
             color: var(--white);
             box-shadow: 0 0 5px rgba(0,0,0,0.2);

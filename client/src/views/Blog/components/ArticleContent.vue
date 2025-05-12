@@ -1,5 +1,14 @@
 <script setup>
 defineProps(['htmlContent'])
+import Prism from 'prismjs'
+import 'prismjs/themes/prism.css'
+import { onUpdated } from 'vue'
+
+onUpdated(() => {
+    document.querySelectorAll('pre code').forEach((block) => {
+        Prism.highlightElement(block)
+    })
+})
 </script>
 
 <template>
@@ -93,10 +102,33 @@ defineProps(['htmlContent'])
 
         code {
             font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
-            background: var(--code-background);
-            color: var(--code-color);
+            background: var(--code-background-inline);
+            color: var(--code-inline);
             padding: 0.2em 0.4em;
             border-radius: 3px;
+            text-shadow: none;
+
+            span {
+                background: none;
+                padding: 0;
+                border-radius: 0;
+
+                &.token.number {
+                    color: #357cef;
+                }
+                &.token.keyword {
+                    color: #6ba3d3;
+                }
+                &.token.function {
+                    color: #C678DD;
+                }
+                &.token.punctuation {
+                    color: #aaa;
+                }
+                &.token.string {
+                    color: #50a14f;
+                }
+            }
         }
 
         pre {
@@ -104,6 +136,13 @@ defineProps(['htmlContent'])
             padding: 1em;
             border-radius: 5px;
             overflow-x: auto;
+
+            code {
+                color: var(--code-color);
+                background: none;
+                padding: 0;
+                border-radius: 0;
+            }
         }
 
         blockquote {
