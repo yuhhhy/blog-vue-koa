@@ -10,7 +10,7 @@ import { apiGetComments } from '@/api/comment'
 
 const route = useRoute()
 const comments = ref([])
-const formState = ref(true) // 用于控制表单的显示与隐藏
+const formState = ref(true) // 用于控制顶部表单的显示与隐藏
 
 // 显示/隐藏顶部评论表单
 const toggleCommentForm = () => {
@@ -26,7 +26,6 @@ const toggleReplyForm = (comment) => {
 
 onMounted(()=>{
   apiGetComments(route.params.id || '-1').then(res => {
-    console.log(res);
     comments.value = res
   })
 })

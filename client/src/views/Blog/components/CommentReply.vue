@@ -1,14 +1,12 @@
 <script setup>
 import CommentForm from './CommentForm.vue'
 import { getFormatDate } from '@/utils/date'
-import { ref } from 'vue'
 
 defineProps(['comment'])
 
-const showReply = ref(false)
-const toggleReplyForm = () => {
-  // 显示回复表单
-  showReply.value = !showReply.value
+// 显示/隐藏回复表单
+const toggleReplyForm = (comment) => {
+  comment.showForm = !comment.showForm
 }
 
 </script>
@@ -29,7 +27,7 @@ const toggleReplyForm = () => {
                 </span>
                 <div class="comment-meta">
                     <span class="comment-time">{{ getFormatDate(reply.createTime) }}</span>
-                    <el-button link type="primary" class="reply-btn" @click="toggleReplyForm()">
+                    <el-button link type="primary" class="reply-btn" @click="toggleReplyForm(reply)">
                         回复
                     </el-button>
                 </div>
@@ -40,7 +38,7 @@ const toggleReplyForm = () => {
             {{ reply.content }}
         </div>
         <!-- 二级评论回复表单 -->
-        <CommentForm v-if="showReply" :comments="reply.replies" :hasParent="reply.hasParent" :parentId="reply.id"></CommentForm>
+        <CommentForm v-if="reply.showForm" :comments="reply.replies" :hasParent="reply.hasParent" :parentId="reply.id"></CommentForm>
         <!-- 递归地显示更深层级回复 -->
         <CommentReply v-if="reply.replies.length > 0" :comment="reply" />
     </div>

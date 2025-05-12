@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { apiCreateComment } from '@/api/comment.js'
@@ -83,13 +83,15 @@ const doSubmit = async () => {
   }
 
   // 创建评论数据
-  const response = await apiCreateComment(newComment)
+  await apiCreateComment(newComment)
 
   // 提交完成后清空表单数据
   form.username = ''
   form.email = ''
   form.website = ''
   form.content = ''
+  // ElMessage提示信息
+  ElMessage.success('评论成功！')
 }
 
 async function getAvatar(email) {
