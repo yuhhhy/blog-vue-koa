@@ -1,15 +1,14 @@
 <script setup>
 import CommentForm from './CommentForm.vue'
 import { getFormatDate } from '@/utils/date'
+import { ref } from 'vue'
 
 defineProps(['comment'])
 
-const showReplyForm = (comment) => {
+const showReply = ref(false)
+const toggleReplyForm = () => {
   // 显示回复表单
-  comment.showForm = true
-
-  // 隐藏回复表单
-  // comment.showForm = false
+  showReply.value = !showReply.value
 }
 
 </script>
@@ -30,7 +29,7 @@ const showReplyForm = (comment) => {
                 </span>
                 <div class="comment-meta">
                     <span class="comment-time">{{ getFormatDate(reply.createTime) }}</span>
-                    <el-button link type="primary" class="reply-btn" @click="showReplyForm(reply)">
+                    <el-button link type="primary" class="reply-btn" @click="toggleReplyForm()">
                         回复
                     </el-button>
                 </div>
@@ -41,7 +40,7 @@ const showReplyForm = (comment) => {
             {{ reply.content }}
         </div>
         <!-- 二级评论回复表单 -->
-        <CommentForm v-if="reply.showForm" :comments="reply.replies" :hasParent="reply.hasParent" :parentId="reply.id"></CommentForm>
+        <CommentForm v-if="showReply" :comments="reply.replies" :hasParent="reply.hasParent" :parentId="reply.id"></CommentForm>
         <!-- 递归地显示更深层级回复 -->
         <CommentReply v-if="reply.replies.length > 0" :comment="reply" />
     </div>
@@ -52,7 +51,7 @@ const showReplyForm = (comment) => {
 .comment-replies {
     margin-top: 15px;
     padding-left: 20px;
-    border-left: 2px solid var(--border-color);
+    border-left: 2px solid var(--reply-border);
 
     :deep(.el-avatar) {
         width: 40px !important;

@@ -29,7 +29,7 @@ const formRef = ref(null)
 const form = reactive({
   username: '一曝十寒',
   email: '281423846@qq.com',
-  website: 'www.yuhhhy.cn',
+  website: 'https://www.yuhhhy.cn',
   content: '今天是2025年5月12日，星期一。',
 })
 // 表单校验规则、校验失败的ElMessage提示信息
@@ -74,7 +74,6 @@ const doSubmit = async () => {
       id: Date.now().toString(36),
       blogId: route.params.id || '-1',
       parentId: props.parentId,
-      // avatar: `https://0.gravatar.com/avatar/${getGravatarHash(form.email)}`,
       avatar: await getAvatar(form.email),
       // avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
       createTime: new Date(),
@@ -83,7 +82,6 @@ const doSubmit = async () => {
       replies: []
   }
 
-  // props.comments.unshift(newComment)
   // 创建评论数据
   const response = await apiCreateComment(newComment)
 
@@ -129,7 +127,7 @@ async function getAvatar(email) {
       <el-form-item prop="website">
         <el-input
           v-model="form.website" 
-          placeholder="网站" 
+          placeholder="网站 https://" 
         />
       </el-form-item>
     </div>
@@ -143,7 +141,7 @@ async function getAvatar(email) {
     </el-form-item>
     <el-form-item>
       <el-button @click="onSubmit" class="comment-form-submit">
-        提交评论
+        提交
       </el-button>
     </el-form-item>
   </el-form>
@@ -161,8 +159,6 @@ async function getAvatar(email) {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       column-gap: 15px;
-      row-gap: 10px;
-      margin-bottom: 15px;
       
       @media (max-width: 1098px) {
         grid-template-columns: 1fr;
@@ -198,7 +194,6 @@ async function getAvatar(email) {
 
     /* 评论输入框样式 */
     .el-textarea {
-      margin-bottom: 15px;
       
       :deep(.el-textarea__inner) {
         color: var(--light-dark);
@@ -221,9 +216,9 @@ async function getAvatar(email) {
 
     /* 提交按钮样式 */
       .comment-form-submit {
-        width: 100px;
-        height: 30px;
-        background: linear-gradient(135deg, var(--grape), var(--skyblue));
+        width: 70px;
+        height: 26px;
+        background: linear-gradient(to left, var(--orange), var(--blue));
         border: none;
         color: white;
         font-weight: bold;

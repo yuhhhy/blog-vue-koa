@@ -1,79 +1,44 @@
 <script setup>
 import { ElButton } from 'element-plus'
-import { reactive } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import CommentForm from './CommentForm.vue'
 import CommentReply from './CommentReply.vue'
-import { getFormatDate } from '@/utils/date';
+import { getFormatDate } from '@/utils/date'
+import { apiGetComments } from '@/api/comment'
 
-// 假数据
-const comments = reactive([
-  {
-    id: 'makmow24',
-    // avatar: `https://0.gravatar.com/avatar/${getGravatarHash('281423846@qq.com')}`,
-    avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-    username: '小浣熊饼干',
-    email: 'user1@example.com',
-    website: 'https://www.example.com',
-    content: '这是一条测试评论',
-    createTime: new Date('2025-04-14T03:24:00'),
-    showForm: false, // 是否显示回复表单
-    hasParent: false, // 是否有父级评论
-    replies: [
-      {
-        id: 'makmow26',
-        avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-        username: '章鱼小丸子',
-        email: 'user3@example.com',
-        website: 'https://www.example.com',
-        content: '这是一条测试回复',
-        createTime: new Date('2025-04-16T03:24:00'),
-        showForm: false,
-        hasParent: true,
-        replies: [
-        {
-            id: 'makmow27',
-            avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-            username: 'Zephurs',
-            email: 'user4@example.com',
-            website: '',
-            content: '这是一条测试回复的回复',
-            createTime: new Date('2025-04-17T03:24:00'),
-            showForm: false,
-            hasParent: true,
-            replies: []
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'makmow25',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-    username: '樱桃小丸子',
-    email: 'user1@example.com',
-    website: '',
-    content: '这是测试评论，你好啊！',
-    createTime: new Date('2025-04-15'),
-    showForm: false,
-    hasParent: false,
-    replies: []
-  }
-])
 
-const showReplyForm = (comment) => {
-  // 显示回复表单
-  comment.showForm = true
-  // comment.replies.push({})
+const route = useRoute()
+const comments = ref([])
+const formState = ref(true) // 用于控制表单的显示与隐藏
+
+// 显示/隐藏顶部评论表单
+const toggleCommentForm = () => {
+  formState.value = !formState.value
+}
+
+// 显示/隐藏回复表单
+const toggleReplyForm = (comment) => {
+  comment.showForm = !comment.showForm
   // 隐藏回复表单
   // comment.showForm = false
 }
+
+onMounted(()=>{
+  apiGetComments(route.params.id || '-1').then(res => {
+    console.log(res);
+    comments.value = res
+  })
+})
 
 </script>
 
 <template>
 <div class="article-footer">
   <!-- 顶部评论表单 -->
-  <CommentForm :comments="comments" :hasParent="false" :parentId="'0'"></CommentForm>
+  <span class="top-form" @click="toggleCommentForm">发表评论</span>
+  <!-- parentId = '-1' 表示没有 parent 评论 -->
+  <CommentForm v-show="formState" :comments="comments" :hasParent="false" :parentId="'-1'"></CommentForm>
   <!-- 一级评论列表 -->
   <div class="comment-list">
     <!-- 遍历所有一级评论 -->
@@ -90,7 +55,7 @@ const showReplyForm = (comment) => {
           </span>
           <div class="comment-meta">
             <span class="comment-time">{{ getFormatDate(comment.createTime) }}</span>
-            <el-button link type="primary" class="reply-btn" @click="showReplyForm(comment)">
+            <el-button link type="primary" class="reply-btn" @click="toggleReplyForm(comment)">
               回复
             </el-button>
           </div>
@@ -117,11 +82,17 @@ const showReplyForm = (comment) => {
   line-height: 1.6;
   border-radius: 8px;
   overflow: hidden;
+  
+  .top-form {
+    color: var(--blue);
+    padding-left: 20px;
+    cursor: pointer;
+  }
 
   /* 评论列表样式 */
   .comment-list {
     .comment-item {
-      padding: 20px;
+      padding: 10px 20px;
       background: var(--white);
       border-top: 1px solid rgba(0, 0, 0, 0.05);
       

@@ -1,5 +1,6 @@
 // 获取格式化日期 YYYY-MM-DD
-export function getFormatDate(date) {
+export function getFormatDate(dateStr) {
+    let date = new Date(dateStr)
     let year = date.getFullYear()
     let month = date.getMonth() + 1
     let strDate = date.getDate()
