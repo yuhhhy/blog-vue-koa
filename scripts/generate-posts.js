@@ -2,8 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { fileURLToPath } from 'url'
-import { apiCreateBlog, apiDeleteAllBlogs } from '../client/src/api/blog.js'
-import { apiCreateBlogContent, apiDeleteAllBlogContent } from '../client/src/api/blogContent.js'
+import { apiCreateBlog, apiGetBlogByTitle, apiUpdateBlog } from '../client/src/api/blog.js'
+import { apiCreateBlogContent, apiUpdateBlogContent } from '../client/src/api/blogContent.js'
 import { apiUpdateWebsiteLastUpdate } from '../client/src/api/websiteData.js'
 
 // 获取当前模块路径
@@ -17,7 +17,6 @@ const POSTS_DIR = path.join(__dirname, '../public/posts')
 const files = fs.readdirSync(POSTS_DIR).filter(file => file.endsWith('.md'))
 
 
-let count = 0; // 用于给每个文件生成唯一的ID
 
 const posts = files.map(file => {
   const filePath = path.join(POSTS_DIR, file)
@@ -25,7 +24,7 @@ const posts = files.map(file => {
   const { data, content } = matter(fileContent)
 
   // 确保有必需的字段
-  if (!data.id) data.id = count++;
+  if (!data.id) data.id = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 4)}`;
   if (!data.link) data.link = `/blog/${data.id}`
   if (!data.content) data.content = content
   // 字数统计
@@ -58,41 +57,63 @@ posts.sort((a, b) => new Date(b.date) - new Date(a.date))
 // 在发送新文章前，先清空所有文章
 async function updateAllPosts(posts) {
   try {
-    // 1. 先删除所有文章
-    console.log('正在清空旧文章...')
-    await apiDeleteAllBlogs()
-    await apiDeleteAllBlogContent()
-    console.log('旧文章清空完成')
+    console.log('开始更新文章...')
 
-    // 2. 重新创建所有文章
-    console.log('开始创建新文章...')
     for (const post of posts) {
       try {
-        // 3. 创建文章信息
-        await apiCreateBlog({
-          id: post.id,
-          title: post.title,
-          coverImage: post.coverImage,
-          date: post.date,
-          tags: post.tags,
-          link: post.link,
-        })
-        // 4. 创建文章内容
-        await apiCreateBlogContent({
-          id: post.id,
-          title: post.title,
-          author: post.author,
-          coverImage: post.coverImage,
-          date: post.date,
-          tags: post.tags,
-          content: post.content,
-          wordCount: post.wordCount,
-          viewCount: 1,
-          likeCount: 1
-        })
-        console.log(`创建文章成功:《${post.title}》`)
-      } catch (error) {
-        console.error(`创建文章失败:《${post.title}》- ${error.message}`)
+        // 1. 检查文章是否已存在（通过标题）
+        const existingBlog = await apiGetBlogByTitle(post.title)
+        if (existingBlog) { 
+          // 2. 更新文章信息
+          await apiUpdateBlog(
+            existingBlog.id, 
+          {
+            coverImage: post.coverImage,
+            date: post.date,
+            tags: post.tags,
+          })
+
+          await apiUpdateBlogContent(
+            existingBlog.id,  
+          {
+            author: post.author,
+            coverImage: post.coverImage,
+            date: post.date,
+            tags: post.tags,
+            content: post.content,
+            wordCount: post.wordCount,
+          })
+
+          console.log(`更新文章成功:《${post.title}》`)
+        } else {
+          // 3. 创建新文章
+          await apiCreateBlog({
+            id: post.id,
+            title: post.title,
+            coverImage: post.coverImage,
+            date: post.date,
+            tags: post.tags,
+            link: post.link,
+          });
+          
+          await apiCreateBlogContent({
+            id: post.id,
+            title: post.title,
+            author: post.author,
+            coverImage: post.coverImage,
+            date: post.date,
+            tags: post.tags,
+            content: post.content,
+            wordCount: post.wordCount,
+            viewCount: 0,
+            likeCount: 0
+          });
+          
+          console.log(`创建文章成功:《${post.title}》`);
+        }
+      }
+      catch (error) {
+        console.error(`更新文章失败:《${post.title}》`, error.message)
       }
     }
     console.log(`全部文章更新完成，共更新 ${posts.length} 篇文章`)

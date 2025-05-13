@@ -19,6 +19,14 @@ export function apiFetchBlogData(blogId) {
     })
 }
 
+// 通过标题获取博客
+export function apiGetBlogByTitle(title) {
+    return request({
+        url: `/api/blog/title/${title}`,
+        method: 'GET'
+    })
+}
+
 // 创建新博客
 export function apiCreateBlog(data) {
     return request({
@@ -41,5 +49,14 @@ export function apiDeleteAllBlogs() {
     return request({
         url: '/api/blog',
         method: 'DELETE'
+    })
+}
+
+// 更新博客
+export function apiUpdateBlog(blogId, data) {
+    return request({
+        url: `/api/blog/${blogId}`,
+        method: 'PUT',
+        data
     })
 }

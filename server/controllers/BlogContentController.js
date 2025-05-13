@@ -46,6 +46,28 @@ export const deleteAllBlogContents = async (ctx) => {
     }
 }
 
+// 更新博客内容
+export const UpdateBlogContent = async (ctx) => {
+    const { id } = ctx.request.params
+    try {
+        const blogContent = await BlogContent.findOne({ id: id })
+        blogContent.author = ctx.request.body.author || blogContent.author
+        blogContent.coverImage = ctx.request.body.coverImage || blogContent.coverImage
+        blogContent.date = ctx.request.body.date || blogContent.date
+        blogContent.tags = ctx.request.body.tags || blogContent.tags
+        blogContent.content = ctx.request.body.content || blogContent.content
+        blogContent.wordCount = ctx.request.body.wordCount || blogContent.wordCount
+        
+        await blogContent.save()
+        ctx.status = 200
+        ctx.body = { message: '博客内容更新成功', blogContent: blogContent }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '博客内容更新失败', error: error.message }
+    }
+}
+
+
 // 更新博客的浏览量
 export const updateBlogViewCount = async (ctx) => {
     const { id } = ctx.request.params

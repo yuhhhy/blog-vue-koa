@@ -1,9 +1,10 @@
 <script setup>
 import Sidebar from "@/components/Sidebar/index.vue"
-import ArticleContent from "../Blog/components/ArticleContent.vue";
-import ArticleFooter from "../Blog/components/ArticleFooter.vue";
-import { onMounted } from "vue";
-import { apiUpdateWebsiteView } from "@/api/websiteData.js";
+import ArticleContent from "../Blog/components/ArticleContent.vue"
+import ArticleFooter from "../Blog/components/ArticleFooter.vue"
+import { onMounted } from "vue"
+import { apiUpdateWebsiteView } from "@/api/websiteData.js"
+import { apiDeleteAllComments } from "@/api/comment"
 
 const htmlContent = `
             <h1>关于我</h1>
@@ -24,6 +25,7 @@ const htmlContent = `
 onMounted(() => {
     // 获取后台数据
     apiUpdateWebsiteView()
+    // apiDeleteAllComments()
 })
 </script>
 

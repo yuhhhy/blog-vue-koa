@@ -28,6 +28,22 @@ export const getBlogById = async (ctx) => {
     ctx.body = blog
 }
 
+// 通过标题获取博客
+export const getBlogByTitle = async (ctx) => {
+    const { title } = ctx.request.params
+    // 从数据库获取单个博客文章
+    const blog = await Blog.findOne({ title: title })
+    if (!blog) {
+        console.log('博客不存在')
+        ctx.status= 404
+        ctx.body = { message: '博客不存在' }
+    }
+    console.log(2);
+
+    ctx.status = 200
+    ctx.body = blog
+}
+
 // 创建新博客
 export const createBlog = async (ctx) => {
     // POST 请求体作为数据，创建新博客到数据库
@@ -64,5 +80,25 @@ export const deleteAllBlogs = async (ctx) => {
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: '全部博客删除失败', error: error.message }
+    }
+}
+
+// 更新博客
+export const updateBlog = async (ctx) => {
+    const { id } = ctx.request.params
+    try {
+        const existedBlog = await Blog.findOne({ id: id })
+        // 更新博客内容
+        existedBlog.coverImage = ctx.request.body.coverImage || existedBlog.coverImage
+        existedBlog.date = ctx.request.body.date || existedBlog.date
+        existedBlog.tags = ctx.request.body.tags || existedBlog.tags
+        existedBlog.link = ctx.request.body.link || existedBlog.link
+
+        await existedBlog.save()
+        ctx.status = 200
+        ctx.body = { message: '博客更新成功', blog: existedBlog }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '博客更新失败', error: error.message }
     }
 }

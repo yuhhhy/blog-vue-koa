@@ -1,6 +1,6 @@
 import Router from '@koa/router'
-import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs } from '../controllers/BlogController.js'
-import { createBlogContent, getBlogContent, deleteAllBlogContents, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
+import { getBlogList, getBlogById, getBlogByTitle, createBlog, deleteBlog, deleteAllBlogs, updateBlog } from '../controllers/BlogController.js'
+import { createBlogContent, getBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate } from '../controllers/WebsiteDataController.js'
 import { getComments, createComment, deleteComment, deleteAllComments } from '../controllers/CommentController.js'
 
@@ -14,6 +14,9 @@ router.get('/blog/bloglist', getBlogList)
 // 获取单个博客
 router.get('/blog/:id', getBlogById)
 
+// 通过标题获取博客
+router.get('/blog/title/:title', getBlogByTitle)
+
 // 创建新博客
 router.post('/blog', createBlog)
 
@@ -22,6 +25,9 @@ router.delete('/blog/:id', deleteBlog)
 
 // 删除所有博客
 router.delete('/blog', deleteAllBlogs)
+
+// 更新博客
+router.put('/blog/:id', updateBlog)
 
 /*
 * Blog Content API
@@ -34,6 +40,9 @@ router.get('/blogcontent/:id', getBlogContent)
 
 // 删除所有博客内容
 router.delete('/blogcontent', deleteAllBlogContents)
+
+// 更新博客内容
+router.put('/blogcontent/:id', UpdateBlogContent)
 
 // 更新博客的浏览量
 router.put('/blogcontent/view/:id', updateBlogViewCount)

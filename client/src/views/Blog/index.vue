@@ -35,19 +35,19 @@ const renderBlogContent = () => {
 // 获取文章内容
 async function getBlogContent() {
     try {
-        const data = await apiGetBlogContent(parseInt(route.params.id))
+        const data = await apiGetBlogContent(route.params.id)
         blogData.value = data
         renderBlogContent()
     }
     catch (error) {
         console.error('获取博客内容失败', error)
-        router.push('/404')
+        // router.push('/404')
     }
 }
 
 async function updateBlogViewCount() {
-        const data = await apiUpdateBlogViewCount(parseInt(route.params.id))
-        blogData.value.viewCount = data.viewCount
+    const data = await apiUpdateBlogViewCount(route.params.id)
+    blogData.value.viewCount = data.viewCount
 }
 
 

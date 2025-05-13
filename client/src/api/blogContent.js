@@ -28,6 +28,15 @@ export function apiDeleteAllBlogContent() {
     })
 }
 
+// 更新博客内容
+export function apiUpdateBlogContent(blogId, data) {
+    return request({
+        url: `/api/blogcontent/${blogId}`,
+        method: 'PUT',
+        data
+    })
+}
+
 // 更新博客的浏览量
 export function apiUpdateBlogViewCount(blogId) {
     return request({
