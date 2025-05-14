@@ -11,14 +11,14 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // 配置路径
-const POSTS_DIR = path.join(__dirname, '../public/posts')
+const POSTS_DIR = path.join(__dirname, '../public/blogs')
 
 // 读取所有Markdown文件
 const files = fs.readdirSync(POSTS_DIR).filter(file => file.endsWith('.md'))
 
 
 
-const posts = files.map(file => {
+const blogs = files.map(file => {
   const filePath = path.join(POSTS_DIR, file)
   const fileContent = fs.readFileSync(filePath, 'utf8')
   const { data, content } = matter(fileContent)
@@ -52,71 +52,71 @@ const posts = files.map(file => {
 })
 
 // 按日期排序
-posts.sort((a, b) => new Date(b.date) - new Date(a.date))
+blogs.sort((a, b) => new Date(b.date) - new Date(a.date))
 
 // 在发送新文章前，先清空所有文章
-async function updateAllPosts(posts) {
+async function updateAllBlogs(blogs) {
   try {
     console.log('开始更新文章...')
 
-    for (const post of posts) {
+    for (const blog of blogs) {
       try {
         // 1. 检查文章是否已存在（通过标题）
-        const existingBlog = await apiGetBlogByTitle(post.title)
+        const existingBlog = await apiGetBlogByTitle(blog.title)
         if (existingBlog) { 
           // 2. 更新文章信息
           await apiUpdateBlog(
             existingBlog.id, 
           {
-            coverImage: post.coverImage,
-            date: post.date,
-            tags: post.tags,
+            coverImage: blog.coverImage,
+            date: blog.date,
+            tags: blog.tags,
           })
 
           await apiUpdateBlogContent(
             existingBlog.id,  
           {
-            author: post.author,
-            coverImage: post.coverImage,
-            date: post.date,
-            tags: post.tags,
-            content: post.content,
-            wordCount: post.wordCount,
+            author: blog.author,
+            coverImage: blog.coverImage,
+            date: blog.date,
+            tags: blog.tags,
+            content: blog.content,
+            wordCount: blog.wordCount,
           })
 
-          console.log(`更新文章成功:《${post.title}》`)
+          console.log(`更新文章成功:《${blog.title}》`)
         } else {
           // 3. 创建新文章
           await apiCreateBlog({
-            id: post.id,
-            title: post.title,
-            coverImage: post.coverImage,
-            date: post.date,
-            tags: post.tags,
-            link: post.link,
+            id: blog.id,
+            title: blog.title,
+            coverImage: blog.coverImage,
+            date: blog.date,
+            tags: blog.tags,
+            link: blog.link,
           });
           
           await apiCreateBlogContent({
-            id: post.id,
-            title: post.title,
-            author: post.author,
-            coverImage: post.coverImage,
-            date: post.date,
-            tags: post.tags,
-            content: post.content,
-            wordCount: post.wordCount,
+            id: blog.id,
+            title: blog.title,
+            author: blog.author,
+            coverImage: blog.coverImage,
+            date: blog.date,
+            tags: blog.tags,
+            content: blog.content,
+            wordCount: blog.wordCount,
             viewCount: 0,
             likeCount: 0
           });
           
-          console.log(`创建文章成功:《${post.title}》`);
+          console.log(`创建文章成功:《${blog.title}》`);
         }
       }
       catch (error) {
-        console.error(`更新文章失败:《${post.title}》`, error.message)
+        console.error(`更新文章失败:《${blog.title}》`, error.message)
       }
     }
-    console.log(`全部文章更新完成，共更新 ${posts.length} 篇文章`)
+    console.log(`全部文章更新完成，共更新 ${blogs.length} 篇文章`)
   } catch (error) {
     console.error('更新文章失败:', error.message)
   }
@@ -125,4 +125,4 @@ async function updateAllPosts(posts) {
 // 更新网站最后更新时间
 apiUpdateWebsiteLastUpdate()
 // 调用更新函数
-updateAllPosts(posts)
+updateAllBlogs(blogs)

@@ -27,3 +27,8 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# docker
+.dockerignore
+Dockerfile
+compose.yaml

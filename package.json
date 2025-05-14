@@ -7,7 +7,7 @@
         "server": "cd server && npm run serve",
         "client": "cd client && npm run dev",
         "install-all": "npm install && cd client && npm install && cd ../server && npm install",
-        "generate": "node scripts/generate-posts.js"
+        "gen": "node scripts/generate-data.js"
     },
     "devDependencies": {
         "concurrently": "^9.1.2",
