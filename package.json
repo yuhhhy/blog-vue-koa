@@ -4,9 +4,9 @@
     "version": "1.0.0",
     "scripts": {
         "start": "concurrently \"npm run server\" \"npm run client\"",
-        "server": "cd server && npm run serve",
-        "client": "cd client && npm run dev",
-        "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+        "server": "cd blog-server && npm run serve",
+        "client": "cd blog-client && npm run dev",
+        "install-all": "npm install && cd blog-client && npm install && cd ../blog-server && npm install",
         "gen": "node scripts/generate-data.js"
     },
     "devDependencies": {

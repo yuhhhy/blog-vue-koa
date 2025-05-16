@@ -28,6 +28,7 @@ app.use(async (ctx, next) => {
 
 // 解析 request.body
 app.use(bodyParser())
+
 // 代理静态资源目录，让前端可以访问到public目录下的文件
 app.use(serve(path.join(__dirname, '../public')))
 

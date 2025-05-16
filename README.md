@@ -41,8 +41,8 @@
 ## 项目结构
 ```
 blog-vue-koa/
-├─ client/              // Vue3 + Vite 前端项目
-│   ├─ src/                 // 项目源码
+├─ blog-client/             // Vue3 博客前端
+│   ├─ src/                     // 项目源码
 │   │   ├─ api/                 // 前端api接口
 │   │   ├─ assets/              // 前端静态资源
 │   │   ├─ components/          // Vue组件
@@ -52,26 +52,26 @@ blog-vue-koa/
 │   │   ├─ views/               // Vue页面
 │   │   ├─ App.vue              // 根组件
 │   │   └─ main.js              // 初始化Vue实例的入口文件
-│   ├─ index.html           // 项目入口文件
+│   ├─ index.html               // 项目入口文件
 │   ├─ package-lock.json
-│   └─ package.json         // 项目依赖
-├─ public/              // 静态资源
-│   ├─ images               // 图片资源
-│   └─ posts                // 文章资源
-├─ scripts/             // 脚本
-│   └─ generate-posts.js    // 生成文章数据的脚本
-├─ server/              // Koa 后端项目
-│   │   ├─ config/          // 配置文件
-│   │   ├─ controllers/     // 控制器
-│   │   ├─ middlewares/     // 中间件
-│   │   ├─ models/          // 数据模型
-│   │   ├─ routes/          // 路由定义
-│   │   ├─ app.js           // 应用主入口文件
+│   └─ package.json             // 项目依赖
+├─ blog-server/             // Koa 后端项目
+│   │   ├─ config/              // 配置文件
+│   │   ├─ controllers/         // 控制器
+│   │   ├─ middlewares/         // 中间件
+│   │   ├─ models/              // 数据模型
+│   │   ├─ routes/              // 路由定义
+│   │   ├─ app.js               // 应用主入口文件
 │   │   ├─ package-lock.json
 │   |   └─ package.json         // 项目依赖
-├─ .gitignore            // 忽略文件
-├─ package-lock.json     // 锁定版本
-├─ package.json          // 统一管理脚本
+├─ public/                  // 静态资源
+│   ├─ images                   // 图片资源
+│   └─ posts                    // 文章资源
+├─ scripts/                 // 脚本
+│   └─ generate-posts.js        // 生成文章数据的脚本
+├─ .gitignore                   // 忽略文件
+├─ package-lock.json            // 锁定版本
+├─ package.json                 // 统一管理脚本
 └─  README.md
 ```
 

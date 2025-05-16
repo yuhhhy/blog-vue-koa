@@ -7,12 +7,11 @@ import MarkdownIt from 'markdown-it'
 import markdownItTocAndAnchor from 'markdown-it-toc-and-anchor'
 
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { apiGetBlogContent, apiUpdateBlogViewCount } from '@/api/blogContent.js'
 import { apiUpdateWebsiteView } from '@/api/websiteData.js'
 
 const route = useRoute()
-const router = useRouter()
 let htmlContent = ref('') // html格式文章内容
 let blogData = ref({}) // data/posts.json
 let tocHtml = ref('') // toc生成的html

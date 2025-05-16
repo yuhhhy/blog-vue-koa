@@ -13,7 +13,7 @@ export default defineConfig({
   },
   server: {
     port: 8080,
-    // 代理请求，前端以 /images 开头的请求会被代理到后端的 3000 端口上
+    // 代理请求，前端以/images开头的请求会被代理到后端的3000端口上 (http://localhost:3000/images)
     proxy: {
       '/images': {
         target: 'http://localhost:3000',
