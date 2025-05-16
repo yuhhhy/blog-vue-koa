@@ -179,7 +179,7 @@ async function getAvatar(email) {
           min-height: 32px;
           width: 100%;
           height: 100%;
-          border: 2px solid var(--lightgrey);
+          border: 2px solid var(--lightgrey); 
           border-radius: 4px;
           text-indent: 0.7em;
           transition: all 0.3s ease;

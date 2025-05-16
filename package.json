@@ -3,10 +3,11 @@
     "type": "module",
     "version": "1.0.0",
     "scripts": {
-        "start": "concurrently \"npm run server\" \"npm run client\"",
+        "start": "concurrently \"npm run server\" \"npm run client\" \"npm run background\"",
         "server": "cd blog-server && npm run serve",
         "client": "cd blog-client && npm run dev",
-        "install-all": "npm install && cd blog-client && npm install && cd ../blog-server && npm install",
+        "background": "cd blog-background && npm run background",
+        "install-all": "npm install && cd blog-client && npm install && cd ../blog-server && npm install && cd ../blog-background && npm install",
         "gen": "node scripts/generate-data.js"
     },
     "devDependencies": {

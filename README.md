@@ -7,7 +7,6 @@
 - Sass
 - Element-Plus
 - Vite
-- Vitest
 ### 后端
 - Koa
 - MongoDB
@@ -41,7 +40,8 @@
 ## 项目结构
 ```
 blog-vue-koa/
-├─ blog-client/             // Vue3 博客前端
+├─ blog-background/         // Vue 博客后台管理
+├─ blog-client/             // Vue 博客前端
 │   ├─ src/                     // 项目源码
 │   │   ├─ api/                 // 前端api接口
 │   │   ├─ assets/              // 前端静态资源

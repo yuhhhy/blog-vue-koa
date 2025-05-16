@@ -1,54 +1,39 @@
 <script setup>
-import Tag from '@/components/Tag/index.vue'
+import { apiGetBlogList } from '@/api/blog.js'
+import { ref, onMounted } from 'vue'
 
-const tagList = [
-    {
-        tagImg: '&#xe632;',
-        tagName: 'HTML',
-        tagHours: 100,
-        tagProgress: 90,
-        tagNumber: 19,
-        progressColor: '#ff9470'
-    },
-    {
-        tagImg: '&#xe61e;',
-        tagName: 'CSS',
-        tagHours: 99,
-        tagProgress: 78,
-        tagNumber: 10,
-        progressColor: '#5cb1f6'
-    },
-    {
-        tagImg: '&#xe704;',
-        tagName: 'JavaScript',
-        tagHours: 66,
-        tagProgress: 60,
-        tagNumber: 1,
-        progressColor: '#efdf60'
-    },
-    {
-        tagImg: '&#xe79a;',
-        tagName: 'Vue',
-        tagHours: 65,
-        tagProgress: 55,
-        tagNumber: 3,
-        progressColor: '#b6ed5c'
-    },
-      {
-        tagImg: '&#xe799;',
-        tagName: 'Webpack',
-        tagHours: 2,
-        tagProgress: 25,
-        tagNumber: 2,
-        progressColor: '#8ED6FB'
-    },
-]
+const posts = ref([])
+const tags = ref([])
+const colors = ref([
+    '#FF33FF', '#00e079', '#3357FF', '#89c3eb', '#b0a4e3',
+    '#e4d2d8', '#47585c', '#192f60', '#6b7b6e', '#758a99',
+    '#e597b2', '#93b69c'
+])
+function randomColor(index) {
+    return index > colors.length ? colors.value[6] : colors.value[index]
+}
+
+onMounted(() => {
+    apiGetBlogList().then(response => {
+        posts.value = response
+        // 获取所有标签
+        tags.value = [...new Set(
+            posts.value.flatMap(post => post.tags)
+        )]
+    })
+})
 </script>
 
 <template>
     <div class="sidebar-tags">
-        <div class="sidebar-tags-title">我的技能</div>
-        <Tag v-for="tag in tagList" :tag="tag"></Tag>
+        <div class="sidebar-tags-title">标签云</div>
+        <div class="sidebar-tags-content">
+            <RouterLink v-for="(tag, index) in tags" :to="`/archive/${tag}`">
+                <span class="tag" :style="{ backgroundColor: randomColor(index) }">
+                    {{ tag }}
+                </span>
+            </RouterLink>
+        </div>
     </div>
 </template>
 
@@ -59,7 +44,8 @@ const tagList = [
     border-radius: 10px;
     overflow: hidden;
     width: 100%;
-    padding: 10px;
+    padding: 10px 10px 20px 10px;
+
     &:hover {
         box-shadow: 0 0 6px var(--cyan);
         transition: 0.4s;
@@ -70,6 +56,29 @@ const tagList = [
         margin-left: 10px;
         margin-bottom: 20px;
         margin-top: 10px;
+    }
+    .sidebar-tags-content {
+        display: flex;
+        flex-wrap: wrap;
+        row-gap: 20px;
+        column-gap: 20px;
+        padding-left: 10px;
+
+        @media screen and (max-width: 768px) {
+            padding: 0;
+        }
+
+        .tag {
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 4px 10px;
+
+            .iconfont {
+                font-size: 12px;
+                margin-right: 5px;
+            }
+        }
     }
 }
 </style>
