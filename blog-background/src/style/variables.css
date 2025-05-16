@@ -1,0 +1,9 @@
+/* 全局变量 */
+:root {
+    --success: #48c78e;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --error: #dc3545;
+    --primary: #007bff;
+    --secondary: #6c757d;
+}

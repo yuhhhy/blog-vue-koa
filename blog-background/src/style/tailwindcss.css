@@ -1,0 +1,4 @@
+/* 初始化并引入tailwindcss的基础样式 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

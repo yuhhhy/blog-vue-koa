@@ -54,13 +54,13 @@ const onLogin = () => {
 </script>
 
 <template>
-  <div class="wrapper">
-    <div class="login">
-      <p>后台管理系统</p>
+  <div class="flex justify-center items-center h-screen w-screen bg-slate-100">
+    <div class="flex flex-col justify-center items-center h-64 w-96 border border-slate-300 rounded-md shadow-xl bg-white">
+      <p class="text-xl mb-5 text-sky-400">后台管理系统</p>
       <el-form :model="form" :rules="rules" ref="fromRef">
         <el-form-item prop="username">
           <el-input 
-            class="input"
+            class="my-1 mx-0 w-60"
             v-model="form.username"
             placeholder="用户名"
             prefix-icon="User"
@@ -68,7 +68,7 @@ const onLogin = () => {
         </el-form-item>
         <el-form-item prop="password">
           <el-input 
-            class="input" 
+            class="my-1 mx-0 w-60" 
             v-model="form.password" 
             placeholder="密码"
             type="password"
@@ -76,40 +76,11 @@ const onLogin = () => {
             prefix-icon="Lock"
           />
         </el-form-item>
-        <el-button class="input" type="primary" @click="onLogin">登录</el-button>
+        <el-button class="my-1 mx-0 w-60" type="primary" @click="onLogin">登录</el-button>
       </el-form>
     </div>
   </div>
 </template>
 
-<style lang="scss" scoped>
-.wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100vw;
-  background-color: #dddddd;
-  .login {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 250px;
-    width: 400px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #fff;
-    box-shadow: 8px 8px 20px 0px rgba(0, 0, 0, 0.5);
-    .input {
-      margin: 5px 0;
-      width: 240px;
-    }
-    p {
-      font-size: 20px;
-      margin-bottom: 20px;
-      color: #009dff;
-    }
-  }
-}
+<style scoped>
 </style>

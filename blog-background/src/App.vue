@@ -2,14 +2,11 @@
 </script>
 
 <template>
-  <div class="app">
+  <!-- 最外层容器 -->
+  <div class="h-screen w-screen relative">
     <RouterView></RouterView>
   </div>
 </template>
 
 <style scoped>
-.app{
-  height: 100vh;
-  width: 100vw;
-}
 </style>

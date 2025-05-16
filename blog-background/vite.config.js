@@ -7,15 +7,15 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      // 设置src别名
-      '@': path.resolve(__dirname, './src') 
+      '@': path.resolve(__dirname, './src'),
+      '~': path.resolve(__dirname, './node_modules')
     }
   },
   css: {
     preprocessorOptions: {
       scss: {
         // 这里是全局引入的scss文件
-        additionalData: '@use "@/style/variables.scss" as *;'
+        additionalData: '@use "@/style/variables.css" as *;'
       }
     }
   },

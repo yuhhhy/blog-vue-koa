@@ -1,10 +1,11 @@
 <script setup>
-import Layout from '@/Layout/index.vue';
+ 
 </script>
 
 <template>
-  <Layout />
+ Article List
 </template>
 
 <style scoped>
+ 
 </style>
