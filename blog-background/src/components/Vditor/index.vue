@@ -7,7 +7,7 @@ const vditorEl = ref()
 
 onMounted(() => {
     vditorEl.value = new Vditor("vditorEl", {
-        height: '100%',
+        height: '80%',
         width: '100%',
         blur(value) {
             console.log(value)
@@ -18,7 +18,6 @@ onMounted(() => {
 
 <template>
     <div id="vditorEl"></div>
-    
 </template>
 
 <style scoped>

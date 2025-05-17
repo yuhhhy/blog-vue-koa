@@ -16,12 +16,12 @@ const routes = [
             {
                 path: 'article/list',
                 name: 'ArticleList',
-                component: () => import('../views/Article/List.vue')
+                component: () => import('../views/ArticleList/index.vue')
             },
             {
                 path: 'article/create',
                 name: 'ArticleCreate',
-                component: () => import('../views/Article/Create.vue')
+                component: () => import('../views/ArticleCreate/index.vue')
             }
         ]
     },

@@ -30,7 +30,7 @@ const form = reactive({
   username: '一曝十寒',
   email: '281423846@qq.com',
   website: 'https://www.yuhhhy.cn',
-  content: '今天是2025年5月12日，星期一。',
+  content: '今天是2025年5月17日，周六。',
 })
 // 表单校验规则、校验失败的ElMessage提示信息
 const rules = {
@@ -116,7 +116,7 @@ async function getAvatar(email) {
     <div class="comment-form-input-row">
       <el-form-item prop="username">
         <el-input
-          v-model="form.username" 
+          v-model="form.username"
           placeholder="昵称*" 
         />
       </el-form-item>
