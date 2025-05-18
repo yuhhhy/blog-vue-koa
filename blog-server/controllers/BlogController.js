@@ -1,10 +1,10 @@
 import { Blog } from '../models/BlogSchema.js'
 
-/*
-* Blog Controller
-* 用于处理博客相关的操作，包括获取博客列表、获取单个博客、创建新博客、删除博客等。
-* 这些操作将直接与数据库交互，返回相应的结果。
-*/
+/**
+ * Blog Controller
+ * 用于处理博客相关的操作，包括获取博客列表、获取单个博客、创建新博客、删除博客等。
+ * 这些操作将直接与数据库交互，返回相应的结果。
+ */
 
 // 获取博客列表
 export const getBlogList = async (ctx) => {

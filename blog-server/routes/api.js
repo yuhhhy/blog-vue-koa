@@ -3,11 +3,12 @@ import { getBlogList, getBlogById, getBlogByTitle, createBlog, deleteBlog, delet
 import { createBlogContent, getBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate } from '../controllers/WebsiteDataController.js'
 import { getComments, createComment, deleteComment, deleteAllComments } from '../controllers/CommentController.js'
+import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 
 const router = new Router({ prefix: '/api' })
-/*
-* Blog API
-*/
+/**
+ * Blog API
+ */
 // 获取博客列表
 router.get('/blog/bloglist', getBlogList)
 
@@ -29,9 +30,9 @@ router.delete('/blog', deleteAllBlogs)
 // 更新博客
 router.put('/blog/:id', updateBlog)
 
-/*
-* Blog Content API
-*/
+/**
+ * Blog Content API
+ */
 // 创建博客内容
 router.post('/blogcontent', createBlogContent)
 
@@ -51,9 +52,9 @@ router.put('/blogcontent/view/:id', updateBlogViewCount)
 router.put('/blogcontent/like/:id', updateBlogLikeCount)
 
 
-/*
-* Website Data API
-*/
+/**
+ * Website Data API
+ */
 // 获取网站访问量
 router.get('/website', getWebsiteData)
 
@@ -67,9 +68,9 @@ router.put('/website/view', updateWebsiteView)
 router.put('/website/lastupdate', updateWebsiteLastUpdate)
 
 
-/*
-* Comment API
-*/
+/**
+ * Comment API
+ */
 // 获取一个博客的所有评论
 router.get('/comment/:id', getComments)
 
@@ -81,5 +82,27 @@ router.delete('/comment/:id', deleteComment)
 
 // 删除所有评论
 router.delete('/comment', deleteAllComments)
+
+
+/**
+ * User API
+ */
+// 用户登录
+router.post('/user/login', userLogin)
+
+// 获取用户列表
+router.get('/user/list', getuserList)
+
+// 获取用户
+router.get('/user/:id', getUser)
+
+// 创建用户
+router.post('/user', createUser)
+
+// 删除用户
+router.delete('/user/:id', deleteUser)
+
+// 更新用户
+router.put('/user/:id', updateUser)
 
 export default router

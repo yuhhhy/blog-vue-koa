@@ -1,10 +1,10 @@
 import { WebsiteData } from '../models/WebsiteDataSchema.js'
 
-/*
-* WebsiteVisit Controller
-* 用于处理网站访问相关的操作，包括获取网站访问次数。
-* 这些操作将直接与数据库交互，返回相应的结果。
-*/
+/**
+ * WebsiteVisit Controller
+ * 用于处理网站访问相关的操作，包括获取网站访问次数。
+ * 这些操作将直接与数据库交互，返回相应的结果。
+ */
 
 // 获取网站数据
 export const getWebsiteData = async (ctx) => {

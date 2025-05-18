@@ -58,11 +58,11 @@ const form = reactive({
         >
           <div class="el-upload__text">点击上传</div>
         </el-upload>
+        <div class="el-upload__tip" slot="tip">限制上传一张，只能上传jpg/png文件</div>
       </el-popover>
     </el-form-item>
  </el-form>
 </template>
 
 <style scoped>
- 
 </style>

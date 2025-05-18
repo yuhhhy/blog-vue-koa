@@ -10,7 +10,7 @@ import "./style/tailwindcss.css"
 
 // 根据环境变量判断是否使用mock
 if (import.meta.env.MODE === 'development') {
-    import('./../mock/login.js')
+    import('./../mock/user.js')
 }
 
 const pinia = createPinia()

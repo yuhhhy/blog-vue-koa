@@ -1,7 +1,7 @@
 import axios from "axios";
 import cfg from '@/config/index.js'
-import { ElMessage } from 'element-plus'
 import router from '@/router/index.js'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from "@/stores/userStore";
 
 const REQUEST_ERROR = '请求失败，请稍后再试'
@@ -36,13 +36,14 @@ request.interceptors.request.use(
 // 响应统一拦截 
 request.interceptors.response.use(
     res => {
+        // 解构Axios响应体res，返回实际响应数据data
         const { data, status, statusText, headers, config, request } = res
         const { code, message } = data
+
         if (code === 200) {
             ElMessage.success(message)
 
-            // 返回响应体数据
-            return res.data;        
+            return res.data;
         } else if (code === 40001) {
             // 表示token过期
             ElMessage.error(TOKEN_EXPIRED)

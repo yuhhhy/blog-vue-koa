@@ -1,10 +1,10 @@
 import { BlogContent } from '../models/BlogContentSchema.js'
 
-/*
-* BlogContent Controller
-* 用于处理博客内容相关的操作，包括获取博客内容、创建新博客内容、删除博客内容等。
-* 这些操作将直接与数据库交互，返回相应的结果。
-*/
+/**
+ * BlogContent Controller
+ * 用于处理博客内容相关的操作，包括获取博客内容、创建新博客内容、删除博客内容等。
+ * 这些操作将直接与数据库交互，返回相应的结果。
+ */
 
 // 创建博客内容
 export const createBlogContent = async (ctx) => {

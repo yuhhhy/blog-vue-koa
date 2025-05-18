@@ -1,6 +1,6 @@
 import Mock from 'mockjs'
 
-Mock.mock('/login', 'post', (options) => {
+Mock.mock('/user/login', 'post', (options) => {
     const { username, password } = JSON.parse(options.body)
     if (username === 'admin' && password === '123456') {
         return {

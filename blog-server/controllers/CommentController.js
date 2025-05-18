@@ -1,10 +1,11 @@
 import { Comment } from '../models/CommentSchema.js'
 
-/*
-* Comment Controller
-* 用于处理评论相关的操作，包括获取评论列表、创建新评论。
-* 这些操作将直接与数据库交互，返回相应的结果。
-*/
+/**
+ * Comment Controller
+ * 用于处理评论相关的操作，包括获取评论列表、创建新评论。
+ * 这些操作将直接与数据库交互，返回相应的结果。
+ */
+
 // 获取博客的所有评论
 export const getComments = async (ctx) => {
     const { id } = ctx.request.params
