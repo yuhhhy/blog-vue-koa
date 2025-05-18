@@ -17,6 +17,10 @@ const siderNavItems = [
                 link: '/article/create'
             }
         ]
+    },
+    {
+        title: '用户',
+        link: '/user'
     }
 ]
  

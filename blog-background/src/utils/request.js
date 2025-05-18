@@ -22,7 +22,6 @@ const userStore = useUserStore()
 // 请求拦截添加token验证
 request.interceptors.request.use(
     config => {
-
         // 添加请求头 Authorization
         const token = userStore.userData.token || ''
         if (token) { 
@@ -36,15 +35,10 @@ request.interceptors.request.use(
 // 响应统一拦截 
 request.interceptors.response.use(
     res => {
-        // 解构Axios响应体res，返回实际响应数据data
-        const { data, status, statusText, headers, config, request } = res
-        const { code, message } = data
-
-        if (code === 200) {
-            ElMessage.success(message)
-
-            return res.data;
-        } else if (code === 40001) {
+        // Axios响应体res，返回实际响应数据是res.data
+        if (res.status >= 200 && res.status < 400) {
+            return res.data
+        } else if (res.data.code === 401) {
             // 表示token过期
             ElMessage.error(TOKEN_EXPIRED)
             setTimeout(() => {

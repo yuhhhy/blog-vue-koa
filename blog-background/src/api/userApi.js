@@ -10,7 +10,7 @@ export function apiUserLogin(data) {
 }
 
 // 获取用户列表
-export function apiUserList() {
+export function apiGetUserList() {
     return request({
         url: '/user/list',
         method: 'get',
