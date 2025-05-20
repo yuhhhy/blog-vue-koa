@@ -8,7 +8,7 @@ import request from '@/utils/request.js'
 // 新建访客记录
 export function apiCreateVisitor(data) {
     return request({
-        url: '/api/visitor',
+        url: '/visitor',
         method: 'post',
         data
     })

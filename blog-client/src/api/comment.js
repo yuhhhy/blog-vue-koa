@@ -8,7 +8,7 @@ import request from "../utils/request.js"
 // 获取博客所有评论
 export function apiGetComments(blogId) {
     return request({
-        url: `/api/comment/${blogId}`,
+        url: `/comment/${blogId}`,
         method: 'GET',
     })
 }
@@ -16,7 +16,7 @@ export function apiGetComments(blogId) {
 // 创建新评论
 export function apiCreateComment(data) {
     return request({
-        url: '/api/comment',
+        url: '/comment',
         method: 'POST',
         data
     })
@@ -25,7 +25,7 @@ export function apiCreateComment(data) {
 // 删除一条评论
 export function apiDeleteComment(id) {
     return request({
-        url: `/api/comment/${id}`,
+        url: `/comment/${id}`,
         method: 'DELETE',
     })
 }
@@ -33,7 +33,7 @@ export function apiDeleteComment(id) {
 // 删除所有评论
 export function apiDeleteAllComments() {
     return request({
-        url: '/api/comment',
+        url: '/comment',
         method: 'DELETE',
     })
 }

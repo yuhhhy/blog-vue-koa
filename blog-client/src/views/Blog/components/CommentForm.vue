@@ -30,7 +30,7 @@ const form = reactive({
   username: '一曝十寒',
   email: '281423846@qq.com',
   website: 'https://www.yuhhhy.cn',
-  content: '今天是2025年5月17日，周六。',
+  content: '今天是2025年5月20日，周二。',
 })
 // 表单校验规则、校验失败的ElMessage提示信息
 const rules = {

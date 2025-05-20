@@ -8,7 +8,7 @@ import request from "../utils/request.js"
 // 获取网站访问量
 export function apiGetWebsiteData() {
     return request({
-        url: '/api/website',
+        url: '/website',
         method: 'GET',
     })
 }
@@ -16,7 +16,7 @@ export function apiGetWebsiteData() {
 // 更新网站访问量
 export function apiUpdateWebsiteVisit() {
     return request({
-        url: '/api/website/visit',
+        url: '/website/visit',
         method: 'PUT',
     })
 }
@@ -24,7 +24,7 @@ export function apiUpdateWebsiteVisit() {
 // 更新网站浏览量
 export function apiUpdateWebsiteView() {
     return request({
-        url: '/api/website/view',
+        url: '/website/view',
         method: 'PUT',
     })
 }
@@ -32,7 +32,7 @@ export function apiUpdateWebsiteView() {
 // 更新网站最后更新时间
 export function apiUpdateWebsiteLastUpdate() {
     return request({
-        url: '/api/website/lastupdate',
+        url: '/website/lastupdate',
         method: 'PUT',
     })
 }

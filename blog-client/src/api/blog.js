@@ -8,7 +8,7 @@ import request from "../utils/request.js"
 // 获取博客列表
 export function apiGetBlogList() {
     return request({
-        url: '/api/blog/bloglist',
+        url: '/blog/bloglist',
         method: 'GET'
     })
 }
@@ -16,7 +16,7 @@ export function apiGetBlogList() {
 // 获取单个博客
 export function apiFetchBlogData(blogId) {
     return request({
-        url: `/api/blog/${blogId}`,
+        url: `/blog/${blogId}`,
         method: 'GET'
     })
 }
@@ -24,7 +24,7 @@ export function apiFetchBlogData(blogId) {
 // 通过标题获取博客
 export function apiGetBlogByTitle(title) {
     return request({
-        url: `/api/blog/title/${title}`,
+        url: `/blog/title/${title}`,
         method: 'GET'
     })
 }
@@ -32,7 +32,7 @@ export function apiGetBlogByTitle(title) {
 // 创建新博客
 export function apiCreateBlog(data) {
     return request({
-        url: '/api/blog',
+        url: '/blog',
         method: 'POST',
         data
     })
@@ -41,7 +41,7 @@ export function apiCreateBlog(data) {
 // 删除博客
 export function apiDeleteBlog(blogId) {
     return request({
-        url: `/api/blog/${blogId}`,
+        url: `/blog/${blogId}`,
         method: 'DELETE'
     })
 }
@@ -49,7 +49,7 @@ export function apiDeleteBlog(blogId) {
 // 删除所有博客
 export function apiDeleteAllBlogs() {
     return request({
-        url: '/api/blog',
+        url: '/blog',
         method: 'DELETE'
     })
 }
@@ -57,7 +57,7 @@ export function apiDeleteAllBlogs() {
 // 更新博客
 export function apiUpdateBlog(blogId, data) {
     return request({
-        url: `/api/blog/${blogId}`,
+        url: `/blog/${blogId}`,
         method: 'PUT',
         data
     })

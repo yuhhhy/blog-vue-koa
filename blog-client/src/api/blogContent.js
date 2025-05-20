@@ -8,7 +8,7 @@ import request from "../utils/request.js"
 // 创建博客内容
 export function apiCreateBlogContent(data) {
     return request({
-        url: '/api/blogcontent',
+        url: '/blogcontent',
         method: 'POST',
         data
     })
@@ -17,7 +17,7 @@ export function apiCreateBlogContent(data) {
 // 获取博客内容
 export function apiGetBlogContent(blogId) {
     return request({
-        url: `/api/blogcontent/${blogId}`,
+        url: `/blogcontent/${blogId}`,
         method: 'GET'
     })
 }
@@ -25,7 +25,7 @@ export function apiGetBlogContent(blogId) {
 // 删除所有博客内容
 export function apiDeleteAllBlogContent() {
     return request({
-        url: '/api/blogcontent',
+        url: '/blogcontent',
         method: 'DELETE'
     })
 }
@@ -33,7 +33,7 @@ export function apiDeleteAllBlogContent() {
 // 更新博客内容
 export function apiUpdateBlogContent(blogId, data) {
     return request({
-        url: `/api/blogcontent/${blogId}`,
+        url: `/blogcontent/${blogId}`,
         method: 'PUT',
         data
     })
@@ -42,7 +42,7 @@ export function apiUpdateBlogContent(blogId, data) {
 // 更新博客的浏览量
 export function apiUpdateBlogViewCount(blogId) {
     return request({
-        url: `/api/blogcontent/view/${blogId}`,
+        url: `/blogcontent/view/${blogId}`,
         method: 'PUT',
     })
 }
@@ -50,7 +50,7 @@ export function apiUpdateBlogViewCount(blogId) {
 // 更新博客的点赞数
 export function apiUpdateBlogLikeCount(blogId) {
     return request({
-        url: `/api/blogcontent/like/${blogId}`,
+        url: `/blogcontent/like/${blogId}`,
         method: 'PUT',
     })
 }
