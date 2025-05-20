@@ -2,7 +2,6 @@
 import Sidebar from '@/components/Sidebar/index.vue'
 import { ref, onMounted } from 'vue'
 import { apiGetBlogList } from '@/api/blog.js'
-import { apiUpdateWebsiteView } from '@/api/websiteData.js'
 
 const blogList = ref([])
 
@@ -14,7 +13,6 @@ async function getBlogList() {
 onMounted(() => {
     // 获取后台数据
     getBlogList()
-    apiUpdateWebsiteView()
 })
 </script>
 

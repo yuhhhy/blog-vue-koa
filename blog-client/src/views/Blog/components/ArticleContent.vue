@@ -1,8 +1,9 @@
 <script setup>
-defineProps(['htmlContent'])
 import Prism from 'prismjs'
 import 'prismjs/themes/prism.css'
 import { onUpdated } from 'vue'
+
+defineProps(['htmlContent'])
 
 onUpdated(() => {
     document.querySelectorAll('pre code').forEach((block) => {

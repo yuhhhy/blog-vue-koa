@@ -14,6 +14,7 @@ export function apiCreateVisitor(data) {
     })
 }
 
+// 获取访客列表
 export function apiGetVisitorList(params) {
     return request({
         url: '/visitor',

@@ -2,11 +2,10 @@
 import { ElButton } from 'element-plus'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import CommentForm from './CommentForm.vue'
-import CommentReply from './CommentReply.vue'
 import { getFormatDate } from '@/utils/date'
 import { apiGetComments } from '@/api/comment'
-
+import CommentForm from './CommentForm.vue'
+import CommentReply from './CommentReply.vue'
 
 const route = useRoute()
 const comments = ref([])

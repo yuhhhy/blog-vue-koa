@@ -1,12 +1,7 @@
 import axios from "axios";
 import cfg from '@/config/index.js'
-import router from '@/router/index.js'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from "@/stores/userStore";
-
-const REQUEST_ERROR = '请求失败，请稍后再试'
-const TOKEN_EXPIRED = '登录信息已过期，请重新登录'
-
+import { useUserStore } from "@/stores/userStore"
 
 // 判断当前环境变量是否开启mock
 const baseURL = cfg.mock ? cfg.mockApi : cfg.baseApi 
@@ -38,16 +33,9 @@ request.interceptors.response.use(
         // Axios响应体res，返回实际响应数据是res.data
         if (res.status >= 200 && res.status < 400) {
             return res.data
-        } else if (res.data.code === 401) {
-            // 表示token过期
-            ElMessage.error(TOKEN_EXPIRED)
-            setTimeout(() => {
-                router.push('/login') 
-            }, 1000)
-            return Promise.reject(TOKEN_EXPIRED)
         } else {
-            ElMessage.error(res.message || REQUEST_ERROR)
-            return Promise.reject(res.message || REQUEST_ERROR)
+            ElMessage.error('请求失败，请稍后再试')
+            return Promise.reject(res.data)
         }
     },
     e => Promise.reject(e)

@@ -15,11 +15,10 @@ export const getIp = (ctx) => {
     
     // 如果是本地测试，返回实际的局域网IP
     if (ip === '127.0.0.1' || ip === '::1') {
-        return '116.162.214.228'
+        return '119.39.54.72'
     }
     // 内网ip 192.168.238.43
-    // 公网ip 116.162.214.228
-
+    // 公网ip 119.39.54.72
     return ip
 }
 
@@ -28,10 +27,9 @@ export const parseIp = (ip) => {
     // 这里可以使用第三方库来解析IP地址
     // 例如：ip2region、geoip-lite等
     const query = new IP2Region({ disableIpv6: true })
-    console.log('ip' , ip);
-    
     const res = query.search(ip)
-    console.log('res', res)
+    
+    console.log('访客信息', res, 'ip:', ip)
     
     const { province, city, isp } = res
     return `${province} ${city} ${isp}` // 这里可以根据需要返回更多信息

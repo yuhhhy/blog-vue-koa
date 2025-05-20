@@ -37,6 +37,6 @@ app.use(serve(path.join(__dirname, '../public')))
 app.use(router.routes())
 app.use(router.allowedMethods())
 
-app.listen(3000, '0.0.0.0') // 禁用 IPv6
+app.listen(3000, '0.0.0.0') // 监听所有网络接口（0.0.0.0）
 
 console.log('Server is running on http://localhost:3000')

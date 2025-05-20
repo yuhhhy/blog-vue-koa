@@ -1,9 +1,7 @@
 <script setup>
 import Sidebar from '@/components/Sidebar/index.vue'
-import TagList from './components/TagList.vue';
-import { apiUpdateWebsiteView } from '@/api/websiteData.js'
-
-apiUpdateWebsiteView()
+import TagList from './components/TagList.vue'
+import Timeline from './components/Timeline.vue'
 </script>
 
 <template>
@@ -12,10 +10,9 @@ apiUpdateWebsiteView()
         <!-- 归档页面文章列表 -->
         <div class="archive-list">
             <!-- 归档页面标签列表 -->
-            <!-- <TagList :posts="posts"></TagList> -->
             <TagList></TagList>
-            <!-- 路由决定不同排序方式 -->
-            <RouterView></RouterView>
+            <!-- 归档页面时间线 -->
+            <Timeline></Timeline>
         </div>
         <!-- 归档页面侧边栏 -->
         <Sidebar></Sidebar>
