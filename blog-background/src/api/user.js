@@ -1,5 +1,10 @@
 import request from '@/utils/request.js'
 
+/**
+ * User API
+ * @returns {Promise}
+ */
+
 // 用户登录
 export function apiUserLogin(data) {
     return request({

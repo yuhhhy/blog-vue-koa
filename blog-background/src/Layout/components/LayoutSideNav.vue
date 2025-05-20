@@ -20,7 +20,16 @@ const siderNavItems = [
     },
     {
         title: '用户',
-        link: '/user'
+        children: [
+            {
+                title: '用户管理',
+                link: '/user/manage'
+            },
+            {
+                title: '访客记录',
+                link: '/user/record'
+            }
+        ]
     }
 ]
  

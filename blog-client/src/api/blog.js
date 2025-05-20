@@ -1,8 +1,10 @@
 import request from "../utils/request.js"
 
-/*
-* Blog API
-*/
+/**
+ * Blog API
+ * @returns {Promise}
+ */
+
 // 获取博客列表
 export function apiGetBlogList() {
     return request({

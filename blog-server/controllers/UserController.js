@@ -15,16 +15,22 @@ export const userLogin = async (ctx) => {
             code: 200,
             message: "登录成功",
             data: {
-                success: "true",
                 username: user.username,
                 userid: user.userId,
+                email: user.email,
+                role: user.role,
             }
         }
     }
     else {
-        ctx.status = 401
+        ctx.status = 200
         ctx.body = {
+            code: 401,
             message: '用户名或密码错误',
+            data: {
+                username: username,
+                userid: null,
+            }
         }
     }
 }

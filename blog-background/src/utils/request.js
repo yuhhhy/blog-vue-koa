@@ -46,8 +46,8 @@ request.interceptors.response.use(
             }, 1000)
             return Promise.reject(TOKEN_EXPIRED)
         } else {
-            ElMessage.error(message || REQUEST_ERROR)
-            return Promise.reject(message || REQUEST_ERROR)
+            ElMessage.error(res.message || REQUEST_ERROR)
+            return Promise.reject(res.message || REQUEST_ERROR)
         }
     },
     e => Promise.reject(e)

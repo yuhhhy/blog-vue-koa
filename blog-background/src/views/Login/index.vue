@@ -2,14 +2,11 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElInput, ElButton, ElForm, ElFormItem, ElMessage } from 'element-plus'
-import { apiUserLogin } from '@/api/userApi.js'
+import { apiUserLogin } from '@/api/user.js'
 import { useUserStore } from '@/stores/userStore.js'
 
 const router = useRouter()
-
 const fromRef = ref(null)
-
-// reactive 设置默认值
 const form = reactive({
   username: 'admin', // 用户名字段
   password: '123456'  // 密码字段
@@ -22,32 +19,26 @@ const rules = {
     { required: true, message: '请输入密码', trigger: 'blur' }
   ]
 }
-
-
 const userStore = useUserStore()
 
-const onLogin = () => {
 
+const onLogin = () => {
   // 点击登录时验证表单
   fromRef.value.validate(valid => { 
     if (!valid) {
       ElMessage.error('请输入正确的用户名和密码')
       return
     } else {
-      
     // 调用登录 api
     apiUserLogin(form)
       .then(res => {
         if (res.code === 200) {
-          
           // 对返回的用户数据及token存储到Pinia
           userStore.setUserData(res.data)
-
           // 登录成功后进行页面跳转
           router.push('/')
         }
       })
-      
     }
   })
 }

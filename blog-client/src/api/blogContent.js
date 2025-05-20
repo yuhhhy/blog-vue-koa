@@ -1,8 +1,10 @@
 import request from "../utils/request.js"
 
-/*
-* Blog Content API
-*/
+/**
+ * Blog Content API
+ * @returns {Promise}
+ */
+
 // 创建博客内容
 export function apiCreateBlogContent(data) {
     return request({

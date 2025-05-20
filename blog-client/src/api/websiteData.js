@@ -1,8 +1,10 @@
 import request from "../utils/request.js"
 
-/*
-* Website Data API
-*/
+/**
+ * Website Data API
+ * @returns {Promise}
+ */
+
 // 获取网站访问量
 export function apiGetWebsiteData() {
     return request({

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import { apiGetUserList, apiDeleteUser, apiUpdateUser } from '@/api/userApi.js'
+import { apiGetUserList, apiDeleteUser, apiUpdateUser } from '@/api/user.js'
 import { ElMessageBox } from 'element-plus'
 
 const tableData = ref([])
@@ -11,7 +11,6 @@ const form = reactive({
   password: '',
   email: ''
 })
-const formLabelWidth = 
 
 onMounted(() => {
     apiGetUserList().then((res) => {
@@ -60,10 +59,8 @@ function handleConfirm() {
       confirmButtonText: '确定',
       type: 'success'
     })
-    const index = tableData.value.findIndex(item => item.userId === form.userId)
-    tableData.value[index].username = form.username
-    tableData.value[index].password = form.password
-    tableData.value[index].email = form.email
+    // 更新表格数据
+    apiGetUserList().then(res => tableData.value = res)
   }).catch((err) => {
     console.error(err)
   })
@@ -86,6 +83,9 @@ function handleConfirm() {
       prop="email"
       label="邮箱">
     </el-table-column>
+
+    <slot></slot>
+
     <el-table-column
       prop="role"
       label="角色">

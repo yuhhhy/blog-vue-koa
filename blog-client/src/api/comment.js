@@ -1,8 +1,10 @@
 import request from "../utils/request.js"
 
-/*
-* Comment API
-*/
+/**
+ * Comment API
+ * @returns {Promise}
+ */
+
 // 获取博客所有评论
 export function apiGetComments(blogId) {
     return request({
