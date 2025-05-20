@@ -4,7 +4,7 @@ import { createBlogContent, getBlogContent, deleteAllBlogContents, UpdateBlogCon
 import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate } from '../controllers/WebsiteDataController.js'
 import { getComments, createComment, deleteComment, deleteAllComments } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
-import { createVisitor } from '../controllers/VisitorController.js'
+import { createVisitor, getVisitorList } from '../controllers/VisitorController.js'
 
 const router = new Router({ prefix: '/api' })
 
@@ -114,5 +114,7 @@ router.put('/user/:id', updateUser)
 // 新建访客记录
 router.post('/visitor', createVisitor)
 
+// 获取访客列表
+router.get('/visitor', getVisitorList)
 
 export default router

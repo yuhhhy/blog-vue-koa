@@ -13,3 +13,14 @@ export function apiCreateVisitor(data) {
         data
     })
 }
+
+export function apiGetVisitorList(params) {
+    return request({
+        url: '/visitor',
+        method: 'get',
+        params: {
+            page: params?.page || 1,
+            limit: params?.limit || 10
+        }
+    })
+}

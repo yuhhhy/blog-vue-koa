@@ -37,3 +37,30 @@ export const createVisitor = async (ctx) => {
         ctx.body = { message: 'Visitor created successfully', visitor }
     }
 }
+
+// 获取访客列表
+// 分页查询
+export const getVisitorList = async (ctx) => {
+    const { page = 1, limit = 10 } = ctx.query
+    const skip = (page - 1) * limit
+
+    try {
+        const visitors = await Visitor.find()
+            .skip(skip)
+            .limit(limit)
+            .sort({ visitedAt: -1 }) // 按照创建时间降序排序
+        const totalVisitors = await Visitor.countDocuments()
+
+        ctx.status = 200
+        ctx.body = {
+            message: 'Visitor list retrieved successfully',
+            visitors,
+            total: totalVisitors,
+            page: parseInt(page),
+            limit: parseInt(limit)
+        }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: 'Error retrieving visitor list', error }
+    }
+}

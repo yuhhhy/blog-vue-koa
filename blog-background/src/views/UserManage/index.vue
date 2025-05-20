@@ -83,9 +83,6 @@ function handleConfirm() {
       prop="email"
       label="邮箱">
     </el-table-column>
-
-    <slot></slot>
-
     <el-table-column
       prop="role"
       label="角色">

@@ -7,9 +7,9 @@ const role = 'client';
 const page = 'home';
 
 onMounted(() => {
-  apiCreateVisitor({ role, page }).then(res => 
-    console.log('response', res)
-  )
+  // apiCreateVisitor({ role, page }).then(res => 
+  //   console.log('response', res)
+  // )
 })
 
 
