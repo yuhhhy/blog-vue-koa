@@ -32,10 +32,11 @@ app.use(bodyParser())
 // 代理静态资源目录，让前端可以访问到public目录下的文件
 app.use(serve(path.join(__dirname, '../public')))
 
+
 // 注册路由
 app.use(router.routes())
 app.use(router.allowedMethods())
 
-app.listen(3000)
+app.listen(3000, '0.0.0.0') // 禁用 IPv6
 
 console.log('Server is running on http://localhost:3000')
