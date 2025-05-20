@@ -1,5 +1,5 @@
 <script setup>
-import Vditor from '@/components/Vditor/index.vue'
+import Vditor from './components/Vditor.vue'
 import ArticleForm from './components/ArticleForm.vue'
 </script>
 

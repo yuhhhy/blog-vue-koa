@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { apiGetVisitorList } from '@/api/visitor.js'
+import { ElMessage } from 'element-plus'
+import { apiGetVisitorList, apiDeleteVisitor } from '@/api/visitor.js'
 
 const loading = ref(false)
 const visitorList = ref([])
@@ -39,6 +40,13 @@ const handleSizeChange = (val) => {
 const handleCurrentChange = (val) => {
   queryParams.value.page = val
   getList()
+}
+
+// 删除访客记录
+const handleDelete = async (index, row) => {
+  const res = await apiDeleteVisitor(row._id)
+  getList()
+  ElMessage.success(res.message)
 }
 </script>
 
@@ -79,9 +87,6 @@ const handleCurrentChange = (val) => {
       <template #default="scope">
         <el-button type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
           删除
-        </el-button>
-        <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">
-          编辑
         </el-button>
       </template>
     </el-table-column>

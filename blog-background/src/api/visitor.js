@@ -25,3 +25,11 @@ export function apiGetVisitorList(params) {
         }
     })
 }
+
+// 删除访客记录
+export function apiDeleteVisitor(id) {
+    return request({
+        url: `/visitor/${id}`,
+        method: 'delete'
+    })
+}

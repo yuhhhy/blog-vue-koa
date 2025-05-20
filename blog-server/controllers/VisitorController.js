@@ -38,8 +38,7 @@ export const createVisitor = async (ctx) => {
     }
 }
 
-// 获取访客列表
-// 分页查询
+// 获取访客列表 分页查询
 export const getVisitorList = async (ctx) => {
     const { page = 1, limit = 10 } = ctx.query
     const skip = (page - 1) * limit
@@ -62,5 +61,16 @@ export const getVisitorList = async (ctx) => {
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: 'Error retrieving visitor list', error }
+    }
+}
+
+// 删除访客记录
+export const deleteVisitor = async (ctx) => {
+    const { id } = ctx.request.params
+    const deletedVisitor = await Visitor.findByIdAndDelete(id)
+    ctx.status = 200
+    ctx.body = {
+        message: '访客记录删除成功',
+        deletedVisitor
     }
 }
