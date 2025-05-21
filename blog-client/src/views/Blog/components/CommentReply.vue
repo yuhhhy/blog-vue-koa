@@ -3,12 +3,17 @@ import CommentForm from './CommentForm.vue'
 import { getFormatDate } from '@/utils/date'
 
 defineProps(['comment'])
+const emit = defineEmits(['replyUpdate'])
 
 // 显示/隐藏回复表单
 const toggleReplyForm = (comment) => {
   comment.showForm = !comment.showForm
 }
 
+// updateComments 回调
+const updateComments = () => {
+    emit('replyUpdate')
+}
 </script>
 
 <template>
@@ -38,9 +43,18 @@ const toggleReplyForm = (comment) => {
             {{ reply.content }}
         </div>
         <!-- 二级评论回复表单 -->
-        <CommentForm v-if="reply.showForm" :comments="reply.replies" :hasParent="reply.hasParent" :parentId="reply.id"></CommentForm>
+        <CommentForm 
+          v-if="reply.showForm" 
+          :comments="reply.replies" 
+          :hasParent="reply.hasParent" 
+          :parentId="reply.id"
+          @updateComments="updateComments"></CommentForm>
         <!-- 递归地显示更深层级回复 -->
-        <CommentReply v-if="reply.replies.length > 0" :comment="reply" />
+        <CommentReply 
+          v-if="reply.replies.length > 0" 
+          :comment="reply"
+          @replyUpdate="updateComments"  
+          />
     </div>
 </div>
 </template>

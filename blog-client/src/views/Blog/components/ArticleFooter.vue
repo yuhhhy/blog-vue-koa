@@ -19,14 +19,26 @@ const toggleCommentForm = () => {
 // 显示/隐藏回复表单
 const toggleReplyForm = (comment) => {
   comment.showForm = !comment.showForm
-  // 隐藏回复表单
-  // comment.showForm = false
 }
 
-onMounted(()=>{
+// 获取评论
+const getComments = () => {
   apiGetComments(route.params.id || '-1').then(res => {
     comments.value = res
   })
+}
+
+// 自定义updateComments事件回调
+const updateComments = () => {
+  getComments()
+}
+// 自定义replyUpdate事件回调
+const replyUpdate = () => {
+  getComments()
+}
+
+onMounted(()=>{
+  getComments()
 })
 
 </script>
@@ -36,7 +48,13 @@ onMounted(()=>{
   <!-- 顶部评论表单 -->
   <span class="top-form" @click="toggleCommentForm">发表评论</span>
   <!-- parentId = '-1' 表示没有 parent 评论 -->
-  <CommentForm v-show="formState" :comments="comments" :hasParent="false" :parentId="'-1'"></CommentForm>
+  <CommentForm 
+    v-show="formState" 
+    :comments="comments" 
+    :hasParent="false" 
+    :parentId="'-1'"
+    @updateComments="updateComments">
+  </CommentForm>
   <!-- 一级评论列表 -->
   <div class="comment-list">
     <!-- 遍历所有一级评论 -->
@@ -64,9 +82,17 @@ onMounted(()=>{
         {{ comment.content }}
       </div>
       <!-- 一级评论回复表单 -->
-      <CommentForm v-if="comment.showForm" :comments="comment.replies" :hasParent="true" :parentId="comment.id"></CommentForm>
+      <CommentForm 
+        v-if="comment.showForm" 
+        :comments="comment.replies" 
+        :hasParent="true" 
+        :parentId="comment.id"
+        @updateComments="updateComments">
+      </CommentForm>
       <!-- 非一级评论组件 -->
-      <CommentReply :comment="comment">
+      <CommentReply 
+        :comment="comment"
+        @replyUpdate="replyUpdate">
       </CommentReply>
     </div>
   </div>

@@ -34,6 +34,21 @@ export const getBlogContent = async (ctx) => {
     ctx.body = newBlogContent
 }
 
+// 获取所有博客内容
+export const getBlogContentList = async (ctx) => {
+    const blogContents = await BlogContent.find({})
+    ctx.status = 200
+    ctx.body = blogContents
+}
+
+// 删除一条博客内容
+export const deleteBlogContent = async (ctx) => {
+    const { id } = ctx.request.params
+    const deletedBlogContent = await BlogContent.findOneAndDelete({ id })
+    ctx.status = 200
+    ctx.body = deletedBlogContent
+}
+
 // 删除所有博客内容
 export const deleteAllBlogContents = async (ctx) => {
     try {
@@ -66,7 +81,6 @@ export const UpdateBlogContent = async (ctx) => {
         ctx.body = { message: '博客内容更新失败', error: error.message }
     }
 }
-
 
 // 更新博客的浏览量
 export const updateBlogViewCount = async (ctx) => {

@@ -5,6 +5,7 @@ import { ElMessage } from 'element-plus'
 import { apiCreateComment } from '@/api/comment.js'
 import { getGravatarHash, getGravatar } from '@/utils/avatar';
 
+const emit = defineEmits(['updateComments'])
 const route = useRoute()
 const props = defineProps({
   // 这一评论的回复数组
@@ -92,6 +93,9 @@ const doSubmit = async () => {
   form.content = ''
   // ElMessage提示信息
   ElMessage.success('评论成功！')
+  
+  // 触发更新评论
+  emit('updateComments')
 }
 
 async function getAvatar(email) {

@@ -1,10 +1,11 @@
 import Router from '@koa/router'
 import { getBlogList, getBlogById, getBlogByTitle, createBlog, deleteBlog, deleteAllBlogs, updateBlog } from '../controllers/BlogController.js'
-import { createBlogContent, getBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
+import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate } from '../controllers/WebsiteDataController.js'
 import { getComments, createComment, deleteComment, deleteAllComments } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
+import { uploadImage } from '../controllers/UploadController.js'
 
 const router = new Router({ prefix: '/api' })
 
@@ -38,8 +39,14 @@ router.put('/blog/:id', updateBlog)
 // 创建博客内容
 router.post('/blogcontent', createBlogContent)
 
+// 获取所有博客内容
+router.get('/blogcontent', getBlogContentList)
+
 // 获取博客内容
 router.get('/blogcontent/:id', getBlogContent)
+
+// 删除一条博客内容
+router.delete('/blogcontent/:id', deleteBlogContent)
 
 // 删除所有博客内容
 router.delete('/blogcontent', deleteAllBlogContents)
@@ -119,5 +126,12 @@ router.get('/visitor', getVisitorList)
 
 // 删除访客记录
 router.delete('/visitor/:id', deleteVisitor)
+
+/**
+ * Upload API
+ */
+// 上传单张图片
+router.post('/upload/image', uploadImage)
+
 
 export default router

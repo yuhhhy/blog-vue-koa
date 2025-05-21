@@ -61,6 +61,15 @@ const handleSubmit = () => {
       })
   })
 }
+
+const uploadSuccess = (file) => {
+  ElMessage.success("封面上传成功")
+  form.coverImgUploaded = true
+}
+
+const uploadError = (file) => {
+  ElMessage.error("封面上传失败")
+}
 </script>
 
 <template>
@@ -107,9 +116,11 @@ const handleSubmit = () => {
       <el-popover placement="top" width="173">
         <template #reference><el-button>上传文章封面</el-button></template>
         <el-upload
-          action="http://www.example.com"
+          action="http://localhost:3000/api/upload/image"
           list-type="picture-card"
           :limit="1"
+          :on-success="uploadSuccess"
+          :on-error="uploadError"
         >
           <div class="el-upload__text">点击上传</div>
         </el-upload>
@@ -123,7 +134,7 @@ const handleSubmit = () => {
       @click="handleSubmit">
       提交
     </el-button>
- </el-form>
+  </el-form>
 </template>
 
 <style scoped>

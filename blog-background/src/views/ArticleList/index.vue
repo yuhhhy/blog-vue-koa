@@ -1,6 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { apiGetBlogList, apiDeleteBlog, apiUpdateBlog } from '@/api/blog.js'
+import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } from '@/api/blogContent.js'
 import { ElMessageBox } from 'element-plus'
 
 const tableData = ref()
@@ -13,11 +14,12 @@ const form = reactive({
   link: ''
 })
 
-onMounted(() => {
-  apiGetBlogList().then((res) => {
-    tableData.value = res
-  }).catch((err) => {
-    console.error(err)
+onMounted(async () => {
+  const res = await apiGetBlogList()
+  const resContent = await apiGetBlogContentList()
+  
+  tableData.value = res.map((item, index) => {
+    return { ...item, ...resContent[index] }
   })
 })
 
@@ -28,7 +30,8 @@ function handleDelete(index, row) {
     type: 'warning'
   }).then(
     async () => {
-    await apiDeleteBlog(row.id)
+      await apiDeleteBlog(row.id)
+      await apiDeleteBlogContent(row.id)
     tableData.value.splice(index, 1)
     ElMessageBox.alert('删除成功', '提示', {
       confirmButtonText: '确定',
@@ -79,17 +82,17 @@ function handleConfirm() {
     <el-table-column
       prop="date"
       label="日期"
-      width="200">
+      width="160">
     </el-table-column>
     <el-table-column
       prop="title"
       label="标题"
-      width="500">
+      width="450">
     </el-table-column>
     <el-table-column
       prop="tags"
       label="标签"
-      width="400">
+      width="300">
       <template #default="scope">
         <el-tag
           v-for="tag in scope.row.tags"
@@ -100,6 +103,16 @@ function handleConfirm() {
           >{{ tag }}</el-tag
         >
       </template>
+    </el-table-column>
+    <el-table-column
+      prop="viewCount"
+      label="浏览量"
+      width="120">
+    </el-table-column>
+    <el-table-column
+      prop="likeCount"
+      label="点赞量"
+      width="120">
     </el-table-column>
     <el-table-column fixed="right" label="管理">
       <template #default="scope">
