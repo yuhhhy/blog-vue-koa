@@ -29,7 +29,7 @@ export const updateWebsiteView = async (ctx) => {
 
 // 更新网站最后更新时间
 export const updateWebsiteLastUpdate = async (ctx) => {
-    const lastUpdate = await WebsiteData.findOneAndUpdate({}, { $set: { lastUpdate: new Date() } }, { new: true, upsert: true })
+    const lastUpdate = await WebsiteData.findOneAndUpdate({}, { $set: { updateTime: new Date() } }, { new: true, upsert: true })
     ctx.status = 200
     ctx.body = lastUpdate
 }

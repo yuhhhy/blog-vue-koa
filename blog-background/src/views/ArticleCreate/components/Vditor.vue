@@ -5,6 +5,7 @@ import "~/vditor/src/assets/less/index.less"
 
 const vditorEl = ref()
 const emit = defineEmits(['vblur'])
+const props = defineProps(['content'])
 
 onMounted(() => {
     vditorEl.value = new Vditor("vditorEl", {
@@ -16,11 +17,18 @@ onMounted(() => {
         },
         // 渲染完成后回调
         after: () => {
+            // 传入的content或空值
+            // 不使用porps，改成Store！！！！！！！！！！！！！！！！！！！！
+            if (props.content) {
+                vditorEl.value.setValue(props.content)
+            }
             const value = vditorEl.value.getValue()
             emit('vblur', value)
         }
     })
 })
+
+
 </script>
 
 <template>

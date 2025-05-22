@@ -62,7 +62,7 @@ export const createBlog = async (ctx) => {
 export const deleteBlog = async (ctx) => {
     const { id } = ctx.request.params
     try {
-        await Blog.findByIdAndDelete(id)
+        await Blog.findOneAndDelete({ id })
         ctx.status = 200
         ctx.body = { message: '博客删除成功' }
     } catch (error) {

@@ -31,7 +31,7 @@ onMounted(() => {
 
                         <div class="blog-title">{{ blog.title }}</div>
                         <div class="blog-time-tags">
-                            <span class="blog-time">{{ blog.date.substring(0, 10) }}</span>
+                            <span class="blog-time">{{ blog.createTime.substring(0, 10) }}</span>
                             <span class="blog-tag" v-for="tag in blog.tags">{{ tag }}</span>
                         </div>
                     </div>

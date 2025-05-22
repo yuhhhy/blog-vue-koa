@@ -1,0 +1,14 @@
+import request from "@/utils/request.js"
+
+/**
+ * Website Data API
+ * @returns {Promise}
+ */
+
+// 更新网站最后更新时间
+export function apiUpdateWebsiteLastUpdate() {
+    return request({
+        url: '/website/lastupdate',
+        method: 'PUT',
+    })
+}

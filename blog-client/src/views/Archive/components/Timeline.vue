@@ -12,7 +12,7 @@ const filterPostsByTag = () => {
   // 参数为日期，匹配精确到月份
   if(route.params.tagName.match(/^\d{4}-\d{2}$/)){
     postsByTag.value = postsByDate.value.filter(post => {
-      return post.date.startsWith(route.params.tagName)
+      return post.createTime.startsWith(route.params.tagName)
     })
   }else{ // 参数为Tag，匹配Tag
     postsByTag.value = postsByDate.value.filter(post => {
@@ -46,7 +46,7 @@ watch(() => route.params.tagName, () => {
       <el-timeline-item 
         v-if="route.params.tagName && postsByTag.length" 
         v-for="item in postsByTag" 
-        :timestamp="item.date" 
+        :timestamp="item.createTime.substring(0, 10)" 
         type="primary" 
         class="timeline-item"
       >
@@ -62,7 +62,7 @@ watch(() => route.params.tagName, () => {
       <el-timeline-item 
         v-else 
         v-for="item in postsByDate" 
-        :timestamp="item.date" 
+        :timestamp="item.createTime.substring(0, 10)" 
         type="primary" 
         class="timeline-item"
       >

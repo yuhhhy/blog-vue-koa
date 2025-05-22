@@ -18,7 +18,7 @@ export const createVisitor = async (ctx) => {
         ip,
         browser,
         page,
-        visitedAt: {
+        visitTime: {
             $gte: new Date(today) // 如果今天访问过，则符合查找条件
         }
     })
@@ -47,7 +47,7 @@ export const getVisitorList = async (ctx) => {
         const visitors = await Visitor.find()
             .skip(skip)
             .limit(limit)
-            .sort({ visitedAt: -1 }) // 按照创建时间降序排序
+            .sort({ visitTime: -1 }) // 按照创建时间降序排序
         const totalVisitors = await Visitor.countDocuments()
 
         ctx.status = 200

@@ -10,6 +10,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiGetBlogContent, apiUpdateBlogViewCount } from '@/api/blogContent.js'
 import { apiUpdateWebsiteView } from '@/api/websiteData.js'
+import { getFormatDate } from '@/utils/date.js'
 
 const route = useRoute()
 let htmlContent = ref('') // html格式文章内容
@@ -67,7 +68,7 @@ onMounted(() => {
             <!-- 相关信息 -->
             <div class="blog-title">{{ blogData.title }}</div>
             <div class="blog-info">
-                <div class="blog-date">{{ blogData.date }}</div>
+                <div class="blog-date">{{ getFormatDate(blogData.createTime) }}</div>
                 <div class="blog-author">作者 {{ blogData.author }}</div>
                 <div class="blog-word-count">字数 {{ blogData.wordCount }}</div>
             </div>

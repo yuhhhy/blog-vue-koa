@@ -20,8 +20,9 @@ const getList = async () => {
     const res = await apiGetVisitorList(queryParams.value)
     visitorList.value = res.visitors
     visitorList.value.forEach((item) => {
-      item.visitedAt = new Date(item.visitedAt).toLocaleString()
+      item.visitTime = new Date(item.visitTime).toLocaleString()
     })
+    
   } catch (error) {
     console.error('获取访客列表失败:', error)
   } finally {
@@ -53,7 +54,7 @@ const handleDelete = async (index, row) => {
 <template>
   <el-table :data="visitorList" v-loading="loading" stripe>
     <el-table-column
-      prop="visitedAt"
+      prop="visitTime"
       label="访问时间">
     </el-table-column>
     <el-table-column

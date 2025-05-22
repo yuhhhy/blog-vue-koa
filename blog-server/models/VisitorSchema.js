@@ -7,7 +7,7 @@ const visitorSchema = new mongoose.Schema({
     browser: { type: String, comment: '访问设备' },
     page: { type: String, comment: '访问页面' },
     viewNum: { type: Number, default: 1, comment: '访问次数' },
-    visitedAt: { type: Date, default: Date.now },
+    visitTime: { type: Date, default: Date.now },
 })
 
 export const Visitor = mongoose.model("Visitor", visitorSchema)

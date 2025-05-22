@@ -7,7 +7,7 @@ const runTime = ref(0) // 网站运行天数
 const totalPosts = ref(0) // 网站文章总数
 const websiteVisits = ref(0) // 网站访问量
 const websiteViews = ref(0) // 网站浏览量
-const lastUpdate = ref('') // 最后更新时间
+const updateTime = ref('') // 最后更新时间
 
 function getrunTime(startTime) {
     let date1 = new Date(startTime)
@@ -24,7 +24,7 @@ async function getWebsiteData() {
     const websitedata = await apiGetWebsiteData() // 获取网站数据
     websiteVisits.value = websitedata.visit
     websiteViews.value = websitedata.view
-    lastUpdate.value = websitedata.lastUpdate
+    updateTime.value = websitedata.updateTime
 }
 
 // 执行函数，初始化网站数据
@@ -55,7 +55,7 @@ getWebsiteData()
         <span class="stat-label">浏览量</span>
       </div>
     </div>
-    <div class="last-updated">最后更新: {{ lastUpdate.slice(0,10) }}</div>
+    <div class="last-updated">最后更新: {{ updateTime.slice(0,10) }}</div>
   </div>
 </template>
 

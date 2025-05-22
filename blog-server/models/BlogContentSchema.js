@@ -6,7 +6,6 @@ export const BlogContentSchema = new mongoose.Schema({
     title: { type: String, required: true },
     author: { type: String, required: true },
     coverImage: { type: String, required: true },
-    date: { type: Date, default: Date.now },
     createTime: { type: Date, default: Date.now },
     updateTime: { type: Date, default: Date.now },
     tags: { type: [String], default: [] },

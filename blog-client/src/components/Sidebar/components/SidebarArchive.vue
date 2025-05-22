@@ -17,11 +17,11 @@ onMounted(async () => {
         
         // 按月份分组
         postsDividedByMonth.value = posts.reduce((acc, post) => {
-            const date = post.date.split('-').slice(0, 2).join('-')
-            if (!acc[date]) {
-                acc[date] = []
+            const createTime = post.createTime.split('-').slice(0, 2).join('-')
+            if (!acc[createTime]) {
+                acc[createTime] = []
             }
-            acc[date].push(post)
+            acc[createTime].push(post)
             return acc
         }, {})
     })
@@ -32,12 +32,12 @@ onMounted(async () => {
     <div class="sidebar-archive">
         <div class="sidebar-archive-title">归档目录</div>
         <RouterLink 
-            v-for="(posts, date) in postsDividedByMonth" 
-            :key="date" 
-            :to="`/archive/${date}`"
+            v-for="(posts, createTime) in postsDividedByMonth" 
+            :key="createTime" 
+            :to="`/archive/${createTime}`"
         >
-            <div class="archive-month" :class="{ active: date === activeMonth }">
-                <div class="date">{{ date.split('-')[0] }}年 {{ date.split('-')[1] }}月</div>
+            <div class="archive-month" :class="{ active: createTime === activeMonth }">
+                <div class="createTime">{{ createTime.split('-')[0] }}年 {{ createTime.split('-')[1] }}月</div>
                 <div class="number">{{ posts.length }}篇</div>
             </div>
         </RouterLink>
