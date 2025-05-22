@@ -62,11 +62,14 @@ const handleSubmit = () => {
   })
 }
 
+// 图片文件上传成功，返回文件数据
 const uploadSuccess = (file) => {
+  form.coverImg = '/images/' + file.filename
   ElMessage.success("封面上传成功")
   form.coverImgUploaded = true
 }
 
+// 图片文件上传失败
 const uploadError = (file) => {
   ElMessage.error("封面上传失败")
 }

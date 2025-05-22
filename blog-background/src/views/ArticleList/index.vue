@@ -47,11 +47,7 @@ function handleEdit(index, row) {
   form.coverImage = row.coverImage
   form.date = row.date
   form.tags = row.tags
-    form.link = row.link
-    console.log(row.tags)
-    console.log('form.tags')
-  console.log(form.tags);
-    
+  form.link = row.link  
 }
 
 function handleConfirm() {

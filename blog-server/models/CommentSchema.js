@@ -9,7 +9,7 @@ const CommentSchema = new mongoose.Schema({
     email: { type: String, required: true },
     website: { type: String, required: false },
     content: { type: String, required: true },
-    createTime: { type: Date, required: true },
+    createTime: { type: Date, default: Date.now },
     showForm: { type: Boolean, required: true }, // 是否显示回复表单
     hasParent : { type: Boolean, required: true }, // 是否是有父评论
     replies: { type: [String], required: true } // 回复的评论 ID 数组

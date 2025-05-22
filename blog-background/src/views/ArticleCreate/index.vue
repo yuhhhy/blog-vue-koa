@@ -1,42 +1,71 @@
 <script setup>
 import Vditor from './components/Vditor.vue'
 import ArticleForm from './components/ArticleForm.vue'
-import { ref } from 'vue'
+import countWords from '@/utils/wordCount.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { apiCreateBlog } from '@/api/blog.js'
 import { apiCreateBlogContent } from '@/api/blogContent.js'
 
-const submitData = ref()
 
-const blurHandler = (data) => {
-    submitData.value = { ...submitData.value, content: data }
+// 提交数据
+let blog = {}
+
+const blurHandler = (content) => {
+    blog = { ...blog, content }
 }
 
-const submitHandler = async (datas) => {
-    submitData.value = { ...submitData.value, ...datas }
-    if (!submitData.value.content || submitData.value.content === '\n') {
+// 处理用户的确定提交
+const submitHandler = (formData) => {
+    // 文章内容不能为空
+    if (!blog.content || blog.content === '\n') {
         ElMessage.error('文章内容不能为空')
-    } else {
-        console.log('submitData', submitData.value)
-        // 创建时间
-        const dateNow = new Date()
-
-        // 创建博客和博客内容
-        // const res = await apiCreateBlog({
-        //     id: 1,
-        //     title: submitData.value.title,
-        //     coverImage: '123',
-        //     date: dateNow,
-        //     tags: submitData.value.tags,
-        //     link: submitData.value.link
-        // })
-        
-        ElMessageBox.alert('提交成功', '提示', {
-        confirmButtonText: '确定',
-        type: 'success'
-      })
+        return
     }
+
+    blog = { ...blog, ...formData }
+    createBlogAndBlogContent()
 }
+
+// 创建博客和博客内容
+const createBlogAndBlogContent = async () => {
+
+    // 创建时间
+    blog.date = new Date()
+    // 创建id
+    blog.id = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 4)}`
+    // 创建博客字数
+    blog.wordCount = countWords(blog.content)
+
+    await apiCreateBlog({
+        id: blog.id,
+        date: blog.date,
+        createTime: blog.date,
+        title: blog.title,
+        coverImage: blog.coverImg,
+        tags: blog.tags,
+        link: `/blog/${blog.id}`
+    })
+
+    await apiCreateBlogContent({
+        id: blog.id,
+        title: blog.title,
+        author: blog.author,
+        coverImage: blog.coverImg,
+        date: blog.date,
+        createTime: blog.date,
+        tags: blog.tags,
+        content: blog.content,
+        wordCount: blog.wordCount,
+        viewCount: 0,
+        likeCount: 0
+    })
+    
+    ElMessageBox.alert('提交成功', '提示', {
+    confirmButtonText: '确定',
+    type: 'success'
+    })
+}
+
 </script>
 
 <template>
