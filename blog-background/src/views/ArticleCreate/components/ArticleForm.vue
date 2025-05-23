@@ -45,7 +45,6 @@ const handleSubmit = () => {
       ElMessage.error('请上传封面图片')
       return
     }
-
     // 验证通过，显示确认对话框
     ElMessageBox.confirm('确认后写入内容会清空，确定提交文章吗？', '提示', {
       confirmButtonText: '确定',
