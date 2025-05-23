@@ -67,10 +67,10 @@ export const UpdateBlogContent = async (ctx) => {
     try {
         const blogContent = await BlogContent.findOne({ id: id })
         blogContent.author = ctx.request.body.author || blogContent.author
-        blogContent.coverImage = ctx.request.body.coverImage || blogContent.coverImage
-        blogContent.date = ctx.request.body.date || blogContent.date
+        blogContent.title = ctx.request.body.title || blogContent.title
         blogContent.tags = ctx.request.body.tags || blogContent.tags
         blogContent.content = ctx.request.body.content || blogContent.content
+        blogContent.updateTime = ctx.request.body.updateTime || blogContent.updateTime
         blogContent.wordCount = ctx.request.body.wordCount || blogContent.wordCount
         
         await blogContent.save()

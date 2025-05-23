@@ -5,21 +5,27 @@ import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } fro
 import { ElMessageBox } from 'element-plus'
 import { getFormatDate } from '@/utils/date.js'
 import { apiUpdateWebsiteLastUpdate } from '@/api/websiteData.js'
+import countWord from '@/utils/wordCount.js'
 import Vditor from '@/views/ArticleCreate/components/Vditor.vue'
 
 const tableData = ref()
 const dialogFormVisible = ref(false)
 const form = reactive({
+  id: '',
   author: '',
   title: '',
   tags: [],
   content: ''
 })
 
+
 onMounted(() => {
   getBlogs()
 })
 
+function blurHandler(content) {
+  form.content = content
+}
 
 // 获取数据
 async function getBlogs() {
@@ -61,6 +67,7 @@ function handleDelete(index, row) {
 // 编辑文章信息前填入默认表单
 function handleEdit(index, row) {
   dialogFormVisible.value = true
+  form.id = row.id
   form.author = row.author
   form.title = row.title
   form.tags = row.tags
@@ -78,7 +85,7 @@ function handleConfirm() {
     return
   }
   // 发送更改
-  UpdateBlog()
+  UpdateBlog(form.id)
 
   // 更新表格数据
   getBlogs()
@@ -92,7 +99,25 @@ function handleConfirm() {
 
 
 // 更改函数
-function UpdateBlog() {
+async function UpdateBlog(id) {
+  const updateTime = new Date()
+
+  await apiUpdateBlog({
+    id,
+    title: form.title,
+    tags: form.tags,
+    updateTime
+  })
+  
+  await apiUpdateBlogContent({
+    id,
+    author: form.author,
+    title: form.title,
+    tags: form.tags,
+    content: form.content,
+    wordCount: countWord(form.content),
+    updateTime
+  })
 
   ElMessageBox.alert('修改成功', '提示', {
     confirmButtonText: '确定',
@@ -164,7 +189,7 @@ function UpdateBlog() {
       </el-form-item>
     </el-form>
     <!-- 文本编辑器 -->
-    <Vditor :content="form.content"></Vditor>
+    <Vditor :content="form.content" @vblur="blurHandler"></Vditor>
 
     <template #footer>
       <div class="dialog-footer">

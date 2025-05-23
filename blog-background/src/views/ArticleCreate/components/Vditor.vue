@@ -36,8 +36,6 @@ onMounted(() => {
             // 如果是新建文章界面
             if (!props.content) {
                 articleStore.setCreateArticle(value)
-            } else {
-                vditorEl.value.setValue(props.content)
             }
             // 触发自定义 blur 事件
             emit('vblur', value)
@@ -72,6 +70,9 @@ onUnmounted(() => {
         clearInterval(timer)
     }
 })
+
+
+
 </script>
 
 <template>

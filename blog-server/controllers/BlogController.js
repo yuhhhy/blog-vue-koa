@@ -89,10 +89,9 @@ export const updateBlog = async (ctx) => {
     try {
         const existedBlog = await Blog.findOne({ id: id })
         // 更新博客内容
-        existedBlog.coverImage = ctx.request.body.coverImage || existedBlog.coverImage
-        existedBlog.date = ctx.request.body.date || existedBlog.date
+        existedBlog.title = ctx.request.body.title || existedBlog.title
         existedBlog.tags = ctx.request.body.tags || existedBlog.tags
-        existedBlog.link = ctx.request.body.link || existedBlog.link
+        existedBlog.updateTime = ctx.request.body.updateTime || existedBlog.updateTime
 
         await existedBlog.save()
         ctx.status = 200

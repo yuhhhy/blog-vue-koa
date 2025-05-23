@@ -25,7 +25,7 @@ export function apiCreateBlogContent(data) {
 // 更新博客内容
 export function apiUpdateBlogContent(data) {
     return request({
-        url: `/blogcontent/${data.blogId}`,
+        url: `/blogcontent/${data.id}`,
         method: 'PUT',
         data
     })
