@@ -7,10 +7,10 @@ const tags = ref([])
 const colors = ref([
     '#FF33FF', '#00e079', '#3357FF', '#89c3eb', '#b0a4e3',
     '#e4d2d8', '#47585c', '#192f60', '#6b7b6e', '#758a99',
-    '#e597b2', '#93b69c'
+    '#e597b2', '#93b69c', '#47b85c', '#9aa3FF', '#172d5c'
 ])
 function randomColor(index) {
-    return index > colors.length ? colors.value[6] : colors.value[index]
+    return colors.value[index]
 }
 
 onMounted(() => {

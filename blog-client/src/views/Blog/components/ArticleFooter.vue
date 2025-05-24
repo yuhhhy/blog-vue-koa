@@ -1,6 +1,6 @@
 <script setup>
 import { ElButton } from 'element-plus'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { getFormatDate } from '@/utils/date'
 import { apiGetComments } from '@/api/comment'
@@ -40,6 +40,9 @@ const replyUpdate = () => {
 onMounted(()=>{
   getComments()
 })
+
+
+
 
 </script>
 

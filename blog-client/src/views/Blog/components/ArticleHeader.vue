@@ -1,8 +1,10 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiUpdateBlogLikeCount } from '@/api/blogContent.js'
 import { useLikeStore } from '@/stores/likeStore.js'
+import { apiGetComments } from '@/api/comment'
+
 
 const props = defineProps(['blogData'])
 const route = useRoute()
@@ -20,6 +22,29 @@ const handleLike = () => {
         likeStore.like(route.params.id)
     }
 }
+
+const countRecursively = (arr) => {
+    let count = 0
+    arr.forEach((item) => {
+        count++;
+        if (item.replies.length !== 0) {
+            count += countRecursively(item.replies)
+        }
+    })
+    return count
+}
+
+
+const comments = ref()
+const commentNumber = ref()
+const getCommentNumber = async () => {
+    const res = await apiGetComments(route.params.id)
+    comments.value = res
+    commentNumber.value = countRecursively(comments.value)
+}
+getCommentNumber()
+
+
 </script>
 
 <template>
@@ -27,19 +52,16 @@ const handleLike = () => {
         <div class="header-left">
             <div class="view-count">
                 <span>阅读 {{ blogData.viewCount }}</span>
-                <!-- <span>{{ blogData.views || 10 }} 阅读</span> -->
             </div>
         </div>
         <div class="header-right">
             <div class="action-btn like">
                 <div class="iconfont" :class="{ liked: liked }" @click="handleLike" >&#xe707;</div>
                 <span>{{ blogData.likeCount }}</span>
-                <!-- <span>{{ blogData.likes || 2 }}</span> -->
             </div>
             <div class="action-btn comment">
                 <div class="iconfont">&#xe613;</div>
-                <span>{{ 3 }}</span>
-                <!-- <span>{{ blogData.comments || 3 }}</span> -->
+                <span>{{ commentNumber }}</span>
             </div>
             <div class="action-btn share">
                 <div class="iconfont">&#xe65a;</div>
