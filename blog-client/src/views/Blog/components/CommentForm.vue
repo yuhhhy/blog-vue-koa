@@ -28,10 +28,10 @@ const props = defineProps({
 // 表单收集四个数据：username、email、website、content
 const formRef = ref(null)
 const form = reactive({
-  username: '一曝十寒',
-  email: '281423846@qq.com',
-  website: 'https://www.yuhhhy.cn',
-  content: '今天是2025年5月20日，周二。',
+  username: '',
+  email: '',
+  website: '',
+  content: '',
 })
 // 表单校验规则、校验失败的ElMessage提示信息
 const rules = {
@@ -69,21 +69,22 @@ const onSubmit = () => {
 
 // 校验成功后的逻辑
 const doSubmit = async () => {
+
+  const avatarSrc = await getAvatar(form.email)
   // 生成评论
   const newComment = { 
       ...form,
       id: Date.now().toString(36),
       blogId: route.params.id || '-1',
       parentId: props.parentId,
-      avatar: await getAvatar(form.email),
-      // avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
+      avatar: avatarSrc,
       createTime: new Date(),
       showForm: false,
       hasParent: props.hasParent,
       replies: []
   }
 
-  // 创建评论数据
+  // 创建评论
   await apiCreateComment(newComment)
 
   // 提交完成后清空表单数据
@@ -99,18 +100,16 @@ const doSubmit = async () => {
 }
 
 async function getAvatar(email) {
-  return 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
-  // 获取 Gravatar 的哈希值
-  const hash = getGravatarHash(email)
-  // 异步请求获取头像地址
-  getGravatar(hash).then(res => {
-    console.log(res);
-    if( JSON.stringify(res) === '{}' ){
-      return 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
-    } else {
-      return res.avatar_url
-    }
-  })
+  try {
+    // 获取 Gravatar 的哈希值
+    const hash = await getGravatarHash(email)
+    // 异步请求获取头像地址
+    const res = await getGravatar(hash)
+    return res
+  } catch (error) {
+    return 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+  }
+  
 }
 
 </script>
@@ -153,6 +152,7 @@ async function getAvatar(email) {
     </el-form-item>
   </el-form>
 </template>
+
 <!-- 这里必须加scoped，因为深度选择器:deep()要求配合scoped用，以改变ElementPlus原始样式 -->
 <style lang="scss" scoped>
 /* 评论表单样式 */
@@ -225,7 +225,7 @@ async function getAvatar(email) {
       .comment-form-submit {
         width: 70px;
         height: 26px;
-        background: linear-gradient(to left, var(--orange), var(--blue));
+        background: linear-gradient(to left, var(--skyblue), var(--blue));
         border: none;
         color: white;
         font-weight: bold;

@@ -40,10 +40,6 @@ const replyUpdate = () => {
 onMounted(()=>{
   getComments()
 })
-
-
-
-
 </script>
 
 <template>
