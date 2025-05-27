@@ -107,7 +107,7 @@ onMounted(() => {
                 min-width: 400px;
 
                 &:hover {
-                    box-shadow: 0 0 10px var(--lake);
+                    box-shadow: 2px 2px 5px var(--dark);
                     transition: 0.4s;
                 }
 

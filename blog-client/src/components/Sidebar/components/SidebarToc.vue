@@ -28,17 +28,18 @@ defineProps({
     top: 84px; // 必须指定top/left/right/bottom值
 
     &:hover {
-        box-shadow: 0 0 6px var(--cyan);
+        box-shadow: 2px 2px 5px var(--dark);
+        transition: 0.4s;
     }
 
     .toc-header {
         padding-left: 20px;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: bold;
         margin-bottom: 10px;
     }
     .toc-content {
-        color: var(--skyblue);
+        color: var(--blue);
         font-size: 0.9rem;
         line-height: 1.5;
     }

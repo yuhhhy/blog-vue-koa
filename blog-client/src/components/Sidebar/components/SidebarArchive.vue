@@ -46,21 +46,22 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .sidebar-archive {
-    color: var(--blue);
+    color: var(--black);
 
     background-color: var(--white);
     border-radius: 10px;
     width: 100%;
     padding: 16px 20px;
     overflow: hidden;
+    
     &:hover {
-        box-shadow: 0 0 6px var(--light-blue);
+        box-shadow: 2px 2px 5px var(--dark);
         transition: 0.4s;
     }
     .sidebar-archive-title {
         color: var(--black);
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         margin-bottom: 10px;
     }
     .archive-month {
@@ -81,21 +82,11 @@ onMounted(async () => {
         }
 
         &:hover {
-            background-color: var(--light-blue);
-            border: 1px solid var(--border-color);
-            color: white;
-
-            .number {
-                color: white;
-            }
+            border: 1px solid var(--dark);
         }
     
         &.active {
-            background-color: var(--blue);
-            color: white;            
-            .number {
-                color: white;
-            }
+            border: 1px solid var(--dark);
         }
     }
 }

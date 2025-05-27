@@ -9,7 +9,7 @@ const themeStore = useThemeStore();
         <div class="author-avatar">
             <img src="@/assets/images/avatar_compress.jpg" alt="my avatar">
         </div>
-        <span id="author-name" style="color: var(--blue); font-weight: 800;">一曝十寒</span>
+        <span id="author-name">一曝十寒</span>
         <div id="author-words">
             <p>你好！欢迎来到我的博客</p>
         </div>
@@ -56,15 +56,16 @@ const themeStore = useThemeStore();
     background-color: var(--white);
     color: var(--light-dark);
     min-height: 300px;
-    padding: 20px;
+    padding: 0 20px;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 30px;
+
     &:hover {
-        box-shadow: 0 0 6px var(--lavender);
+        box-shadow: 2px 2px 5px var(--dark);
         transition: 0.4s;
     }
 
@@ -76,7 +77,6 @@ const themeStore = useThemeStore();
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 0 5px var(--grape);
 
         &:hover {
             transform: scale(1.05);
@@ -90,8 +90,10 @@ const themeStore = useThemeStore();
     }
 
     #author-name {
-        font-weight: bold;
         margin: -10px 0 -20px 0;
+        color: var(--blue);
+        font-weight: 800;
+        font-size: 1rem;
     }
 
     #author-words {

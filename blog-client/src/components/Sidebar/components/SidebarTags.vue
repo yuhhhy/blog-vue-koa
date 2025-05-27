@@ -47,12 +47,12 @@ onMounted(() => {
     padding: 10px 10px 20px 10px;
 
     &:hover {
-        box-shadow: 0 0 6px var(--cyan);
+        box-shadow: 2px 2px 5px var(--dark);
         transition: 0.4s;
     }
     .sidebar-tags-title {
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         margin-left: 10px;
         margin-bottom: 20px;
         margin-top: 10px;

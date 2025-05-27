@@ -70,12 +70,12 @@ getWebsiteData()
   gap: 15px;
   
   &:hover {
-    box-shadow: 0 0 6px var(--lake);
+    box-shadow: 2px 2px 5px var(--dark);
     transition: 0.4s;
   }
 
   .website-info-header {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: bold;
     margin-bottom: 5px;
   }
@@ -94,7 +94,7 @@ getWebsiteData()
 
       .stat-value {
         font-size: 1.5rem;
-        font-weight: bold;
+        font-weight: 600;
         color: var(--blue);
       }
 

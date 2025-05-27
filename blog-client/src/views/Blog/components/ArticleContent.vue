@@ -56,7 +56,7 @@ onUpdated(() => {
 
         h1, h2, h3, h4, h5, h6 
         {
-            color: var(--sapphire);
+            color: var(--blue);
             margin: 1.5em 0 0.8em;
             font-weight: 600;
 

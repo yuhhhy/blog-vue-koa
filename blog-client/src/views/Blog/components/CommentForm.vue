@@ -235,7 +235,7 @@ async function getAvatar(email) {
       .comment-form-submit {
         width: 70px;
         height: 26px;
-        background: linear-gradient(to left, var(--skyblue), var(--blue));
+        background: var(--light-blue);
         border: none;
         color: white;
         font-weight: bold;
