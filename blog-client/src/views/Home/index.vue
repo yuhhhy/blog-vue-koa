@@ -19,7 +19,7 @@ onMounted(() => {
     <div class="home-container">
         <!-- banner -->
         <div class="home-banner">
-            <span>少说漂亮话，多做平凡事。</span>
+            <span class="motto">少说漂亮话，多做平凡事。</span>
         </div>
         <div class="home-content">
             <!-- 博客列表 -->
@@ -53,9 +53,22 @@ onMounted(() => {
     .home-banner {
         width: 100%;
         height: 400px;
-        background: linear-gradient(to top, #B1EAFB, #4158d0);
-        // background: linear-gradient(135deg, #c850c0, #4158d0);
-        color: #FFF;
+        --s: 200px; /* control the size */
+        background: repeating-conic-gradient(
+                from 30deg,
+                #0000 0 120deg,
+                var(--c3) 0 180deg
+            )
+            calc(0.5 * var(--s)) calc(0.5 * var(--s) * 0.577),
+            repeating-conic-gradient(
+            from 30deg,
+            var(--c1) 0 60deg,
+            var(--c2) 0 120deg,
+            var(--c3) 0 180deg
+            );
+        background-size: var(--s) calc(var(--s) * 0.577);
+
+        color: var(--dark);
         font-size: 4rem;
         font-weight: 700;
         font-family: "Google Sans", arial, sans-serif;

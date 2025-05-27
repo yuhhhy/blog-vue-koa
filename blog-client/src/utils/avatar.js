@@ -17,7 +17,8 @@ export async function getGravatar(hash) {
     }
     
 }
-    // V2EX - 国内Gravatar镜像
-    // (hash) => `https://cdn.v2ex.com/gravatar/${hash}?s=200&d=mp`,
-    // 七牛云 - Gravatar镜像
-    // (hash) => `https://dn-qiniu-avatar.qbox.me/avatar/${hash}?s=200&d=mp`,
+
+// V2EX - 国内Gravatar镜像
+// (hash) => `https://cdn.v2ex.com/gravatar/${hash}?s=200&d=mp`,
+// 七牛云 - Gravatar镜像
+// (hash) => `https://dn-qiniu-avatar.qbox.me/avatar/${hash}?s=200&d=mp`,
