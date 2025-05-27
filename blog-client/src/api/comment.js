@@ -37,3 +37,12 @@ export function apiDeleteAllComments() {
         method: 'DELETE',
     })
 }
+
+// 更新评论
+export function apiUpdateComment(data) {
+    return request({
+        url: `/comment/${data.id}`,
+        method: 'PUT',
+        data
+    })
+}

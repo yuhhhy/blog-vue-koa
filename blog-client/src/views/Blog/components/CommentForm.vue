@@ -2,7 +2,7 @@
 import { ref, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { apiCreateComment } from '@/api/comment.js'
+import { apiCreateComment, apiUpdateComment } from '@/api/comment.js'
 import { getGravatarHash, getGravatar } from '@/utils/avatar';
 
 const emit = defineEmits(['updateComments'])
@@ -70,14 +70,14 @@ const onSubmit = () => {
 // 校验成功后的逻辑
 const doSubmit = async () => {
 
-  const avatarSrc = await getAvatar(form.email)
+  const defaultAvatar = '/src/assets/images/user_default.png'
   // 生成评论
-  const newComment = { 
+  let newComment = { 
       ...form,
       id: Date.now().toString(36),
       blogId: route.params.id || '-1',
       parentId: props.parentId,
-      avatar: avatarSrc,
+      avatar: defaultAvatar,
       createTime: new Date(),
       showForm: false,
       hasParent: props.hasParent,
@@ -88,6 +88,7 @@ const doSubmit = async () => {
   await apiCreateComment(newComment)
 
   // 提交完成后清空表单数据
+  let userEmail = form.email
   form.username = ''
   form.email = ''
   form.website = ''
@@ -97,6 +98,15 @@ const doSubmit = async () => {
   
   // 触发更新评论
   emit('updateComments')
+
+  // 尝试获取Grvatar头像，更新新评论的头像
+  const avatarSrc = await getAvatar(userEmail)
+  if (avatarSrc) {
+    newComment.avatar = avatarSrc
+    await apiUpdateComment(newComment)
+    // 触发更新评论
+    emit('updateComments')
+  }
 }
 
 async function getAvatar(email) {

@@ -81,7 +81,7 @@ onMounted(async () => {
         }
 
         &:hover {
-            background-color: var(--blue);
+            background-color: var(--light-blue);
             border: 1px solid var(--border-color);
             color: white;
 

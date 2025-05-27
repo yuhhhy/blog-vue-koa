@@ -118,7 +118,7 @@ img {
             width: 100%;
             height: 500px;
             background-attachment: fixed;
-            background-size: cover;
+            background-size: contain;
         }
 
         .mask {

@@ -2,7 +2,7 @@ import Router from '@koa/router'
 import { getBlogList, getBlogById, getBlogByTitle, createBlog, deleteBlog, deleteAllBlogs, updateBlog } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate } from '../controllers/WebsiteDataController.js'
-import { getComments, createComment, deleteComment, deleteAllComments } from '../controllers/CommentController.js'
+import { getComments, createComment, deleteComment, deleteAllComments, updateComment } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 import { uploadImage } from '../controllers/UploadController.js'
@@ -91,6 +91,9 @@ router.delete('/comment/:id', deleteComment)
 
 // 删除所有评论
 router.delete('/comment', deleteAllComments)
+
+// 更新评论
+router.put('/comment/:id', updateComment)
 
 
 /**

@@ -76,3 +76,24 @@ export const deleteAllComments = async (ctx) => {
         ctx.body = { message: '删除所有评论失败', error: error.message }
     }
 }
+
+// 更新评论
+export const updateComment = async (ctx) => {
+    const { id } = ctx.params
+    const updateData = ctx.request.body
+
+    try {
+        const updatedComment = await Comment.findOneAndUpdate({ id }, updateData, { new: true })
+        if (!updatedComment) {
+            ctx.status = 404
+            ctx.body = { message: '评论不存在' }
+            return
+        } else {
+            ctx.status = 200
+            ctx.body = { message: '评论更新成功', comment: updatedComment }
+        }  
+    }  catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '评论更新失败', error: error.message }
+    }
+}
