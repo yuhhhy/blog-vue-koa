@@ -21,3 +21,12 @@ a {
         font-size: 14px;
     }
 }
+
+.el-popover.popover {
+    background-color: var(--white);
+    color: var(--black);
+
+    .el-popover__title {
+        color: var(--black);
+    }
+}
