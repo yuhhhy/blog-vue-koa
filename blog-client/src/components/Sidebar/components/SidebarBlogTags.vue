@@ -39,17 +39,18 @@
     }
     
     button {
+        border: transparent;
+        background-color: var(--white);
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         justify-content: center;
         gap: 10px;
         padding: 2px 10px;
-        color: var(--black);
+        color: var(--quote-color);
         text-transform: uppercase;
         cursor: pointer;
         letter-spacing: 1px;
-        font-weight: 600;
         font-size: 1rem;
         border-radius: 50px;
         position: relative;

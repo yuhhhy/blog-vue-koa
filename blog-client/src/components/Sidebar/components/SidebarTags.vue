@@ -4,14 +4,6 @@ import { ref, onMounted } from 'vue'
 
 const posts = ref([])
 const tags = ref([])
-const colors = ref([
-    '#FF33FF', '#00e079', '#3357FF', '#89c3eb', '#b0a4e3',
-    '#e4d2d8', '#47585c', '#192f60', '#6b7b6e', '#758a99',
-    '#e597b2', '#93b69c', '#47b85c', '#9aa3FF', '#172d5c'
-])
-function randomColor(index) {
-    return colors.value[index]
-}
 
 onMounted(() => {
     apiGetBlogList().then(response => {
@@ -29,7 +21,7 @@ onMounted(() => {
         <div class="sidebar-tags-title">标签云</div>
         <div class="sidebar-tags-content">
             <RouterLink v-for="(tag, index) in tags" :to="`/archive/${tag}`">
-                <span class="tag" :style="{ backgroundColor: randomColor(index) }">
+                <span class="tag">
                     {{ tag }}
                 </span>
             </RouterLink>
@@ -69,7 +61,7 @@ onMounted(() => {
         }
 
         .tag {
-            color: white;
+            color: var(--quote-color);
             border-radius: 5px;
             cursor: pointer;
             padding: 4px 10px;

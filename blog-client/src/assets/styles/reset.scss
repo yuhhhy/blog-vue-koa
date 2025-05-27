@@ -25,6 +25,10 @@ a {
 .el-popover.popover {
     background-color: var(--white);
     color: var(--black);
+    display: flex;
+    justify-content: space-evenly;
+    padding-top: 5px;
+    padding-bottom: 5px;
 
     .el-popover__title {
         color: var(--black);

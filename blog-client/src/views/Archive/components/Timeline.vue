@@ -92,8 +92,8 @@ watch(() => route.params.tagName, () => {
       color: var(--light-dark);
     }
     :deep(.el-timeline-item__node){
-      background-color: var(--cyan);
-      border-color: var(--cyan);
+      background-color: var(--blue);
+      border-color: var(--blue);
     }
 
     @media screen and (max-width: 768px)  {

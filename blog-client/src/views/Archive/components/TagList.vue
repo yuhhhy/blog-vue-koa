@@ -51,8 +51,8 @@ onMounted(() => {
     }
 
     .tag {
-        border: 2px none var(--cyan);
-        color: var(--cyan);
+        border: 2px none var(--blue);
+        color: var(--blue);
         border-radius: 5px;
         cursor: pointer;
         margin: 30px 10px;
@@ -64,13 +64,13 @@ onMounted(() => {
        }
         
         &.active {
-            background-color: var(--cyan);
+            background-color: var(--blue);
             color: var(--white);
             box-shadow: 0 0 5px rgba(0,0,0,0.2);
         }
 
         &:hover {
-            background-color: var(--cyan);
+            background-color: var(--blue);
             color: var(--white);
             box-shadow: 0 0 5px rgba(0,0,0,0.2);
         }

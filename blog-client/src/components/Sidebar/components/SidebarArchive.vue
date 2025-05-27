@@ -46,8 +46,7 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .sidebar-archive {
-    color: var(--black);
-
+    color: var(--quote-color);
     background-color: var(--white);
     border-radius: 10px;
     width: 100%;
@@ -72,7 +71,7 @@ onMounted(async () => {
         position: relative;
         display: flex;
         align-items: center;
-        border-radius: 10px;
+        border-radius: 7px;
 
         .number {
             position: absolute;
