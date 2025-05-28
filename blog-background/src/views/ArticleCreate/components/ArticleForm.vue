@@ -5,9 +5,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 const emit = defineEmits(['articleSubmit'])
 const formRef = ref(null)
 const form = reactive({
-    title: '示例文章标题',
-    author: '作者名',
-    tags: ['标签1', '标签2'],
+    title: '',
+    author: '',
+    tags: [],
     coverImgUploaded: false
 })
 const rules = {

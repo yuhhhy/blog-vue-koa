@@ -129,6 +129,18 @@ onUpdated(() => {
                 &.token.string {
                     color: #50a14f;
                 }
+                &.token.constant {
+                    color: #d00d87;
+                }
+                &.token.literal-property.property {
+                    color: #d00d87;
+                }
+                &.token.property {
+                    color: #d00d87;
+                }
+                &.token.operator {
+                    color: #b27934;
+                }
             }
         }
 

@@ -5,7 +5,6 @@ import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLas
 import { getComments, createComment, deleteComment, deleteAllComments, updateComment } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
-import { uploadImage } from '../controllers/UploadController.js'
 
 const router = new Router({ prefix: '/api' })
 
@@ -134,7 +133,10 @@ router.delete('/visitor/:id', deleteVisitor)
  * Upload API
  */
 // 上传单张图片
-router.post('/upload/image', uploadImage)
+router.post('/upload/image', async (ctx) => {
+    ctx.status = 200
+    ctx.body = ctx.request.file
+})
 
 
 export default router

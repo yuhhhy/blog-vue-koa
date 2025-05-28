@@ -130,6 +130,11 @@ function handleConfirm() {
   </el-dialog>
 </template>
 
-<style scoped>
- 
+<style>
+ tr.el-table__row {
+  height: 60px;
+}
+tr.el-table__row.el-table__row--striped {
+  height: 60px;
+}
 </style>

@@ -37,6 +37,8 @@ export const getBlogContent = async (ctx) => {
 // 获取所有博客内容
 export const getBlogContentList = async (ctx) => {
     const blogContents = await BlogContent.find({})
+        .sort({ createTime: -1 })
+        .exec()
     ctx.status = 200
     ctx.body = blogContents
 }

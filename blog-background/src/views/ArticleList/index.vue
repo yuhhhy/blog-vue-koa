@@ -2,9 +2,9 @@
 import { reactive, ref, onMounted } from 'vue'
 import { apiGetBlogList, apiDeleteBlog, apiUpdateBlog } from '@/api/blog.js'
 import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } from '@/api/blogContent.js'
+import { apiUpdateWebsiteLastUpdate } from '@/api/websiteData.js'
 import { ElMessageBox } from 'element-plus'
 import { getFormatDate } from '@/utils/date.js'
-import { apiUpdateWebsiteLastUpdate } from '@/api/websiteData.js'
 import countWord from '@/utils/wordCount.js'
 import Vditor from '@/views/ArticleCreate/components/Vditor.vue'
 
@@ -130,7 +130,7 @@ async function UpdateBlog(id) {
   <el-table :data="tableData" stripe>
     <el-table-column
       prop="createTime"
-      label="日期"
+      label="创建日期"
       width="160">
     </el-table-column>
     <el-table-column
@@ -202,6 +202,11 @@ async function UpdateBlog(id) {
   </el-dialog>
 </template>
 
-<style scoped>
-
+<style>
+tr.el-table__row {
+  height: 60px;
+}
+tr.el-table__row.el-table__row--striped {
+  height: 60px;
+}
 </style>

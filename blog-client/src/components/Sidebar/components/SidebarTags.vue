@@ -66,6 +66,10 @@ onMounted(() => {
             cursor: pointer;
             padding: 4px 10px;
 
+            &:hover {
+                color: var(--black);
+            }
+
             .iconfont {
                 font-size: 12px;
                 margin-right: 5px;

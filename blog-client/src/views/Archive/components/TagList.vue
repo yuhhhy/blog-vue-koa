@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { apiGetBlogList } from '@/api/blog.js'
 
 const route = useRoute()
+const router = useRouter()
 const posts = ref([])
 const tags = ref([])
 
@@ -11,6 +12,18 @@ const tags = ref([])
 const activeTag = computed(() => {
   return route.params.tagName
 })
+
+// 第一次点击添加params，第二次点击去除params
+const toggleTagLink = (tag) => {
+  // 如果点击的标签是当前活跃标签，则不进行跳转
+    if (route.params.tagName && route.params.tagName === tag) {
+        router.push({ path: '/archive' })
+    }
+    // 如果没有活跃标签，则跳转到当前标签
+    else {
+        router.push({ path: `/archive/${tag}` })
+    }
+}
 
 onMounted(() => {
     apiGetBlogList().then(response => {
@@ -25,22 +38,22 @@ onMounted(() => {
 
 <template>
 <div class="archive-tags">
-    <RouterLink 
+    <div 
         v-for="tag in tags" 
-        :key="tag" 
-        :to="`/archive/${tag}`"
+        :key="tag"
+        @click="toggleTagLink(tag)"
         >
         <span class="tag" :class="{ active: tag === activeTag }">
             <span class="iconfont">&#xe920;</span>
             {{ tag }}
         </span>
-    </RouterLink>
+    </div>
 </div>
 </template>
 
 <style lang="scss" scoped>
 .archive-tags {
-    padding: 10px 40px;
+    padding: 10px 25px;
     display: flex;
     flex-wrap: wrap;
     row-gap: 20px;
@@ -51,8 +64,8 @@ onMounted(() => {
     }
 
     .tag {
-        border: 2px none var(--blue);
-        color: var(--blue);
+        border: 2px none var(--tag-color);
+        color: var(--tag-color);
         border-radius: 5px;
         cursor: pointer;
         margin: 30px 10px;

@@ -81,11 +81,11 @@ onMounted(async () => {
         }
 
         &:hover {
-            border: 1px solid var(--dark);
+            color: var(--black);
         }
     
         &.active {
-            border: 1px solid var(--dark);
+            color: var(--black);
         }
     }
 }

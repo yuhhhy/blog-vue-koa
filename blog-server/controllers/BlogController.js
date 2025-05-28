@@ -8,7 +8,9 @@ import { Blog } from '../models/BlogSchema.js'
 
 // 获取博客列表
 export const getBlogList = async (ctx) => {
-    const posts = await Blog.find({}) // 从数据库获取所有博客文章
+    const posts = await Blog.find({})
+        .sort({ createTime: -1 }) // -1 表示降序，最新的排在前面
+        .exec()
     ctx.status = 200
     ctx.body = posts
 }

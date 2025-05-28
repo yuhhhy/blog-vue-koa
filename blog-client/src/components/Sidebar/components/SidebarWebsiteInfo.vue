@@ -81,6 +81,7 @@ getWebsiteData()
   }
 
   .website-stats {
+    font-family: var(--font-serif);
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
