@@ -2,17 +2,19 @@
 import Sidebar from '@/components/Sidebar/index.vue'
 import ArticleHeader from './components/ArticleHeader.vue'
 import ArticleContent from './components/ArticleContent.vue'
+import ArticleRecommended from './components/ArticleRecommended.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
 import MarkdownIt from 'markdown-it'
 import markdownItTocAndAnchor from 'markdown-it-toc-and-anchor'
 
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { apiGetBlogContent, apiUpdateBlogViewCount } from '@/api/blogContent.js'
 import { apiUpdateWebsiteView } from '@/api/websiteData.js'
 import { getFormatDate } from '@/utils/date.js'
 
 const route = useRoute()
+const router = useRouter()
 let htmlContent = ref('') // html格式文章内容
 let blogData = ref({}) // data/posts.json
 let tocHtml = ref('') // toc生成的html
@@ -41,7 +43,7 @@ async function getBlogContent() {
     }
     catch (error) {
         console.error('获取博客内容失败', error)
-        // router.push('/404')
+        router.push('/404')
     }
 }
 
@@ -49,6 +51,25 @@ async function updateBlogViewCount() {
     const data = await apiUpdateBlogViewCount(route.params.id)
     blogData.value.viewCount = data.viewCount
 }
+
+// 监听路由参数变化
+watch(
+  () => route.params.id,
+  async (newId, oldId) => {
+    if (newId && newId !== oldId) {
+      // 重置数据
+      htmlContent.value = ''
+      blogData.value = {}
+      tocHtml.value = ''
+      
+      // 重新获取数据
+      await getBlogContent()
+      await updateBlogViewCount()
+      await apiUpdateWebsiteView()
+    }
+  },
+  { immediate: true } // 立即执行一次
+)
 
 
 onMounted(() => {
@@ -79,13 +100,14 @@ onMounted(() => {
             <!-- 博客页面文章主体 -->
             <div class="blog-aritcle">
                 <!-- 文章上部分交互区域 -->
-                <ArticleHeader :blogData="blogData" ></ArticleHeader>
+                <ArticleHeader :blogData="blogData" class="blog-aritcle-item"></ArticleHeader>
                 <!-- 文章主体内容区域 -->
-                <ArticleContent :htmlContent="htmlContent"></ArticleContent>
+                <ArticleContent :htmlContent="htmlContent" class="blog-aritcle-item"></ArticleContent>
+                <!-- 上一篇、下一篇、推荐文章 -->
+                <ArticleRecommended class="blog-aritcle-item"></ArticleRecommended>
                 <!-- 文章底部相关信息和评论区域 -->
-                <ArticleFooter></ArticleFooter>
+                <ArticleFooter class="blog-aritcle-item"></ArticleFooter>
             </div>
-
             <!-- 博客页面右侧边栏 -->
             <div class="blog-sidebar">
                 <Sidebar :tags="blogData.tags" :tocHtml="tocHtml"></Sidebar>
@@ -169,6 +191,10 @@ img {
             flex: 1;
             background-color: var(--white);
             border-radius: 15px;
+
+            .blog-aritcle-item{
+                margin-bottom: 30px;
+            }
         }
 
         .blog-sidebar {

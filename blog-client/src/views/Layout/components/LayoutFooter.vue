@@ -19,7 +19,7 @@ const copyToClipboard = async (text, type) => {
         <div class="right-footer">
             <RouterLink to="/about" class="info-title">关于</RouterLink>
             <RouterLink to="/archive" class="info-title">归档</RouterLink>
-            <RouterLink to="/links" class="info-title">友链</RouterLink>
+            <RouterLink to="/" class="info-title">友链</RouterLink>
             <el-popover
                 class="footer-popover"
                 popper-class="popover"

@@ -103,3 +103,54 @@ export const updateBlog = async (ctx) => {
         ctx.body = { message: '博客更新失败', error: error.message }
     }
 }
+
+// 获取上一篇博客
+export const getPrevBlog = async (ctx) => {
+    const { id } = ctx.request.params
+    const currentBlog = await Blog.findOne({ id })
+    const prevBlog = await Blog.findOne({
+        createTime: { $gt: currentBlog.createTime }
+    }).sort({ createTime: 1 })
+
+    if (!prevBlog) {
+        ctx.status = 200
+        ctx.body = {
+            found: false,
+            message: '已经是最新一篇博客'
+        }
+        return
+    }
+
+    ctx.status = 200
+    ctx.body = {
+        found: true,
+        message: '找到上一篇博客',
+        prevBlog
+    }
+}
+
+// 获取下一篇博客
+export const getNextBlog = async (ctx) => {
+
+    const { id } = ctx.request.params
+    const currentBlog = await Blog.findOne({ id })
+    const nextBlog = await Blog.findOne({
+        createTime: { $lt: currentBlog.createTime }
+    }).sort({ createTime: -1 })
+
+    if (!nextBlog) {
+        ctx.status = 200
+        ctx.body = {
+            found: false,
+            message: '已经是最后一篇博客'
+        }
+        return
+    }
+
+    ctx.status = 200
+    ctx.body = {
+        found: true,
+        message: '找到下一篇博客',
+        nextBlog
+    }
+}

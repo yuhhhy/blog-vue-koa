@@ -151,7 +151,7 @@ async function getAvatar(email) {
       <el-input
         v-model="form.content"
         type="textarea"
-        :autosize="{ minRows: 3 }"
+        :autosize="{ minRows: 2 }"
         placeholder="写下你的评论..."
       />
     </el-form-item>
@@ -169,7 +169,6 @@ async function getAvatar(email) {
   .comment-form {
     margin-top: 10px;
     margin-bottom: 10px;
-    padding: 0 20px;
 
     /* 表单输入框样式 */
     .comment-form-input-row {

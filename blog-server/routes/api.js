@@ -1,5 +1,5 @@
 import Router from '@koa/router'
-import { getBlogList, getBlogById, getBlogByTitle, createBlog, deleteBlog, deleteAllBlogs, updateBlog } from '../controllers/BlogController.js'
+import { getBlogList, getBlogById, getBlogByTitle, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate } from '../controllers/WebsiteDataController.js'
 import { getComments, createComment, deleteComment, deleteAllComments, updateComment } from '../controllers/CommentController.js'
@@ -31,6 +31,12 @@ router.delete('/blog', deleteAllBlogs)
 
 // 更新博客
 router.put('/blog/:id', updateBlog)
+
+// 获取上一篇博客
+router.get('/blog/prev/:id', getPrevBlog)
+
+// 获取下一篇博客
+router.get('/blog/next/:id', getNextBlog)
 
 /**
  * Blog Content API

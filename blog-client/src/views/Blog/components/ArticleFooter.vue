@@ -1,6 +1,6 @@
 <script setup>
 import { ElButton } from 'element-plus'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getFormatDate } from '@/utils/date'
 import { apiGetComments } from '@/api/comment'
@@ -36,6 +36,13 @@ const updateComments = () => {
 const replyUpdate = () => {
   getComments()
 }
+
+// 监听路由参数变化，更新评论区
+watch(() => route.params.id, (newId) => {
+  if (newId) {
+    getComments()
+  }
+}, { immediate: true })  // 确保组件首次加载时也执行，代替了onMounted
 
 onMounted(()=>{
   getComments()
@@ -105,10 +112,10 @@ onMounted(()=>{
   line-height: 1.6;
   border-radius: 8px;
   overflow: hidden;
+  padding: 0 30px;
   
   .top-form {
     color: var(--blue);
-    padding-left: 20px;
     cursor: pointer;
   }
 

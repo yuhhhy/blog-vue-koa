@@ -23,7 +23,6 @@ onUpdated(() => {
 .article-content {
     padding: 0 30px;
     line-height: 1.8;
-    padding-bottom: 30px;
     font-family: 'Helvetica Neue', Arial, sans-serif;
     color: var(--light-dark);
 
