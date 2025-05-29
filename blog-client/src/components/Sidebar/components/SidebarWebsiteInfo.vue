@@ -8,7 +8,9 @@ const totalPosts = ref(0) // 网站文章总数
 const websiteVisits = ref(0) // 网站访问量
 const websiteViews = ref(0) // 网站浏览量
 const updateTime = ref('') // 最后更新时间
+const totalWordCount = ref(0) // 网站总字数
 
+// 网站总运行时间计算
 function getrunTime(startTime) {
     let date1 = new Date(startTime)
     let date2 = new Date()
@@ -16,15 +18,27 @@ function getrunTime(startTime) {
     const diffDate =  Math.round(diff / (24 * 60 * 60 * 1000))
     return diffDate
 }
+
+// 获取文章总数
 async function getBlogList() {
     const posts = await apiGetBlogList()
     totalPosts.value = posts.length // 写入文章总数
 }
+
+// 添加字数格式化函数
+const formatWordCount = (count) => {
+  if (!count) return '0 k'
+  return count >= 1000
+    ? (count / 1000).toFixed(1) + ' k'
+    : count + ''
+}
+
 async function getWebsiteData() {
     const websitedata = await apiGetWebsiteData() // 获取网站数据
     websiteVisits.value = websitedata.visit
     websiteViews.value = websitedata.view
     updateTime.value = websitedata.updateTime
+    totalWordCount.value = websitedata.totalWordCount
 }
 
 // 执行函数，初始化网站数据
@@ -39,12 +53,12 @@ getWebsiteData()
     <div class="website-info-header">网站资讯</div>
     <div class="website-stats">
       <div class="stat-item">
-        <span class="stat-value">{{ runTime }}</span>
-        <span class="stat-label">运行天数</span>
-      </div>
-      <div class="stat-item">
         <span class="stat-value">{{ totalPosts }}</span>
         <span class="stat-label">文章总数</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ formatWordCount(totalWordCount) }}</span>
+        <span class="stat-label">全站字数</span>
       </div>
       <div class="stat-item">
         <span class="stat-value">{{ websiteVisits }}</span>
@@ -53,6 +67,10 @@ getWebsiteData()
       <div class="stat-item">
         <span class="stat-value">{{ websiteViews }}</span>
         <span class="stat-label">浏览量</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ runTime }}</span>
+        <span class="stat-label">运行天数</span>
       </div>
     </div>
     <div class="last-updated">最后更新: {{ updateTime.slice(0,10) }}</div>

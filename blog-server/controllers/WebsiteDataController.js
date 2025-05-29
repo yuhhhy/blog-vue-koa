@@ -1,4 +1,5 @@
 import { WebsiteData } from '../models/WebsiteDataSchema.js'
+import { BlogContent } from '../models/BlogContentSchema.js'
 
 /**
  * WebsiteVisit Controller
@@ -15,21 +16,52 @@ export const getWebsiteData = async (ctx) => {
 
 // 更新网站访问次数
 export const updateWebsiteVisit = async (ctx) => {
-    const visit = await WebsiteData.findOneAndUpdate({}, { $inc: { visit: 1 } }, { new: true, upsert: true })
+    const visit = await WebsiteData.findOneAndUpdate(
+        {},
+        { $inc: { visit: 1 } },
+        { new: true, upsert: true }
+    )
     ctx.status = 200
     ctx.body = visit
 }
 
 // 更新网站浏览次数
 export const updateWebsiteView = async (ctx) => {
-    const view = await WebsiteData.findOneAndUpdate({}, { $inc: { view: 1 } }, { new: true, upsert: true })
+    const view = await WebsiteData.findOneAndUpdate(
+        {},
+        { $inc: { view: 1 } },
+        { new: true, upsert: true }
+    )
     ctx.status = 200
     ctx.body = view
 }
 
 // 更新网站最后更新时间
 export const updateWebsiteLastUpdate = async (ctx) => {
-    const lastUpdate = await WebsiteData.findOneAndUpdate({}, { $set: { updateTime: new Date() } }, { new: true, upsert: true })
+    const lastUpdate = await WebsiteData.findOneAndUpdate(
+        {},
+        { $set: { updateTime: new Date() } },
+        { new: true, upsert: true }
+    )
     ctx.status = 200
     ctx.body = lastUpdate
+}
+
+// 更新网站总字数
+export const updataWebsitetotalWordCount = async (ctx) => {
+    const blogContents = await BlogContent.find({})
+    
+    const totalWordCount = blogContents.reduce((sum, currentBlog) => {
+        return sum + currentBlog.wordCount
+    }, 0)
+
+    // 更新数据库中的总字数
+    const result = await WebsiteData.findOneAndUpdate(
+        {},
+        { $set: { totalWordCount } },
+        { new: true, upsert: true }
+    )
+    
+    ctx.status = 200
+    ctx.body = result
 }

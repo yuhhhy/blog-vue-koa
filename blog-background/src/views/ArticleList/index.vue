@@ -55,6 +55,8 @@ function handleDelete(index, row) {
       tableData.value.splice(index, 1)
       // 更新网站更新时间
       apiUpdateWebsiteLastUpdate()
+      // 更新网站总字数
+      apiUpdateWebsiteTotalWordCount()
 
       ElMessageBox.alert('删除成功', '提示', {
         confirmButtonText: '确定',
@@ -92,6 +94,8 @@ function handleConfirm() {
   
   // 更新网站更新时间
   apiUpdateWebsiteLastUpdate()
+  // 更新网站总字数
+  apiUpdateWebsiteTotalWordCount()
 
   // 弹出框不可见
   dialogFormVisible.value = false

@@ -12,3 +12,11 @@ export function apiUpdateWebsiteLastUpdate() {
         method: 'PUT',
     })
 }
+
+// 更新网站总字数
+export function apiUpdateWebsiteTotalWordCount() {
+    return request({
+        url: '/website/totalwordcount',
+        method: 'PUT'
+    })
+}
