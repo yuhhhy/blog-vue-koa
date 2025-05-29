@@ -25,8 +25,8 @@ async function getBlogList() {
     totalPosts.value = posts.length // 写入文章总数
 }
 
-// 添加字数格式化函数
-const formatWordCount = (count) => {
+// 添加数据格式化函数
+const formatCount = (count) => {
   if (!count) return '0 k'
   return count >= 1000
     ? (count / 1000).toFixed(1) + ' k'
@@ -57,15 +57,15 @@ getWebsiteData()
         <span class="stat-label">文章总数</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value">{{ formatWordCount(totalWordCount) }}</span>
+        <span class="stat-value">{{ formatCount(totalWordCount) }}</span>
         <span class="stat-label">全站字数</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value">{{ websiteVisits }}</span>
+        <span class="stat-value">{{ formatCount(websiteVisits) }}</span>
         <span class="stat-label">访问量</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value">{{ websiteViews }}</span>
+        <span class="stat-value">{{ formatCount(websiteViews) }}</span>
         <span class="stat-label">浏览量</span>
       </div>
       <div class="stat-item">

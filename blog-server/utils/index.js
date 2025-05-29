@@ -41,7 +41,3 @@ export const parseBrowser = (userAgent) => {
     const deviceType = device.is('mobile') ? 'mobile' : device.is('tablet') ? 'tablet' : 'desktop'
     return `${browser.name || 'unknown'} ${browser.version} ${deviceType}` // 这里可以根据需要返回更多信息
 }
-
-
-// 获取QQ头像
-// https://q1.qlogo.cn/g?b=qq&nk=281423846&s=640

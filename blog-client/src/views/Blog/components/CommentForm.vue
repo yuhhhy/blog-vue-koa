@@ -3,7 +3,7 @@ import { ref, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { apiCreateComment, apiUpdateComment } from '@/api/comment.js'
-import { getGravatarHash, getGravatar } from '@/utils/avatar';
+import { getAvatar } from '@/utils/avatar';
 
 const emit = defineEmits(['updateComments'])
 const route = useRoute()
@@ -101,6 +101,7 @@ const doSubmit = async () => {
 
   // 尝试获取Grvatar头像，更新新评论的头像
   const avatarSrc = await getAvatar(userEmail)
+
   if (avatarSrc) {
     newComment.avatar = avatarSrc
     await apiUpdateComment(newComment)
@@ -108,20 +109,6 @@ const doSubmit = async () => {
     emit('updateComments')
   }
 }
-
-async function getAvatar(email) {
-  try {
-    // 获取 Gravatar 的哈希值
-    const hash = await getGravatarHash(email)
-    // 异步请求获取头像地址
-    const res = await getGravatar(hash)
-    return res
-  } catch (error) {
-    return 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
-  }
-  
-}
-
 </script>
 
 <template>
