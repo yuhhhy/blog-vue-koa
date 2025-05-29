@@ -7,11 +7,9 @@
         "server": "cd blog-server && npm run serve",
         "client": "cd blog-client && npm run dev",
         "background": "cd blog-background && npm run background",
-        "install-all": "npm install && cd blog-client && npm install && cd ../blog-server && npm install && cd ../blog-background && npm install",
-        "gen": "node scripts/generate-data.js"
+        "install-all": "npm install && cd blog-client && npm install && cd ../blog-server && npm install && cd ../blog-background && npm install"
     },
     "devDependencies": {
-        "concurrently": "^9.1.2",
-        "gray-matter": "^4.0.3"
+        "concurrently": "^9.1.2"
     }
 }

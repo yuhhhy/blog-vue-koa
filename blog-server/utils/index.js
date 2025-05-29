@@ -15,10 +15,9 @@ export const getIp = (ctx) => {
     
     // 如果是本地测试，返回实际的局域网IP
     if (ip === '127.0.0.1' || ip === '::1') {
-        return '119.39.54.72'
+        return '58.20.126.212'
     }
-    // 内网ip 192.168.238.43
-    // 公网ip 119.39.54.72
+
     return ip
 }
 
@@ -42,3 +41,7 @@ export const parseBrowser = (userAgent) => {
     const deviceType = device.is('mobile') ? 'mobile' : device.is('tablet') ? 'tablet' : 'desktop'
     return `${browser.name || 'unknown'} ${browser.version} ${deviceType}` // 这里可以根据需要返回更多信息
 }
+
+
+// 获取QQ头像
+// https://q1.qlogo.cn/g?b=qq&nk=281423846&s=640

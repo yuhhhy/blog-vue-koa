@@ -8,10 +8,14 @@
 - Element-Plus
 - Vite
 ### 后端
-- Koa
+- Koa3
 - MongoDB
 - mongoose
-- nodemon
+## 后台管理
+- Vue3
+- Element-Plus
+- Tailwind CSS
+
 
 ## 项目预览
 
@@ -28,6 +32,7 @@
 - 博客列表
 - 博客归档
 - 发表和显示评论
+- 关于页面
 - 通用Sidebar组件
 - 适配移动端
 
@@ -36,11 +41,29 @@
 - 博客内容API
 - 网站数据API
 - 评论API
+- 用户API
+- 访客API
 
 ## 项目结构
 ```
 blog-vue-koa/
 ├─ blog-background/         // Vue 博客后台管理
+│   ├─ src/                     // 项目源码
+│   │   ├─ api/                 // 前端api接口
+│   │   ├─ assets/              // 前端静态资源
+│   │   ├─ components/          // Vue组件
+│   │   ├─ config/              // 环境配置
+│   │   ├─ Layout/              // 页面基础布局
+│   │   ├─ router/              // 路由
+│   │   ├─ stores/              // Pinia
+│   │   ├─ style/               // 基础样式
+│   │   ├─ utils/               // 工具函数
+│   │   ├─ views/               // Vue页面
+│   │   ├─ App.vue              // 根组件
+│   │   └─ main.js              // 初始化Vue实例的入口文件
+│   ├─ index.html               // 项目入口文件
+│   ├─ package-lock.json
+│   └─ package.json             // 项目依赖
 ├─ blog-client/             // Vue 博客前端
 │   ├─ src/                     // 项目源码
 │   │   ├─ api/                 // 前端api接口
@@ -99,6 +122,8 @@ npm run start
 
 4. 访问项目
 ```bash
+# 前端
 http://localhost:8080/
+# 后台
+http://localhost:8096/
 ```
-
