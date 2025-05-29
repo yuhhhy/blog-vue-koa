@@ -112,7 +112,7 @@ onMounted(()=>{
   line-height: 1.6;
   border-radius: 8px;
   overflow: hidden;
-  padding: 0 30px;
+  padding: 0 30px 10px 30px;
   
   .top-form {
     color: var(--blue);

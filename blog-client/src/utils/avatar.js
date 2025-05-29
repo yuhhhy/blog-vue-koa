@@ -19,13 +19,16 @@ export async function getAvatar(email) {
         // 2. 尝试获取Gravatar头像
         const hash = sha256(email.trim().toLowerCase()).toString()
         const gravatarUrls = [
-            `https://cravatar.cn/avatar/${hash}?s=200&d=mp`,
-            `https://dn-qiniu-avatar.qbox.me/avatar/${hash}?s=200&d=mp`
+            'https://weavatar.com/avatar/',
+            'https://cdn.sep.cc/avatar/',
+            'https://gravatar.zeruns.tech/avatar/',
+            'https://cravatar.cn/avatar/',
+            'https://dn-qiniu-avatar.qbox.me/avatar/'
         ]
         // 依次尝试不同的Gravatar镜像
         for (const url of gravatarUrls) {
             try {
-                const response = await fetch(url)
+                const response = await fetch(url + hash + '?s=200&d=mp')
                 if (response.ok) {
                     return response.url
                 }

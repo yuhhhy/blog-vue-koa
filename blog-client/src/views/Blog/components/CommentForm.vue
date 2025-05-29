@@ -109,24 +109,54 @@ const doSubmit = async () => {
     emit('updateComments')
   }
 }
+
+
+// 添加 emoji 列表
+const emojis = ['😀', '😊', '🤣', '😍', '🤔', '😮', '😴', '😭', '😡', '🥰', '👍', '👋', '🎉', '❤️', '✨']
+
+// 添加 textarea 的引用
+const textareaRef = ref(null)
+
+// 优化后的插入 emoji 方法
+const insertEmoji = (emoji) => {
+  const textarea = textareaRef.value.textarea // 获取 el-input 组件的 textarea 元素
+  if (!textarea) return
+  
+  // 保存当前选区位置
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+  
+  // 在光标位置插入 emoji
+  const text = form.content
+  form.content = text.slice(0, start) + emoji + text.slice(end)
+  
+  // 使用 nextTick 确保 DOM 更新后再设置光标位置
+  nextTick(() => {
+    textarea.focus()
+    textarea.setSelectionRange(start + emoji.length, start + emoji.length)
+  })
+}
 </script>
 
 <template>
 <!-- 评论表单 -->
 <el-form :model="form" :rules="rules" ref="formRef" class="comment-form">
     <div class="comment-form-input-row">
+      <!-- 昵称 -->
       <el-form-item prop="username">
         <el-input
           v-model="form.username"
           placeholder="昵称*" 
         />
       </el-form-item>
+      <!-- 邮箱 -->
       <el-form-item prop="email">
         <el-input 
           v-model="form.email" 
           placeholder="电子邮箱*" 
         />
       </el-form-item>
+      <!-- 网站 -->
       <el-form-item prop="website">
         <el-input
           v-model="form.website" 
@@ -134,18 +164,47 @@ const doSubmit = async () => {
         />
       </el-form-item>
     </div>
+    <!-- 评论内容区域 -->
     <el-form-item prop="content">
       <el-input
+        ref="textareaRef"
         v-model="form.content"
         type="textarea"
         :autosize="{ minRows: 2 }"
         placeholder="写下你的评论..."
       />
     </el-form-item>
+    <!-- 表情和提交 -->
     <el-form-item>
-      <el-button @click="onSubmit" class="comment-form-submit">
-        提交
-      </el-button>
+      <div class="submit-container">
+        <!-- 添加表情的弹出框 -->
+        <el-popover
+          placement="top"
+          :width="200"
+          trigger="click"
+          popper-class="emoji-popover"
+        >
+          <template #reference>
+            <el-button class="emoji-button" type="info" text>
+              <span class="emoji-icon">😊</span>
+            </el-button>
+          </template>
+          <div class="emoji-container">
+            <span
+              v-for="emoji in emojis"
+              :key="emoji"
+              class="emoji-item"
+              @click="insertEmoji(emoji)"
+            >
+              {{ emoji }}
+            </span>
+          </div>
+        </el-popover>
+        <!-- 提交按钮 -->
+        <el-button @click="onSubmit" class="comment-form-submit">
+          提交
+        </el-button>
+    </div>
     </el-form-item>
   </el-form>
 </template>
@@ -217,18 +276,52 @@ const doSubmit = async () => {
       }
     }
 
-    /* 提交按钮样式 */
+    /* 提交按钮容器样式 */
+    .submit-container {
+      height: 28px;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+
+      /* emoji表情选择按钮 */
+      .emoji-button {
+        height: 28px;
+        border-radius: 4px;
+
+        .emoji-icon {
+          padding-bottom: 2px;
+          font-size: 18px;
+          cursor: pointer;
+          line-height: 1;
+        }
+        
+        &:hover {
+          background-color: var(--lightgrey);
+        }
+      }
+
+      /* 提交按钮样式 */
       .comment-form-submit {
-        width: 70px;
-        height: 26px;
-        background: var(--light-blue);
+        width: 80px;
+        height: 28px;
+        background: var(--tag-color);
         border: none;
-        color: white;
-        font-weight: bold;
+        color: var(--white);
+        font-weight: 600;
+        letter-spacing: 8px;
+        text-indent: 8px;
+
+        &:hover {
+        background: var(--blue);  // 悬浮时颜色变化
+        transform: translateY(-1px);  // 轻微上浮效果
+      }
+
         &:focus {
           animation: pulse 0.5s;
         }
       }
+    }
+
     /* 提交按钮动画 */
     @keyframes pulse {
       0% {

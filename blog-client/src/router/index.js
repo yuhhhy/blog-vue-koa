@@ -40,14 +40,35 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     linkActiveClass: 'active', // 设置Vue Router模糊匹配类名
-    routes
+    routes,
+    scrollBehavior(to, from, savedPosition) {
+        // 如果是锚点导航，不做处理
+        if (to.hash) {
+            return
+        }
+
+        // 如果有保存的位置，优先使用
+        if (savedPosition) {
+            return savedPosition
+        }
+
+        // 始终滚动到顶部
+        return { top: 0 }
+    }
 })
 
-router.beforeEach( async (to, from) => {
+router.beforeEach(async (to, from) => {
+    // 如果是锚点导航，不做处理
+    if (to.hash) {
+        return
+    }
+    
+    // 路由切换时创建访客记录
     const role = 'client'
     const page = to.name
     await apiCreateVisitor({ role, page })
     await apiUpdateWebsiteView()
+
 })
 
 export default router
