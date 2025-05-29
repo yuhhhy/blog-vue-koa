@@ -8,7 +8,7 @@
         <RouterLink 
             v-for="tag in tags" 
             :key="tag" 
-            :to="`/archive/${tag}`">
+            :to="`/archive?tag=${tag}`">
             <button>
                 <span class="tag" >{{ tag }}</span>
                 <span class="go iconfont">&#xe600;</span>

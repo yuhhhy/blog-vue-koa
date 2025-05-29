@@ -1,38 +1,43 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { apiGetBlogList } from '@/api/blog.js'
+import { useBlogList } from '@/composables/useBlogList'
+
 
 const route = useRoute()
 const router = useRouter()
-const posts = ref([])
+const { fetchBlogList } = useBlogList()
 const tags = ref([])
 
 // 获取当前活跃标签
 const activeTag = computed(() => {
-  return route.params.tagName
+  return route.query.tag
 })
 
 // 第一次点击添加params，第二次点击去除params
 const toggleTagLink = (tag) => {
   // 如果点击的标签是当前活跃标签，则不进行跳转
-    if (route.params.tagName && route.params.tagName === tag) {
-        router.push({ path: '/archive' })
+    if (route.query.tag && route.query.tag === tag) {
+        router.push({
+            path: '/archive',
+            query: {}
+         })
     }
     // 如果没有活跃标签，则跳转到当前标签
     else {
-        router.push({ path: `/archive/${tag}` })
+        router.push({
+            path: '/archive',
+            query: { tag }
+         })
     }
 }
 
-onMounted(() => {
-    apiGetBlogList().then(response => {
-        posts.value = response
-        // 获取所有标签
-        tags.value = [...new Set(
-            posts.value.flatMap(post => post.tags)
-        )]
-    })
+onMounted(async () => {
+    const posts = await fetchBlogList()
+    // 获取所有标签
+    tags.value = [...new Set(
+        posts.flatMap(post => post.tags)
+    )]
 })
 </script>
 

@@ -1,42 +1,41 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { apiGetBlogList } from '@/api/blog.js'
+import { useBlogList } from '@/composables/useBlogList'
 
 const route = useRoute()
-const postsByDate = ref([])
+const { blogList, fetchBlogList } = useBlogList()
 const postsByTag = ref([])
 
 // 提取筛选逻辑为单独函数
 const filterPostsByTag = () => {
+  const tag = route.query.tag
+  if (!tag) return
+  
   // 参数为日期，匹配精确到月份
-  if(route.params.tagName.match(/^\d{4}-\d{2}$/)){
-    postsByTag.value = postsByDate.value.filter(post => {
-      return post.createTime.startsWith(route.params.tagName)
+  if (tag.match(/^\d{4}-\d{2}$/)) {
+    postsByTag.value = blogList.value.filter(post => {
+      return post.createTime.startsWith(tag)
     })
-  }else{ // 参数为Tag，匹配Tag
-    postsByTag.value = postsByDate.value.filter(post => {
-      return post.tags.includes(route.params.tagName)
+  } else { // 参数为Tag，匹配Tag
+    postsByTag.value = blogList.value.filter(post => {
+      return post.tags.includes(tag)
     })
   }
 }
 
-// 页面挂载
-onMounted(() => {
-  
-  apiGetBlogList().then(response => {
-    postsByDate.value = response
-
-    if(route.params.tagName){
-      filterPostsByTag()
-    }
-  })
+onMounted(async () => {
+  await fetchBlogList()
+  if (route.query.tag) {
+    filterPostsByTag()
+  }
 })
 
-// 当前页面切换Tag
-watch(() => route.params.tagName, () => {
+// 监听 query 参数变化
+watch(() => route.query.tag, () => {
   filterPostsByTag()
 })
+
 </script>
 
 <template>
@@ -44,8 +43,9 @@ watch(() => route.params.tagName, () => {
     <el-timeline style="max-wipx" class="timeline">
       <!-- 有路由参数时显示 -->
       <el-timeline-item 
-        v-if="route.params.tagName && postsByTag.length" 
+        v-if="route.query.tag && postsByTag.length" 
         v-for="item in postsByTag" 
+        :key="item.id"
         :timestamp="item.createTime.substring(0, 10)" 
         type="primary" 
         class="timeline-item"
@@ -56,12 +56,12 @@ watch(() => route.params.tagName, () => {
       </el-timeline-item>
 
       <!-- 有路由参数但没有对应文章时显示 -->
-      <div v-else-if="route.params.tagName && !postsByTag.length" class="noPosts">很抱歉，还没有这类文章……</div>
+      <div v-else-if="route.query.tag && !postsByTag.length" class="noPosts">很抱歉，还没有这类文章……</div>
 
       <!-- 无路由参数时显示 -->
       <el-timeline-item 
         v-else 
-        v-for="item in postsByDate" 
+        v-for="item in blogList" 
         :timestamp="item.createTime.substring(0, 10)" 
         type="primary" 
         class="timeline-item"

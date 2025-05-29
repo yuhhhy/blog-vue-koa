@@ -20,7 +20,7 @@ onMounted(() => {
     <div class="sidebar-tags">
         <div class="sidebar-tags-title">标签云</div>
         <div class="sidebar-tags-content">
-            <RouterLink v-for="(tag, index) in tags" :to="`/archive/${tag}`">
+            <RouterLink v-for="(tag, index) in tags" :to="`/archive?tag=${tag}`">
                 <span class="tag">
                     {{ tag }}
                 </span>

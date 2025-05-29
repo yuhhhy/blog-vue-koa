@@ -8,7 +8,7 @@ const postsDividedByMonth = ref({})
 
 // 获取当前活跃的月份，用于动态样式高亮显示
 const activeMonth = computed(() => {
-  return route.params.tagName
+  return route.query.tag
 })
 
 onMounted(async () => {
@@ -34,7 +34,7 @@ onMounted(async () => {
         <RouterLink 
             v-for="(posts, createTime) in postsDividedByMonth" 
             :key="createTime" 
-            :to="`/archive/${createTime}`"
+            :to="`/archive?tag=${createTime}`"
         >
             <div class="archive-month" :class="{ active: createTime === activeMonth }">
                 <div class="createTime">{{ createTime.split('-')[0] }}年 {{ createTime.split('-')[1] }}月</div>

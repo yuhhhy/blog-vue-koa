@@ -62,10 +62,13 @@ router.beforeEach(async (to, from) => {
     if (to.hash) {
         return
     }
+    // 如果是路由参数的tag参数变换，不做处理
+    if (to.name === from.name && to.query.tag !== from.query.tag) {
+        return
+    }
     
     // 路由切换时创建访客记录
-    const role = 'client'
-    const page = to.name
+    const { role, page } = { role: 'client', page: to.name }
     await apiCreateVisitor({ role, page })
     await apiUpdateWebsiteView()
 
