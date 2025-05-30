@@ -24,7 +24,7 @@ app.use(cors({
 
 // 对所有请求进行打印
 app.use(async (ctx, next) => {
-    console.log(`in app.js 请求方法：${ctx.request.method} 请求路径：${ctx.request.url}`)
+    console.log(`${ctx.request.method}请求 ${ctx.request.url}`)
     await next()
 })
 

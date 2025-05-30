@@ -30,7 +30,6 @@ onMounted(() => {
   <div>
     Welcome!
     <div id="main" class="w-96 h-96"></div>
-    <el-button type="primary" @click="$router.push('/login')">去登录</el-button>
   </div>
 </template>
 

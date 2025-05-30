@@ -4,8 +4,9 @@ import { computed, ref } from 'vue'
 export const useUserStore = defineStore('user', () => {
 
     // 持久化存储
-    const userData = ref(JSON.parse(localStorage.getItem('userData')) || {});
-    // 用户验证登录
+    const userData = ref(JSON.parse(localStorage.getItem('userData')) || {})
+
+    // 用户验证登录 逻辑易被破解，需更改！！2
     const isAuthenticated = computed(() => {
         return Reflect.ownKeys(userData.value).length !== 0
     })

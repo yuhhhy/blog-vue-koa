@@ -169,10 +169,10 @@ async function UpdateBlog(id) {
     </el-table-column>
     <el-table-column fixed="right" label="管理">
       <template #default="scope">
-        <el-button type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
+        <el-button type="text" size="small" @click="handleDelete(scope.$index, scope.row)" class="text-red-500">
           删除
         </el-button>
-        <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">
+        <el-button type="text" size="small" @click="handleEdit(scope.$index, scope.row)">
           编辑
         </el-button>
       </template>

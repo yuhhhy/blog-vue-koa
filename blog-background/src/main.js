@@ -5,8 +5,7 @@ import router from './router'
 import ElementPlus from 'element-plus'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/dist/index.css'
-import './style/global.css'
-import "./style/tailwindcss.css"
+import './style/index.css'
 
 const pinia = createPinia()
 const app = createApp(App)
