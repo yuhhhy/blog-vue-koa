@@ -6,8 +6,21 @@ export const authMiddleware = async (ctx, next) => {
 
     if (requireAuth) {
         // 如果前端请求请求头有 require-auth: true，则需要校验 token
+
+
+        // 检查是否登录
+        const authorization = ctx.request.headers.authorization
+        if (!authorization) {
+            ctx.status = 401
+            ctx.body = {
+                code: 401,
+                message: '请先登录'
+            }
+            return
+        }
+
+        // 检查token和权限
         try {
-            const authorization = ctx.request.headers.authorization
             const token = authorization.split(' ')[1]
             const decoded = jwt.verify(token, KEY)
 
@@ -23,9 +36,9 @@ export const authMiddleware = async (ctx, next) => {
             
             await next()
         } catch (error) {
-            ctx.status = 401
+            ctx.status = 400
             ctx.body = {
-                code: 401,
+                code: 400,
                 message: 'token过期，请重新登录'
             }
         }

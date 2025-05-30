@@ -2,8 +2,8 @@
 import { reactive, ref, onMounted } from 'vue'
 import { apiGetBlogList, apiDeleteBlog, apiUpdateBlog } from '@/api/blog.js'
 import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } from '@/api/blogContent.js'
-import { apiUpdateWebsiteLastUpdate } from '@/api/websiteData.js'
-import { ElMessageBox } from 'element-plus'
+import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount } from '@/api/websiteData.js'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getFormatDate } from '@/utils/date.js'
 import countWord from '@/utils/wordCount.js'
 import Vditor from '@/views/ArticleCreate/components/Vditor.vue'
@@ -77,7 +77,7 @@ function handleEdit(index, row) {
 }
 
 // 处理更改
-function handleConfirm() {
+async function handleConfirm() {
   // 确认信息完整
   if (!form.author || !form.title || !form.tags || !form.content) {
     ElMessageBox.alert('请填写完整信息', '提示', {
@@ -86,21 +86,26 @@ function handleConfirm() {
     })
     return
   }
-  // 发送更改
-  UpdateBlog(form.id)
 
-  // 更新表格数据
-  getBlogs()
-  
-  // 更新网站更新时间
-  apiUpdateWebsiteLastUpdate()
-  // 更新网站总字数
-  apiUpdateWebsiteTotalWordCount()
+  try {
+    // 发送更改
+    await UpdateBlog(form.id)
 
-  // 弹出框不可见
-  dialogFormVisible.value = false
+    // 更新表格数据
+    await getBlogs()
+
+    // 更新网站数据
+    await Promise.all([
+      apiUpdateWebsiteLastUpdate(), // 更新网站更新时间
+      apiUpdateWebsiteTotalWordCount() // 更新网站总字数
+    ])
+
+    // 关闭对话框
+    dialogFormVisible.value = false
+  } catch (error) {
+    
+  }
 }
-
 
 // 更改函数
 async function UpdateBlog(id) {
@@ -108,11 +113,12 @@ async function UpdateBlog(id) {
 
   await apiUpdateBlog({
     id,
+    author: form.author,
     title: form.title,
     tags: form.tags,
     updateTime
   })
-  
+
   await apiUpdateBlogContent({
     id,
     author: form.author,

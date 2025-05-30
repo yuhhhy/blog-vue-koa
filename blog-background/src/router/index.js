@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/userStore.js'
+import { ElMessage } from 'element-plus'
 
 const routes = [
     {
@@ -48,7 +49,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from) => {
-
+    
     // 检查用户是否已登录 未登录跳转登录页
     const userStore = useUserStore()
     if (
@@ -56,8 +57,8 @@ router.beforeEach((to, from) => {
         // 避免无限重定向
         to.name !== 'Login'
     ) {
-        // 将用户重定向到登录页面
-        return { name: 'Login' }
+        ElMessage.warning('请先登录！')   
+        return { name: 'Login' } // 将用户重定向到登录页面
     }
 })
 

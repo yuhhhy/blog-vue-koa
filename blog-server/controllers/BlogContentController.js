@@ -25,7 +25,6 @@ export const getBlogContent = async (ctx) => {
     // 从数据库获取单个博客文章
     const newBlogContent = await BlogContent.findOne({ id: id })
     if (!newBlogContent) {
-        console.log('博客不存在')
         ctx.status = 404
         ctx.body = { message: '博客不存在' }
         return
@@ -46,17 +45,25 @@ export const getBlogContentList = async (ctx) => {
 // 删除一条博客内容
 export const deleteBlogContent = async (ctx) => {
     const { id } = ctx.request.params
-    const deletedBlogContent = await BlogContent.findOneAndDelete({ id })
-    ctx.status = 200
-    ctx.body = deletedBlogContent
+    try {
+        const deletedBlogContent = await BlogContent.findOneAndDelete({ id })
+        if (!deletedBlogContent) {
+            ctx.status = 404
+            ctx.body = { message: '博客不存在' }
+            return
+        }
+        ctx.status = 204 // 204 No Content
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '删除失败', error: error.message }
+    }
 }
 
 // 删除所有博客内容
 export const deleteAllBlogContents = async (ctx) => {
     try {
         await BlogContent.deleteMany({})
-        ctx.status = 200
-        ctx.body = { message: '全部博客内容删除成功' }
+        ctx.status = 204 // 204 No Content
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: '全部博客内容删除失败', error: error.message }
@@ -68,13 +75,10 @@ export const UpdateBlogContent = async (ctx) => {
     const { id } = ctx.request.params
     try {
         const blogContent = await BlogContent.findOne({ id: id })
-        blogContent.author = ctx.request.body.author || blogContent.author
-        blogContent.title = ctx.request.body.title || blogContent.title
-        blogContent.tags = ctx.request.body.tags || blogContent.tags
-        blogContent.content = ctx.request.body.content || blogContent.content
-        blogContent.updateTime = ctx.request.body.updateTime || blogContent.updateTime
-        blogContent.wordCount = ctx.request.body.wordCount || blogContent.wordCount
         
+        // 使用 Object.assign 合并对象
+        Object.assign(blogContent, ctx.request.body)
+
         await blogContent.save()
         ctx.status = 200
         ctx.body = { message: '博客内容更新成功', blogContent: blogContent }

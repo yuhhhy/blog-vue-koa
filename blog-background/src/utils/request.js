@@ -13,7 +13,6 @@ const request = axios.create({
 // 请求统一拦截
 request.interceptors.request.use(
     config => {
-
         // 判断Axios配置对象是否有requireAuth:true字段，如果有，就代表这个请求需要鉴权
         if (config.requireAuth === true) {
             // 如果需要鉴权，添加requireAuth请求头
@@ -35,11 +34,15 @@ request.interceptors.request.use(
 
 // 响应统一拦截 
 request.interceptors.response.use(
-
     // 2xx 范围内的状态码都会触发该函数
     // response是Axios响应体，后端实际可以设置的响应数据是response.data
     response => {
         // 2xx 范围内的状态码都会触发该函数
+        if (response.status === 204) {
+            return {
+                message: "204 No Content"
+            }
+        }
         return response.data
     },
 
@@ -50,10 +53,14 @@ request.interceptors.response.use(
         if (response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
             switch (response.status) {
-                case 401:
+                case 400:
                     ElMessage.error('token过期，请重新登录')
+                    userStore.clearUserData()  // 登出
                     router.push('/login')
-                    // 可以在这里处理登出逻辑
+                    break
+                case 401:
+                    ElMessage.error('请先登录')
+                    router.push('/login')
                     break
                 case 403:
                     ElMessage.error('请求拒绝，没有操作权限')

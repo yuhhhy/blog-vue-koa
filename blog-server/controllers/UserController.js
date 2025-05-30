@@ -20,7 +20,7 @@ export const userLogin = async (ctx) => {
             email: user.email,
             role: user.role,
         }
-        const token = jwt.sign(payload, KEY, { expiresIn: '2h' })
+        const token = jwt.sign(payload, KEY, { expiresIn: '10h' })
 
         ctx.status = 200
         ctx.body = {
@@ -93,10 +93,7 @@ export const deleteUser = async (ctx) => {
     const user = await User.findOne({ userId: id })
     if (user) {
         await User.deleteOne({ userId: id })
-        ctx.status = 200
-        ctx.body = {
-            message: '用户删除成功',
-        }
+        ctx.status = 204
     }
     else {
         ctx.status = 404
@@ -109,22 +106,24 @@ export const deleteUser = async (ctx) => {
 // 更新用户
 export const updateUser = async (ctx) => {
     const { id } = ctx.params
-    const { username, password, email } = ctx.request.body
-    const user = await User.findOne({ userId: id })
-    if (user) {
-        user.username = username
-        user.password = password
-        user.email = email
+    try {
+        const user = await User.findOne({ userId: id })
+
+        Object.assign(user, ctx.request.body)
         await user.save()
+
         ctx.status = 200
         ctx.body = {
+            code: 200,
             message: '用户更新成功',
-            data: user,
+            data: user
         }
-    } else {
-        ctx.status = 404
+    } catch (error) {
+        ctx.status = 500
         ctx.body = {
-            message: '用户不存在',
+            code: 500,
+            message: '更新失败',
+            error: error.message
         }
     }
 }

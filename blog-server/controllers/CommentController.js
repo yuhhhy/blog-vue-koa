@@ -22,8 +22,8 @@ export const getComments = async (ctx) => {
         replies: buildTree(items, item.id)
         }))
     }
-    ctx.body = buildTree(comments)
     ctx.status = 200
+    ctx.body = buildTree(comments)
 }
 
 // 创建新评论
@@ -38,9 +38,7 @@ export const createComment = async (ctx) => {
         }
         ctx.status = 201 // 201 Created
         ctx.body = { message: '评论创建成功', comment: newComment }   
-        console.log('评论创建成功，id: ', newComment.id, " 当前时间：", newComment.createTime)
     } catch (error) {
-        console.error('Error creating comment:', error) // 记录完整错误
         ctx.status = 500 
         ctx.body = { message: '评论创建失败', error: error.message }
     }

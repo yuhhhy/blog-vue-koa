@@ -49,8 +49,7 @@ export const deleteBlog = async (ctx) => {
     const { id } = ctx.request.params
     try {
         await Blog.findOneAndDelete({ id })
-        ctx.status = 200
-        ctx.body = { message: '博客删除成功' }
+        ctx.status = 204  // 204 No Content
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: '博客删除失败', error: error.message }
@@ -61,8 +60,7 @@ export const deleteBlog = async (ctx) => {
 export const deleteAllBlogs = async (ctx) => {
     try {
         await Blog.deleteMany({})
-        ctx.status = 200
-        ctx.body = { message: '全部博客删除成功' }
+        ctx.status = 204  // 204 No Content
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: '全部博客删除失败', error: error.message }
@@ -74,10 +72,9 @@ export const updateBlog = async (ctx) => {
     const { id } = ctx.request.params
     try {
         const existedBlog = await Blog.findOne({ id: id })
-        // 更新博客内容
-        existedBlog.title = ctx.request.body.title || existedBlog.title
-        existedBlog.tags = ctx.request.body.tags || existedBlog.tags
-        existedBlog.updateTime = ctx.request.body.updateTime || existedBlog.updateTime
+
+        // 使用 Object.assign 合并对象，更新博客信息
+        Object.assign(existedBlog, ctx.request.body)
 
         await existedBlog.save()
         ctx.status = 200

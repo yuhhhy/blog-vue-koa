@@ -5,6 +5,7 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useArticleStore } from '@/stores/articleStore.js'
 
 const vditorEl = ref()
+const timer = ref(null)
 const emit = defineEmits(['vblur'])
 const props = defineProps(['content'])
 const articleStore = useArticleStore()
@@ -23,7 +24,7 @@ if (props.content) {
             vditorEl.value.setValue(props.content)
         }
     })
-    const timer = setInterval(checkOverlay, 100)
+    timer.value = setInterval(checkOverlay, 100)
 }
 
 
@@ -66,12 +67,11 @@ onMounted(() => {
 
 // 组件卸载时清理定时器
 onUnmounted(() => {
-    if (props.content) {
-        clearInterval(timer)
+    if (timer.value) {
+        clearInterval(timer.value)
+        timer.value = null
     }
 })
-
-
 
 </script>
 

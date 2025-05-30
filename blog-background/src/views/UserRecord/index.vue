@@ -45,9 +45,13 @@ const handleCurrentChange = (val) => {
 
 // 删除访客记录
 const handleDelete = async (index, row) => {
-  const res = await apiDeleteVisitor(row._id)
-  getList()
-  ElMessage.success(res.message)
+  try {
+    const res = await apiDeleteVisitor(row._id)
+    getList()
+    ElMessage.success(res.message)
+  } catch (error) {
+    
+  }
 }
 </script>
 
