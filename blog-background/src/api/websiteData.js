@@ -10,6 +10,7 @@ export function apiUpdateWebsiteLastUpdate() {
     return request({
         url: '/website/lastupdate',
         method: 'PUT',
+        requireAuth: true
     })
 }
 
@@ -17,6 +18,7 @@ export function apiUpdateWebsiteLastUpdate() {
 export function apiUpdateWebsiteTotalWordCount() {
     return request({
         url: '/website/totalwordcount',
-        method: 'PUT'
+        method: 'PUT',
+        requireAuth: true
     })
 }

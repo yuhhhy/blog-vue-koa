@@ -9,7 +9,7 @@ import request from '@/utils/request.js'
 export function apiUserLogin(data) {
     return request({
         url: '/user/login',
-        method: 'post',
+        method: 'POST',
         data // POST 请求体数据
     })
 }
@@ -18,7 +18,7 @@ export function apiUserLogin(data) {
 export function apiGetUserList() {
     return request({
         url: '/user/list',
-        method: 'get',
+        method: 'GET'
     })
 }
 
@@ -26,7 +26,7 @@ export function apiGetUserList() {
 export function apiGetUser(userId) {
     return request({
         url: `/user/${userId}`,
-        method: 'get',
+        method: 'GET'
     })
 }
 
@@ -34,8 +34,9 @@ export function apiGetUser(userId) {
 export function apiCreateUser(data) {
     return request({
         url: '/user',
-        method: 'post',
-        data
+        method: 'POST',
+        data,
+        requireAuth: true
     })
 }
 
@@ -43,7 +44,8 @@ export function apiCreateUser(data) {
 export function apiDeleteUser(userId) {
     return request({
         url: `/user/${userId}`,
-        method: 'delete',
+        method: 'DELETE',
+        requireAuth: true
     })
 }
 
@@ -51,7 +53,8 @@ export function apiDeleteUser(userId) {
 export function apiUpdateUser(data) {
     return request({
         url: `/user/${data.userId}`,
-        method: 'put',
-        data
+        method: 'PUT',
+        data,
+        requireAuth: true
     })
 }

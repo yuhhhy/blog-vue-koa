@@ -1,0 +1,36 @@
+import jwt from 'jsonwebtoken'
+import KEY from '../config/key.js'
+
+export const authMiddleware = async (ctx, next) => {
+    const requireAuth = ctx.request.headers['require-auth']
+
+    if (requireAuth) {
+        // 如果前端请求请求头有 require-auth: true，则需要校验 token
+        try {
+            const authorization = ctx.request.headers.authorization
+            const token = authorization.split(' ')[1]
+            const decoded = jwt.verify(token, KEY)
+
+            // 检查JWT payload中的用户角色字段
+            if (decoded.role !== 'admin') {
+                ctx.status = 403
+                ctx.body = {
+                    code: 403,
+                    message: '权限不足，需要管理员权限'
+                }
+                return
+            }
+            
+            await next()
+        } catch (error) {
+            ctx.status = 401
+            ctx.body = {
+                code: 401,
+                message: 'token过期，请重新登录'
+            }
+        }
+    } else {
+        await next()
+        return
+    }
+}

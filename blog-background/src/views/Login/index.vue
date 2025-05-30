@@ -33,10 +33,13 @@ const onLogin = () => {
     apiUserLogin(form)
       .then(res => {
         if (res.code === 200) {
+          ElMessage.success(res.message)
           // 对返回的用户数据及token存储到Pinia
           userStore.setUserData(res.data)
           // 登录成功后进行页面跳转
           router.push('/')
+        } else {
+          ElMessage.error(res.message)
         }
       })
     }

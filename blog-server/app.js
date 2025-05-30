@@ -8,6 +8,7 @@ import multer from '@koa/multer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { storage } from './config/upload.js'
+import { authMiddleware } from './middlewares/auth.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -24,22 +25,23 @@ app.use(cors({
 
 // 对所有请求进行打印
 app.use(async (ctx, next) => {
-    console.log(`${ctx.request.method}请求 ${ctx.request.url}`)
+    const auth = ctx.request.headers['require-auth'] ? 'auth' : 'noAuth'
+    console.log(`${ctx.request.method} | ${ctx.request.url} | ${auth}`)
     await next()
 })
 
 // 解析 request.body
 app.use(bodyParser())
 
-
 // 代理静态资源目录，让前端可以访问到public目录下的文件
 app.use(serve(path.join(__dirname, '../public')))
-
 
 // 处理文件上传
 const upload = multer({ storage })
 app.use(upload.single('file')) // 处理单个文件上传，注意这里的 'file' 要和前端上传时的 name 对应
 
+// 注册鉴权中间件
+app.use(authMiddleware)
 
 // 注册路由
 app.use(router.routes())

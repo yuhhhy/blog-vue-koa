@@ -18,7 +18,8 @@ export function apiCreateBlogContent(data) {
     return request({
         url: '/blogcontent',
         method: 'POST',
-        data
+        data,
+        requireAuth: true
     })
 }
 
@@ -27,7 +28,8 @@ export function apiUpdateBlogContent(data) {
     return request({
         url: `/blogcontent/${data.id}`,
         method: 'PUT',
-        data
+        data,
+        requireAuth: true
     })
 }
 
@@ -36,5 +38,6 @@ export function apiDeleteBlogContent(blogId) {
     return request({
         url: `/blogcontent/${blogId}`,
         method: 'DELETE',
+        requireAuth: true
     })
 }
