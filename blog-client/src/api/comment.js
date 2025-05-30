@@ -22,22 +22,6 @@ export function apiCreateComment(data) {
     })
 }
 
-// 删除一条评论
-export function apiDeleteComment(id) {
-    return request({
-        url: `/comment/${id}`,
-        method: 'DELETE',
-    })
-}
-
-// 删除所有评论
-export function apiDeleteAllComments() {
-    return request({
-        url: '/comment',
-        method: 'DELETE',
-    })
-}
-
 // 更新评论
 export function apiUpdateComment(data) {
     return request({

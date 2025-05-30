@@ -9,7 +9,7 @@ import request from '@/utils/request.js'
 export function apiCreateVisitor(data) {
     return request({
         url: '/visitor',
-        method: 'post',
+        method: 'POST',
         data
     })
 }

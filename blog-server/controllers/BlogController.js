@@ -30,22 +30,6 @@ export const getBlogById = async (ctx) => {
     ctx.body = blog
 }
 
-// 通过标题获取博客
-export const getBlogByTitle = async (ctx) => {
-    const { title } = ctx.request.params
-    // 从数据库获取单个博客文章
-    const blog = await Blog.findOne({ title: title })
-    if (!blog) {
-        console.log('博客不存在')
-        ctx.status= 404
-        ctx.body = { message: '博客不存在' }
-    }
-    console.log(2);
-
-    ctx.status = 200
-    ctx.body = blog
-}
-
 // 创建新博客
 export const createBlog = async (ctx) => {
     // POST 请求体作为数据，创建新博客到数据库

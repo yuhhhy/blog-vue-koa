@@ -65,9 +65,10 @@ export const getVisitorList = async (ctx) => {
 }
 
 // 删除访客记录
-export const deleteVisitor = async (ctx) => {
+export const deleteVisitor = async (ctx) => {  
     const { id } = ctx.request.params
     const deletedVisitor = await Visitor.findByIdAndDelete(id)
+
     ctx.status = 200
     ctx.body = {
         message: '访客记录删除成功',

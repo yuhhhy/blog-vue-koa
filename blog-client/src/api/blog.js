@@ -21,48 +21,6 @@ export function apiFetchBlogData(blogId) {
     })
 }
 
-// 通过标题获取博客
-export function apiGetBlogByTitle(title) {
-    return request({
-        url: `/blog/title/${title}`,
-        method: 'GET'
-    })
-}
-
-// 创建新博客
-export function apiCreateBlog(data) {
-    return request({
-        url: '/blog',
-        method: 'POST',
-        data
-    })
-}
-
-// 删除博客
-export function apiDeleteBlog(blogId) {
-    return request({
-        url: `/blog/${blogId}`,
-        method: 'DELETE'
-    })
-}
-
-// 删除所有博客
-export function apiDeleteAllBlogs() {
-    return request({
-        url: '/blog',
-        method: 'DELETE'
-    })
-}
-
-// 更新博客
-export function apiUpdateBlog(blogId, data) {
-    return request({
-        url: `/blog/${blogId}`,
-        method: 'PUT',
-        data
-    })
-}
-
 // 获取上一篇博客
 export function apiGetPrevArticle(blogId) {
     return request({

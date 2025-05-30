@@ -65,18 +65,6 @@ export const deleteComment = async (ctx) => {
     }
 }
 
-// 删除所有评论
-export const deleteAllComments = async (ctx) => {
-    try {
-        await Comment.deleteMany({}) // 删除所有评论
-        ctx.status = 200
-        ctx.body = { message: '所有评论删除成功' }
-    } catch (error) {
-        ctx.status = 500
-        ctx.body = { message: '删除所有评论失败', error: error.message }
-    }
-}
-
 // 更新评论
 export const updateComment = async (ctx) => {
     const { id } = ctx.params

@@ -1,8 +1,8 @@
 import Router from '@koa/router'
-import { getBlogList, getBlogById, getBlogByTitle, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
+import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
-import { getComments, createComment, deleteComment, deleteAllComments, updateComment } from '../controllers/CommentController.js'
+import { getComments, createComment, deleteComment, updateComment } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 
@@ -16,9 +16,6 @@ router.get('/blog/bloglist', getBlogList)
 
 // 获取单个博客
 router.get('/blog/:id', getBlogById)
-
-// 通过标题获取博客
-router.get('/blog/title/:title', getBlogByTitle)
 
 // 创建新博客
 router.post('/blog', createBlog)
@@ -95,9 +92,6 @@ router.post('/comment', createComment)
 
 // 删除一条评论
 router.delete('/comment/:id', deleteComment)
-
-// 删除所有评论
-router.delete('/comment', deleteAllComments)
 
 // 更新评论
 router.put('/comment/:id', updateComment)
