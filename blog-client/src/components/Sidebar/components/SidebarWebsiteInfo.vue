@@ -35,8 +35,8 @@ const formatCount = (count) => {
 
 async function getWebsiteData() {
     const websitedata = await apiGetWebsiteData() // 获取网站数据
-    websiteVisits.value = websitedata.visit
-    websiteViews.value = websitedata.view
+    websiteVisits.value = websitedata.visit.total
+    websiteViews.value = websitedata.view.total
     updateTime.value = websitedata.updateTime
     totalWordCount.value = websitedata.totalWordCount
 }

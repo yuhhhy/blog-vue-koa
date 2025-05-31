@@ -5,11 +5,12 @@ import request from "@/utils/request.js"
  * @returns {Promise}
  */
 
-// 获取网站访问量
-export function apiGetWebsiteData() {
+// 获取网站数据
+export function apiGetWebsiteData(timeRange = 'all') {
     return request({
         url: '/website',
         method: 'GET',
+        params: { timeRange }
     })
 }
 

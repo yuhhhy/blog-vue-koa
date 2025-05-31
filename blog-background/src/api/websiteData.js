@@ -5,6 +5,15 @@ import request from "@/utils/request.js"
  * @returns {Promise}
  */
 
+// 获取网站数据
+export function apiGetWebsiteData(timeRange = 'all') {
+    return request({
+        url: '/website',
+        method: 'GET',
+        params: { timeRange }
+    })
+}
+
 // 更新网站最后更新时间
 export function apiUpdateWebsiteLastUpdate() {
     return request({

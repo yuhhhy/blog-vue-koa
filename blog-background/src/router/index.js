@@ -7,7 +7,7 @@ const routes = [
         path: '/',
         name: 'Home',
         redirect: '/welcome',
-        component: () => import('../views/Home/index.vue'),
+        component: () => import('../views/Home.vue'),
         children: [
             {        
                 path: 'welcome',
