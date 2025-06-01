@@ -118,6 +118,20 @@ export const getWebsiteData = async (ctx) => {
             }
         }
 
+        const getThisYear = (dailyDatas) => {
+            const now = new Date()
+            const startOfYear = new Date(now.getFullYear(), 0, 1) // 本年1月1日
+
+            // 筛选本年数据
+            const thisYearData = dailyDatas.filter(item => {
+                const itemDate = new Date(item.date)
+                return itemDate >= startOfYear
+            })
+
+            // 按时间排序
+            return thisYearData.sort((a, b) => new Date(a.date) - new Date(b.date))
+        }
+
         // 处理返回数据
         ctx.status = 200
         ctx.body = {
@@ -132,6 +146,10 @@ export const getWebsiteData = async (ctx) => {
             comment: {
                 total: data.comment.total,
                 data: filterData(data.comment.dailyData, timeRange).map(item => item.count)
+            },
+            article: {
+                total: data.article.total,
+                data: getThisYear(data.article.dailyData) // 不管传递什么参数，始终返回一年的数据
             },
             updateTime: data.updateTime,
             totalWordCount: data.totalWordCount
@@ -159,6 +177,9 @@ export const getWebsiteDataCount = async (ctx) => {
         },
         comment: {
             total: data.comment.total,
+        },
+        article: {
+            total: data.article.total,
         },
         updateTime: data.updateTime,
         totalWordCount: data.totalWordCount
@@ -215,3 +236,4 @@ export const updataWebsitetotalWordCount = async (ctx) => {
     ctx.status = 200
     ctx.body = result
 }
+

@@ -26,6 +26,14 @@ export const WebsiteDataSchema = new mongoose.Schema({
             count: { type: Number }
         }]
     },
+    // 网站文章总数
+    article: {
+        total: { type: Number, default: 0 },
+        dailyData: [{
+            date: { type: Date },
+            count: { type: Number }
+        }]
+    },
     // 网站最后更新时间
     updateTime: {
         type: Date,

@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import { apiGetBlogList } from '@/api/blog.js'
 import { apiGetWebsiteData } from '@/api/websiteData.js'
 
 const runTime = ref(0) // 网站运行天数
@@ -19,12 +18,6 @@ function getrunTime(startTime) {
     return diffDate
 }
 
-// 获取文章总数
-async function getBlogList() {
-    const posts = await apiGetBlogList()
-    totalPosts.value = posts.length // 写入文章总数
-}
-
 // 添加数据格式化函数
 const formatCount = (count) => {
   if (!count) return '0 k'
@@ -34,16 +27,16 @@ const formatCount = (count) => {
 }
 
 async function getWebsiteData() {
-    const websitedata = await apiGetWebsiteData() // 获取网站数据
-    websiteVisits.value = websitedata.visit.total
-    websiteViews.value = websitedata.view.total
-    updateTime.value = websitedata.updateTime
-    totalWordCount.value = websitedata.totalWordCount
+  const websitedata = await apiGetWebsiteData() // 获取网站数据
+  websiteVisits.value = websitedata.visit.total
+  websiteViews.value = websitedata.view.total
+  totalPosts.value = websitedata.article.total
+  updateTime.value = websitedata.updateTime
+  totalWordCount.value = websitedata.totalWordCount
 }
 
 // 执行函数，初始化网站数据
 runTime.value = getrunTime('2025-05-04')
-getBlogList()
 getWebsiteData()
 
 </script>

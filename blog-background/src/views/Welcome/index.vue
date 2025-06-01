@@ -11,17 +11,22 @@ onMounted(() => {
 // 获取初始化数据
 async function fetchData() {
   try {
-    const dataWeek = await apiGetWebsiteData('week')
+    const data = await apiGetWebsiteData('week')
 
     // 更新顶部统计数据
-    Object.assign(topData.value.view, dataWeek.view)
-    Object.assign(topData.value.visit, dataWeek.visit)
-    Object.assign(topData.value.comment, dataWeek.comment)
+    Object.assign(topData.value.view, data.view)
+    Object.assign(topData.value.visit, data.visit)
+    Object.assign(topData.value.comment, data.comment)
 
     // 更新主图表初始数据
-    mainData.value.view.weekData = dataWeek.view.data
-    mainData.value.visit.weekData = dataWeek.visit.data
-    mainData.value.comment.weekData = dataWeek.comment.data
+    mainData.value.view.weekData = data.view.data
+    mainData.value.visit.weekData = data.visit.data
+    mainData.value.comment.weekData = data.comment.data
+
+    // 更新热力图表数据
+    heatmapData.value = data.article.data
+    console.log(heatmapData.value);
+    
 
     // 初始化图表
     initTopCards()
@@ -347,82 +352,110 @@ const initMainChart = () => {
   })
 }
 
-
-
+const heatmapData = ref([])
 
 // 文章统计图表 - 热力图
 const initArticleChart = () => {
   const articleChart = echarts.init(document.getElementById('articleChart'))
   
-  // 生成模拟数据
-  const data = []
-  const hours = ['12a', '1a', '2a', '3a', '4a', '5a', '6a', '7a', '8a', '9a', '10a', '11a',
-    '12p', '1p', '2p', '3p', '4p', '5p', '6p', '7p', '8p', '9p', '10p', '11p']
-  const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-
-  for (let i = 0; i < 7; i++) {
-    for (let j = 0; j < 24; j++) {
-      data.push([j, i, Math.round(Math.random() * 10)])
+  const getYearlyData = (year) => {
+    // 创建一个 Map 来存储日期和文章数量的对应关系
+    const articleMap = new Map()
+    
+    // 处理实际数据
+    heatmapData.value.forEach(item => {
+      const date = new Date(item.date)
+      const dateStr = echarts.time.format(+date, '{yyyy}-{MM}-{dd}', false)
+      articleMap.set(dateStr, item.count)
+    })
+    
+    // 生成完整的年度数据
+    const date = +echarts.time.parse(year + '-01-01')
+    const end = +echarts.time.parse((+year + 1) + '-01-01')
+    const dayTime = 3600 * 24 * 1000
+    const data = []
+    
+    // 遍历整年的每一天
+    for (let time = date; time < end; time += dayTime) {
+      const dateStr = echarts.time.format(time, '{yyyy}-{MM}-{dd}', false)
+      data.push([
+        dateStr,
+        articleMap.get(dateStr) || 0  // 如果该日期没有数据则返回0
+      ])
     }
+    
+    return data
   }
 
   articleChart.setOption({
     title: {
-      text: '文章发布时间分布',
+      top: 30,
       left: 'center',
-      top: 0
+      text: '文章发布'
     },
     tooltip: {
-      position: 'top',
-      formatter: function (params) {
-        return `${days[params.value[1]]} ${hours[params.value[0]]}<br/>发布数量: ${params.value[2]}`
+      formatter: function(params) {
+        const value = params.value[1]
+        const date = new Date(params.value[0])
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+        // 获取日期的后缀
+        const getDaySuffix = (day) => {
+          if (day > 3 && day < 21) return 'th'
+          switch (day % 10) {
+            case 1: return 'st'
+            case 2: return 'nd'
+            case 3: return 'rd'
+            default: return 'th'
+          }
+        }
+
+        const month = months[date.getMonth()]
+        const day = date.getDate()
+        const suffix = getDaySuffix(day)
+
+        return value === 1 || value === 0
+          ? `${value} article written on ${month} ${day}${suffix}`
+          : `${value} articles written on ${month} ${day}${suffix}`
       }
     },
-    grid: {
-      top: '15%',
-      left: '5%',
-      right: '5%',
-      bottom: '10%'
-    },
-    xAxis: {
-      type: 'category',
-      data: hours,
-      splitArea: { show: true }
-    },
-    yAxis: {
-      type: 'category',
-      data: days,
-      splitArea: { show: true }
-    },
-    // 修改热力图配置部分
     visualMap: {
       min: 0,
       max: 10,
-      calculable: true,
+      type: 'piecewise',
       orient: 'horizontal',
       left: 'center',
-      bottom: '0%',
-      inRange: {
-        // 改为绿色渐变
-        color: ['#e6ffef', '#10B981']
-      }
+      top: 75,
+      pieces: [
+        { gte: 4, color: '#216e39' },
+        { value: 3, color: '#30a14e' },
+        { value: 2, color: '#40c463' },
+        { value: 1, color: '#9be9a8' },
+        { value: 0, color: '#ebedf0' }
+      ]
     },
-    series: [{
-      name: '文章数量',
-      type: 'heatmap',
-      data: data,
-      label: {
-        show: false
+    calendar: {
+      top: 140,
+      left: 30,
+      right: 30,
+      cellSize: ['auto', 16],
+      range: '2025',
+      splitLine: false,
+      itemStyle: {
+        borderWidth: 0.5,
+        borderWidth: 3,
+        borderColor: 'rgb(255, 255, 255)'
       },
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      }
-    }]
+      yearLabel: { show: false }
+    },
+    series: {
+      type: 'heatmap',
+      coordinateSystem: 'calendar',
+      data: getYearlyData('2025')
+    }
   })
 }
+
 
 // 通知管理
 const notificationList = ref([
@@ -497,11 +530,13 @@ const notificationList = ref([
     </div>
 
      <!-- 底部图表 -->
-    <div class="grid grid-cols-5 gap-6">
+    <div class="grid grid-cols-4 gap-6">
+      <!-- 热力图表 -->
       <div class="col-span-3 bg-white p-4 rounded-lg shadow">
         <div id="articleChart" class="w-full h-64"></div>
       </div>
-      <div class="col-span-2 bg-white p-4 rounded-lg shadow">
+      <!-- 通知管理 -->
+      <div class="col-span-1 bg-white p-4 rounded-lg shadow">
         <h3 class="text-lg font-bold mb-4">通知管理</h3>
         <div class="space-y-4">
           <div v-for="item in notificationList" 
