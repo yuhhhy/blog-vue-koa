@@ -3,6 +3,7 @@ import { ref, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { apiCreateComment, apiUpdateComment } from '@/api/comment.js'
+import { apiUpdateWebsiteComment } from '@/api/websiteData.js'
 import { getAvatar } from '@/utils/avatar';
 
 const emit = defineEmits(['updateComments'])
@@ -69,44 +70,50 @@ const onSubmit = () => {
 
 // 校验成功后的逻辑
 const doSubmit = async () => {
+  try {
+    const defaultAvatar = '/src/assets/images/user_default.png'
+    // 生成评论
+    let newComment = { 
+        ...form,
+        id: Date.now().toString(36),
+        blogId: route.params.id || '-1',
+        parentId: props.parentId,
+        avatar: defaultAvatar,
+        createTime: new Date(),
+        showForm: false,
+        hasParent: props.hasParent,
+        replies: []
+    }
 
-  const defaultAvatar = '/src/assets/images/user_default.png'
-  // 生成评论
-  let newComment = { 
-      ...form,
-      id: Date.now().toString(36),
-      blogId: route.params.id || '-1',
-      parentId: props.parentId,
-      avatar: defaultAvatar,
-      createTime: new Date(),
-      showForm: false,
-      hasParent: props.hasParent,
-      replies: []
-  }
+    // 创建评论
+    await apiCreateComment(newComment)
 
-  // 创建评论
-  await apiCreateComment(newComment)
-
-  // 提交完成后清空表单数据
-  let userEmail = form.email
-  form.username = ''
-  form.email = ''
-  form.website = ''
-  form.content = ''
-  // ElMessage提示信息
-  ElMessage.success('评论成功！')
-  
-  // 触发更新评论
-  emit('updateComments')
-
-  // 尝试获取Grvatar头像，更新新评论的头像
-  const avatarSrc = await getAvatar(userEmail)
-
-  if (avatarSrc) {
-    newComment.avatar = avatarSrc
-    await apiUpdateComment(newComment)
+    // 提交完成后清空表单数据
+    let userEmail = form.email
+    form.username = ''
+    form.email = ''
+    form.website = ''
+    form.content = ''
+    // ElMessage提示信息
+    ElMessage.success('评论成功！')
+    
     // 触发更新评论
     emit('updateComments')
+
+    // 更新网站评论数
+    await apiUpdateWebsiteComment()
+
+    // 尝试获取Grvatar头像，更新新评论的头像
+    const avatarSrc = await getAvatar(userEmail)
+
+    if (avatarSrc) {
+      newComment.avatar = avatarSrc
+      await apiUpdateComment(newComment)
+      // 触发更新评论
+      emit('updateComments')
+    }
+  } catch (error) {
+    ElMessage.error(error)
   }
 }
 

@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
-import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
+import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteComment, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
 import { getComments, createComment, deleteComment, updateComment } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
@@ -74,6 +74,9 @@ router.put('/website/visit', updateWebsiteVisit)
 
 // 更新网站浏览量
 router.put('/website/view', updateWebsiteView)
+
+// 更新网站总评论数
+router.put('/website/comment', updateWebsiteComment)
 
 // 更新网站最后更新时间
 router.put('/website/lastupdate', updateWebsiteLastUpdate)
