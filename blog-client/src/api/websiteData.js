@@ -29,3 +29,11 @@ export function apiUpdateWebsiteView() {
         method: 'PUT',
     })
 }
+
+// 更新总评论量
+export function apiUpdateWebsiteComment() {
+    return request({
+        url: '/website/comment',
+        method: 'PUT'
+    })
+}

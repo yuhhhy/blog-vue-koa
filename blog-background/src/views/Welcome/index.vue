@@ -8,12 +8,43 @@ onMounted(() => {
   fetchData()
 })
 
-// 统计数据
-const statistics = ref({
+// 获取初始化数据
+async function fetchData() {
+  try {
+    const dataWeek = await apiGetWebsiteData('week')
+
+    // 更新顶部统计数据
+    Object.assign(topData.value.view, dataWeek.view)
+    Object.assign(topData.value.visit, dataWeek.visit)
+    Object.assign(topData.value.comment, dataWeek.comment)
+
+    // 更新主图表初始数据
+    mainData.value.view.weekData = dataWeek.view.data
+    mainData.value.visit.weekData = dataWeek.visit.data
+    mainData.value.comment.weekData = dataWeek.comment.data
+
+    // 初始化图表
+    initTopCards()
+    initMainChart()
+    initArticleChart()
+    // initNotificationChart()
+  } catch (error) {
+    console.error('获取数据失败:', error)
+    ElMessage.error('数据获取失败')
+  }
+}
+
+/**
+ * 顶部卡片图表部分
+ * initTopCards
+ */
+
+// 顶部卡片数据
+const topData = ref({
   view: { 
     total: 0, 
-    data: [], // 存储每日数据
-    rate: 10
+    data: [],
+    rate: 0
   },
   visit: { 
     total: 0, 
@@ -25,147 +56,256 @@ const statistics = ref({
   }
 })
 
-// 时间范围选择
-const timeRange = ref('all')
-const timeRanges = [
-  { label: '今日', value: 'today' },
-  { label: '本周', value: 'week' },
-  { label: '本月', value: 'month' },
-  { label: '本年', value: 'year' }
-]
+// 生成过去7天的日期数组
+const getLastSevenDays = () => {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  const today = new Date().getDay() // 0-6，0代表周日
+  const todayIndex = today === 0 ? 6 : today - 1 // 转换为数组索引
 
-watch(timeRange, () => {
-  fetchData()
-})
-
-// 数据类型选择
-const dataType = ref('views')
-const dataTypes = [
-  { label: '浏览量', value: 'views' },
-  { label: '访问量', value: 'visits' },
-  { label: '评论数', value: 'comments' }
-]
-
-// 添加数据加载状态
-const loading = ref(false)
-
-// 获取数据
-async function fetchData() {
-  loading.value = true
-  try {
-    const websiteData = await apiGetWebsiteData('all')
-    console.log("websiteData", websiteData)
-    
-
-    // 更新统计数据
-    statistics.value.view = {
-      total: websiteData.view.total,
-      data: websiteData.view.data
-    }
-    
-    statistics.value.visit = {
-      total: websiteData.visit.total,
-      data: websiteData.visit.data
-    }
-
-    statistics.value.comment = {
-      total: websiteData.comment.total,
-      data: websiteData.comment.data
-    }
-
-    console.log("statistics", statistics.value)
-
-    // 初始化图表
-    initCards()
-    initMainChart()
-    initArticleChart()
-    // initNotificationChart()
-  } catch (error) {
-    console.error('获取数据失败:', error)
-    ElMessage.error('数据获取失败')
-  } finally {
-    loading.value = false
-  }
+  // 重新排序数组
+  return [
+    ...days.slice(todayIndex + 1),
+    ...days.slice(0, todayIndex + 1)
+  ]
 }
 
-// 计算增长率（模拟，实际应该从后端获取）
-function calculateGrowthRate(current) {
-  return ((current / (current * 0.9) - 1) * 100).toFixed(1)
-}
-
+// 使用这个函数替换固定的日期数组，作为xAxis的data
+const dateLabels = getLastSevenDays()
 
 // 初始化顶部卡片图表
-const initCards = () => {
+const initTopCards = () => {
   
   // 浏览量折线图
   const viewChart = echarts.init(document.getElementById('viewChart'))
   viewChart.setOption({
-    grid: { top: 0, right: 0, bottom: 0, left: 0 },
-    xAxis: { show: false },
-    yAxis: { show: false },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'line'
+      }
+    },
+    grid: { top: 5, right: 0, bottom: 5, left: 0 },
+    xAxis: { 
+      data: dateLabels,
+      show: false
+    },
+    yAxis: { 
+      show: false
+    },
     series: [{
+      // data: topData.value.view.data,
+      data: [0, 1, 3, 2, 4, 7, 6],
       type: 'line',
       smooth: true,
       showSymbol: false,
-      // data: statistics.value.view.data,
-      data: [1,23,54,22],
-      areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(16,185,129,0.8)' },
-          { offset: 1, color: 'rgba(16,185,129,0.1)' }
-        ])
-      },
-      lineStyle: { color: '#10B981' }
+      areaStyle: { color: '#82BEFF' },
+      lineStyle: { color: '#82BEFF' }
     }]
   })
 
-  // 访问量折线图
+  // 访问量柱状图
   const visitChart = echarts.init(document.getElementById('visitChart'))
   visitChart.setOption({
-    grid: { top: 5, right: 5, bottom: 5, left: 5 },
-    xAxis: { show: false },
-    yAxis: { show: false },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow',
+      }
+    },
+    grid: { top: 0, right: 0, bottom: 5, left: 0 },
+    xAxis: { 
+      data: dateLabels,
+      show: false
+    },
+    yAxis: { 
+      show: false
+    },
     series: [{
-      type: 'line',
-      smooth: true,
-      showSymbol: true,
-      // data: statistics.value.visit.data,
-      data: [1,23,54,19],
-      areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(58,77,233,0.8)' },
-          { offset: 1, color: 'rgba(58,77,233,0.1)' }
-        ])
-      },
-      lineStyle: { color: '#3a4de9' }
+      // data: topData.value.visit.data,
+      data: [1, 23, 54, 19, 26, 32 , 47],
+      type: 'bar',
+      itemStyle: { color: '#82BEFF' }
     }]
   })
 
   // 评论数柱状图
   const commentChart = echarts.init(document.getElementById('commentChart'))
   commentChart.setOption({
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow',
+      }
+    },
     grid: { top: 5, right: 5, bottom: 5, left: 5 },
-    xAxis: { show: false },
+    xAxis: {
+      data: dateLabels,
+      show: false
+    },
     yAxis: { show: false },
     series: [{
       type: 'bar',
-      data: statistics.value.comment.data,
+      data: [1, 23, 54, 19, 26, 32 , 47],
+      // data: topData.value.comment.data,
       itemStyle: { color: '#3a4de9' }
     }]
   })
 }
 
+
+/**
+ * 最大的主图表部分
+ * initMainChart
+ */
+
+// 主图表数据
+const mainData = ref({
+  view: { 
+    weekData: [],
+    monthData: [],
+    yearData: [],
+  },
+  visit: { 
+    weekData: [],
+    monthData: [],
+    yearData: []
+  },
+  comment: { 
+    weekData: [],
+    monthData: [],
+    yearData: []
+  }
+})
+
+// 时间范围选择
+const timeRange = ref('week')
+const timeRanges = [
+  { label: '本周', value: 'week' },
+  { label: '本月', value: 'month' },
+  { label: '本年', value: 'year' }
+]
+
+// 数据类型选择
+const dataType = ref('view')
+const dataTypes = [
+  { label: '浏览量', value: 'view' },
+  { label: '访问量', value: 'visit' },
+  { label: '评论数', value: 'comment' }
+]
+
+// 定义中文周名称映射
+const weekDayMap = {
+  'Mon': '一',
+  'Tue': '二',
+  'Wed': '三',
+  'Thu': '四',
+  'Fri': '五',
+  'Sat': '六',
+  'Sun': '日'
+}
+
+watch([timeRange, dataType], async () => {
+  try {
+    if (timeRange.value !== 'week') {
+      if (mainData.value.view.monthData.length === 0 && timeRange.value === 'month') {
+        // 获取month数据
+        const dataMonth = await apiGetWebsiteData(timeRange.value)
+        mainData.value.view.monthData = dataMonth.view.data
+        mainData.value.visit.monthData = dataMonth.visit.data
+        mainData.value.comment.monthData = dataMonth.comment.data
+      }
+      if (mainData.value.view.yearData.length === 0 && timeRange.value === 'year') {
+        // 获取year数据
+        const dataYear = await apiGetWebsiteData(timeRange.value)
+        mainData.value.view.yearData = dataYear.view.data
+        mainData.value.visit.yearData = dataYear.visit.data
+        mainData.value.comment.yearData = dataYear.comment.data
+      }
+      // 重新渲染MainChart
+      initMainChart()
+    } else {
+      initMainChart()
+    }
+  } catch (error) {
+    console.error('更新主图表失败:', error)
+    ElMessage.error('更新主图表失败')
+  }
+})
+
+// 对主图表的引用
+const mainChartRef = ref(null)
+
 // 初始化主图表
 const initMainChart = () => {
-  const mainChart = echarts.init(document.getElementById('mainChart'))
-  const xAxisData = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  if (mainChartRef.value) {
+    // 如果图表已存在，先销毁
+    mainChartRef.value.dispose()
+  }
+
+  mainChartRef.value = echarts.init(document.getElementById('mainChart'))
+
+  // 根据时间范围获取对应的标签
+  const getTimeLabels = () => {
+    const now = new Date()
   
-  mainChart.setOption({
-    title: { text: '数据统计' },
-    tooltip: { trigger: 'axis' },
-    legend: { 
-      data: ['浏览量', '访问量', '评论数'],
-      bottom: 0
+    switch(timeRange.value) {
+      case 'week': {
+        // 获取过去7天的日期
+        const dates = Array.from({length: 7}, (_, i) => {
+          const date = new Date()
+          date.setDate(now.getDate() - (6 - i))
+          return date
+        })
+        return dates.map(date => `${date.getMonth() + 1}月${date.getDate()}日`)
+      }
+      case 'month': {
+        // 获取本月所有日期
+        const year = now.getFullYear()
+        const month = now.getMonth()
+        const daysInMonth = new Date(year, month + 1, 0).getDate()
+        return Array.from({length: daysInMonth}, (_, i) => `${i + 1}日`)
+      }
+      case 'year': {
+        // 获取今年所有月份
+        return Array.from({length: 12}, (_, i) => `${i + 1}月`)
+      }
+      default:
+        return []
+    }
+  }
+
+  // 获取当前数据类型的配置
+  const getCurrentTypeConfig = () => {
+    const typeConfigs = {
+      view: {
+        name: '浏览量',
+        color: '#10B981',
+        data: mainData.value.view[`${timeRange.value}Data`]
+      },
+      visit: {
+        name: '访问量',
+        color: '#3B82F6',
+        data: mainData.value.visit[`${timeRange.value}Data`]
+      },
+      comment: {
+        name: '评论数',
+        color: '#F59E0B',
+        data: mainData.value.comment[`${timeRange.value}Data`]
+      }
+    }
+    return typeConfigs[dataType.value]
+  }
+
+  const currentConfig = getCurrentTypeConfig()
+
+  mainChartRef.value.setOption({
+    title: { 
+      text: `${currentConfig.name}统计`,
+      left: 'center'
+    },
+    tooltip: { 
+      trigger: 'axis',
+      formatter: `{b}<br/>${currentConfig.name}：{c}`
     },
     grid: {
       left: '3%',
@@ -180,28 +320,39 @@ const initMainChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      data: getTimeLabels(),
+      axisLabel: {
+        rotate: timeRange.value === 'month' ? 45 : 0,
+        interval: timeRange.value === 'month' ? 'auto' : 0 // 防止标签重叠
+      }
     },
-    yAxis: { type: 'value' },
+    yAxis: { 
+      type: 'value',
+      name: currentConfig.name
+    },
     series: [
       {
-        name: '浏览量',
+        name: currentConfig.name,
         type: 'bar',
-        data: statistics.value.view.data
-      },
-      {
-        name: '访问量',
-        type: 'bar',
-        data: statistics.value.visit.data
-      },
-      {
-        name: '评论数',
-        type: 'bar',
-        data: statistics.value.comment.data
+        data: currentConfig.data,
+        itemStyle: {
+          color: currentConfig.color
+        },
+        emphasis: {
+          focus: 'series',
+          label: {
+            show: true,
+            formatter: '{c}',
+            position: 'top'
+          }
+        }
       }
     ]
   })
 }
+
+
+
 
 // 文章统计图表 - 热力图
 const initArticleChart = () => {
@@ -290,25 +441,25 @@ const notificationList = ref([
 <div class="p-6 space-y-6">
     <!-- 顶部卡片 -->
     <div class="grid grid-cols-3 gap-6">
-    <!-- 浏览量卡片 -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex justify-between items-start mb-4">
-        <div>
-          <h3 class="text-gray-500">总浏览量</h3>
-          <p class="text-2xl font-bold">{{ statistics.view.total }}</p>
+      <!-- 浏览量卡片 -->
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-gray-500">总浏览量</h3>
+            <p class="text-2xl font-bold">{{ topData.view.total }}</p>
+          </div>
+          <div :class="topData.view.rate >= 0 ? 'text-green-500' : 'text-red-500'">
+            <span>{{ topData.view.rate >= 0 ? '↑' : '↓' }}{{ Math.abs(topData.view.rate) }}%</span>
+          </div>
         </div>
-        <div :class="statistics.view.rate >= 0 ? 'text-green-500' : 'text-red-500'">
-          <span>{{ statistics.view.rate >= 0 ? '↑' : '↓' }}{{ Math.abs(statistics.view.rate) }}%</span>
-        </div>
+        <div id="viewChart" class="h-16 w-full"></div>
       </div>
-      <div id="viewChart" class="h-16 w-full"></div>
-    </div>
 
       <!-- 访问量卡片 -->
       <div class="bg-white p-4 rounded-lg shadow">
         <div class="mb-4">
           <h3 class="text-gray-500">总访问量</h3>
-          <p class="text-2xl font-bold">{{ statistics.visit.total }}</p>
+          <p class="text-2xl font-bold">{{ topData.visit.total }}</p>
         </div>
         <div id="visitChart" class="h-16 w-full"></div>
       </div>
@@ -317,7 +468,7 @@ const notificationList = ref([
       <div class="bg-white p-4 rounded-lg shadow">
         <div class="mb-4">
           <h3 class="text-gray-500">总评论数</h3>
-          <p class="text-2xl font-bold">{{ statistics.comment.total }}</p>
+          <p class="text-2xl font-bold">{{ topData.comment.total }}</p>
         </div>
         <div id="commentChart" class="h-16 w-full"></div>
       </div>
