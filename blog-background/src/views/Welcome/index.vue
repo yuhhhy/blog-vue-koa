@@ -27,7 +27,6 @@ async function fetchData() {
     initTopCards()
     initMainChart()
     initArticleChart()
-    // initNotificationChart()
   } catch (error) {
     console.error('获取数据失败:', error)
     ElMessage.error('数据获取失败')
@@ -93,8 +92,7 @@ const initTopCards = () => {
       show: false
     },
     series: [{
-      // data: topData.value.view.data,
-      data: [0, 1, 3, 2, 4, 7, 6],
+      data: topData.value.view.data,
       type: 'line',
       smooth: true,
       showSymbol: false,
@@ -121,8 +119,7 @@ const initTopCards = () => {
       show: false
     },
     series: [{
-      // data: topData.value.visit.data,
-      data: [1, 23, 54, 19, 26, 32 , 47],
+      data: topData.value.visit.data,
       type: 'bar',
       itemStyle: { color: '#82BEFF' }
     }]
@@ -145,8 +142,7 @@ const initTopCards = () => {
     yAxis: { show: false },
     series: [{
       type: 'bar',
-      data: [1, 23, 54, 19, 26, 32 , 47],
-      // data: topData.value.comment.data,
+      data: topData.value.comment.data,
       itemStyle: { color: '#3a4de9' }
     }]
   })
@@ -180,7 +176,7 @@ const mainData = ref({
 // 时间范围选择
 const timeRange = ref('week')
 const timeRanges = [
-  { label: '本周', value: 'week' },
+  { label: '七日', value: 'week' },
   { label: '本月', value: 'month' },
   { label: '本年', value: 'year' }
 ]
@@ -279,12 +275,12 @@ const initMainChart = () => {
     const typeConfigs = {
       view: {
         name: '浏览量',
-        color: '#10B981',
+        color: '#3B82F6',
         data: mainData.value.view[`${timeRange.value}Data`]
       },
       visit: {
         name: '访问量',
-        color: '#3B82F6',
+        color: '#10B981',
         data: mainData.value.visit[`${timeRange.value}Data`]
       },
       comment: {

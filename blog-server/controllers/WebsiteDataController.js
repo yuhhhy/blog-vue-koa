@@ -16,26 +16,106 @@ export const getWebsiteData = async (ctx) => {
         // 根据时间范围筛选数据
         const filterData = (dailyDatas, range) => {
             const now = new Date()
-            let startDate = new Date()
 
             switch (range) {
-                case 'today':
-                    startDate.setHours(0, 0, 0, 0)
-                    break
-                case 'week':
-                    startDate.setDate(now.getDate() - 7)
-                    break
-                case 'month':
-                    startDate.setMonth(now.getMonth() - 1)
-                    break
-                case 'year':
-                    startDate.setFullYear(now.getFullYear() - 1)
-                    break
+                case 'today': {
+                    // 获取今天零点时间
+                    const today = new Date()
+                    today.setHours(0, 0, 0, 0)
+                    return dailyDatas.filter(item => new Date(item.date) >= today)
+                }
+                case 'week': {
+                    // 创建过去7天的初始数据数组
+                    const weekData = []
+                    for (let i = 6; i >= 0; i--) {
+                        const date = new Date()
+                        date.setDate(now.getDate() - i)
+                        date.setHours(0, 0, 0, 0)
+
+                        // 查找这一天是否有数据
+                        const dayData = dailyDatas.find(item => {
+                            const itemDate = new Date(item.date)
+                            itemDate.setHours(0, 0, 0, 0)
+                            return itemDate.getTime() === date.getTime()
+                        })
+
+                        weekData.push({
+                            date: date,
+                            count: dayData ? dayData.count : 0
+                        })
+                    }
+                    return weekData
+                }
+                case 'month': {
+                    // 获取当月天数
+                    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+
+                    // 创建本月所有日期的数据数组
+                    const monthData = []
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const date = new Date(now.getFullYear(), now.getMonth(), day)
+                        date.setHours(0, 0, 0, 0)
+
+                        // 查找这一天是否有数据
+                        const dayData = dailyDatas.find(item => {
+                            const itemDate = new Date(item.date)
+                            itemDate.setHours(0, 0, 0, 0)
+                            return itemDate.getTime() === date.getTime()
+                        })
+
+                        monthData.push({
+                            date: date,
+                            count: dayData ? dayData.count : 0
+                        })
+                    }
+                    return monthData
+                }
+                case 'year': {
+                    // 获取本年1月1号零点的时间
+                    const startOfYear = new Date(now.getFullYear(), 0, 1)
+
+                    // 首先筛选出本年的数据
+                    const thisYearData = dailyDatas.filter(item => {
+                        const itemDate = new Date(item.date)
+                        return itemDate >= startOfYear
+                    })
+
+                    // 创建包含所有月份的初始对象
+                    const initialMonthlyData = {}
+                    for (let month = 0; month < 12; month++) {
+                        const monthDate = new Date(now.getFullYear(), month, 1)
+                        const monthKey = `${monthDate.getFullYear()}-${month}`
+                        initialMonthlyData[monthKey] = {
+                            date: monthDate,
+                            count: 0
+                        }
+                    }
+
+                    // 按月份分组并合并数据
+                    const monthlyData = thisYearData.reduce((acc, curr) => {
+                        const date = new Date(curr.date)
+                        const monthKey = `${date.getFullYear()}-${date.getMonth()}`
+
+                        // 累加当月数据
+                        acc[monthKey].count += curr.count
+
+                        // 如果当前日期更早，更新为月份的代表日期
+                        if (new Date(curr.date) < new Date(acc[monthKey].date)) {
+                            acc[monthKey].date = curr.date
+                        }
+
+                        return acc
+                    }, initialMonthlyData)
+
+                    // 转换为数组并按日期排序
+                    return Object.values(monthlyData).sort((a, b) =>
+                        new Date(a.date) - new Date(b.date)
+                    )
+                }
+                    
                 default: // 'all'默认返回全部数据
                     return dailyDatas
             }
-
-            return dailyDatas.filter(item => new Date(item.date) >= startDate)
         }
 
         // 处理返回数据
@@ -63,6 +143,25 @@ export const getWebsiteData = async (ctx) => {
             message: '获取统计数据失败',
             error: error.message
         }
+    }
+}
+
+// 获取网站数据（不含dailyData）
+export const getWebsiteDataCount = async (ctx) => {
+    const data = await WebsiteData.findOne({})
+    ctx.status = 200
+    ctx.body = {
+        view: {
+            total: data.view.total,
+        },
+        visit: {
+            total: data.visit.total,
+        },
+        comment: {
+            total: data.comment.total,
+        },
+        updateTime: data.updateTime,
+        totalWordCount: data.totalWordCount
     }
 }
 

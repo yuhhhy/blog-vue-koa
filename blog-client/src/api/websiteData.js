@@ -6,11 +6,10 @@ import request from "@/utils/request.js"
  */
 
 // 获取网站数据
-export function apiGetWebsiteData(timeRange = 'all') {
+export function apiGetWebsiteData() {
     return request({
-        url: '/website',
+        url: '/website/count',
         method: 'GET',
-        params: { timeRange }
     })
 }
 

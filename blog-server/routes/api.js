@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
-import { getWebsiteData, updateWebsiteVisit, updateWebsiteView, updateWebsiteComment, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
+import { getWebsiteData, getWebsiteDataCount, updateWebsiteVisit, updateWebsiteView, updateWebsiteComment, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
 import { getComments, createComment, deleteComment, updateComment } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
@@ -68,6 +68,9 @@ router.put('/blogcontent/like/:id', updateBlogLikeCount)
  */
 // 获取网站访问量
 router.get('/website', getWebsiteData)
+
+// 获取网站数据（不含dailyData）
+router.get('/website/count', getWebsiteDataCount)
 
 // 更新网站访问量
 router.put('/website/visit', updateWebsiteVisit)
