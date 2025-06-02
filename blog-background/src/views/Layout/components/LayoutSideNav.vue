@@ -33,13 +33,12 @@ const siderNavItems = [
     },
     {
         title: '评论',
-        children: [
-            {
-                title: '评论管理',
-                link: '/comment/manage'
-            }
-        ]
+        link: '/comment'
     },
+    {
+        title: '友链',
+        link: '/links',
+    }
     // {
     //     title: '通知',
     //     children: [

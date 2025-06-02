@@ -1,4 +1,5 @@
 import { Comment } from '../models/CommentSchema.js'
+import { WebsiteData } from '../models/WebsiteDataSchema.js'
 
 /**
  * Comment Controller
@@ -19,7 +20,10 @@ export const getComments = async (ctx) => {
     const { id } = ctx.request.params
     // 使用 lean() 获取纯对象
     // 否则会返回 Mongoose 文档对象，包含额外的方法和属性
-    const comments = await Comment.find({ blogId: id, reviewed: true, reviewPassed: true }).lean()
+    const comments = await Comment.find({
+        blogId: id,
+        reviewPassed: { $ne: false }
+    }).lean()
 
     // 使用递归构建嵌套结构，返回对象数组给前端
     const buildTree = (items, parentId = '-1') => {
@@ -69,12 +73,31 @@ export const deleteComment = async (ctx) => {
     const { id } = ctx.params
     try {
         const comment = await Comment.findOneAndDelete({ id })
-
-        if (!comment) {
-            ctx.status = 404
-            ctx.body = { message: '评论不存在' }
-            return
+        // 如果评论有父评论，则从父评论的 replies 数组中移除当前评论的 id
+        if (comment.hasParent && comment.parentId) {
+            await Comment.findOneAndUpdate(
+                { id: comment.parentId },
+                { $pull: { replies: comment.id } }
+            )
         }
+        // 获取今天的日期（零点）
+        const date = new Date(comment.createTime)
+        date.setHours(0, 0, 0, 0)
+
+        // 更新网站的评论总数和当天 dailyData 中的 count
+        await WebsiteData.findOneAndUpdate(
+            {},
+            {
+                $inc: {
+                    "comment.total": -1,
+                    "comment.dailyData.$[elem].count": -1
+                }
+            },
+            {
+                arrayFilters: [{ "elem.date": { $eq: date } }]
+            }
+        )
+        
         ctx.status = 200
         ctx.body = { message: '评论删除成功' }
     } catch (error) {

@@ -179,7 +179,7 @@ async function deleteComment() {
           >{{ scope.row.reviewed === true ? '已审' : '待审' }}</el-tag
         >
         <el-tag
-          :type="scope.row.reviewPassed === true ? 'success' : 'error'"
+          :type="scope.row.reviewPassed === true ? 'success' : 'danger'"
           disable-transitions
           class="mt-2"
           >{{ scope.row.reviewPassed === true ? '通过' : '未通过' }}</el-tag
