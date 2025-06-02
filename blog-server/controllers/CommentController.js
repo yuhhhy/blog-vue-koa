@@ -6,12 +6,20 @@ import { Comment } from '../models/CommentSchema.js'
  * 这些操作将直接与数据库交互，返回相应的结果。
  */
 
+// 获取网站的所有评论
+export const getAllComments = async (ctx) => {
+    const allComments = await Comment.find({})
+
+    ctx.status = 200
+    ctx.body = allComments
+}
+
 // 获取博客的所有评论
 export const getComments = async (ctx) => {
     const { id } = ctx.request.params
     // 使用 lean() 获取纯对象
     // 否则会返回 Mongoose 文档对象，包含额外的方法和属性
-    const comments = await Comment.find({ blogId: id }).lean()
+    const comments = await Comment.find({ blogId: id, reviewed: true, reviewPassed: true }).lean()
 
     // 使用递归构建嵌套结构，返回对象数组给前端
     const buildTree = (items, parentId = '-1') => {
@@ -42,6 +50,18 @@ export const createComment = async (ctx) => {
         ctx.status = 500 
         ctx.body = { message: '评论创建失败', error: error.message }
     }
+}
+
+// 审核评论
+export const reviewComment = async (ctx) => {
+    const { id } = ctx.params
+    const { passed } = ctx.request.body
+    const comment = await Comment.findOne({ id })
+    comment.reviewed = true
+    comment.reviewPassed = passed
+    await comment.save()
+    ctx.status = 200
+    ctx.body = { message: '审核成功' }
 }
 
 // 删除一条评论

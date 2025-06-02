@@ -30,7 +30,25 @@ const siderNavItems = [
                 link: '/user/record'
             }
         ]
-    }
+    },
+    {
+        title: '评论',
+        children: [
+            {
+                title: '评论管理',
+                link: '/comment/manage'
+            }
+        ]
+    },
+    // {
+    //     title: '通知',
+    //     children: [
+    //         {
+    //             title: '通知管理',
+    //             link: '/notification/manage'
+    //         }
+    //     ]
+    // }
 ]
  
 </script>

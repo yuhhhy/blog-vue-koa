@@ -25,7 +25,6 @@ async function fetchData() {
 
     // 更新热力图表数据
     heatmapData.value = data.article.data
-    console.log(heatmapData.value);
     
 
     // 初始化图表
@@ -459,10 +458,10 @@ const initArticleChart = () => {
 
 // 通知管理
 const notificationList = ref([
-  { type: '系统通知', count: 35, color: '#10B981', icon: 'Setting' },
   { type: '评论通知', count: 20, color: '#3B82F6', icon: 'ChatDotRound' },
-  { type: '点赞通知', count: 15, color: '#F59E0B', icon: 'Star' },
-  { type: '回复通知', count: 10, color: '#6366F1', icon: 'Comment' }
+  { type: '互动通知', count: 15, color: '#F59E0B', icon: 'Star' },
+  { type: '订阅通知', count: 10, color: '#EC4899', icon: 'Bell' },
+  { type: '友链申请', count: 35, color: '#10B981', icon: 'Link' }
 ])
 </script>
 
@@ -530,13 +529,13 @@ const notificationList = ref([
     </div>
 
      <!-- 底部图表 -->
-    <div class="grid grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <!-- 热力图表 -->
-      <div class="col-span-3 bg-white p-4 rounded-lg shadow">
+      <div class="lg:col-span-3 bg-white p-4 rounded-lg shadow">
         <div id="articleChart" class="w-full h-64"></div>
       </div>
       <!-- 通知管理 -->
-      <div class="col-span-1 bg-white p-4 rounded-lg shadow">
+      <div class="lg:col-span-1 bg-white p-4 rounded-lg shadow">
         <h3 class="text-lg font-bold mb-4">通知管理</h3>
         <div class="space-y-4">
           <div v-for="item in notificationList" 
@@ -556,6 +555,8 @@ const notificationList = ref([
         </div>
       </div>
     </div>
+
+    <!-- 用户访问的热点地图 中国地图 -->
 
   </div>
 </template>
