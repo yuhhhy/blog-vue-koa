@@ -294,6 +294,7 @@ const insertEmoji = (emoji) => {
       .emoji-button {
         height: 28px;
         border-radius: 4px;
+        background-color: var(--icon-background);
 
         .emoji-icon {
           padding-bottom: 2px;
@@ -311,7 +312,7 @@ const insertEmoji = (emoji) => {
       .comment-form-submit {
         width: 80px;
         height: 28px;
-        background: var(--tag-color);
+        background: var(--submit-button);
         border: none;
         color: var(--white);
         font-weight: 600;

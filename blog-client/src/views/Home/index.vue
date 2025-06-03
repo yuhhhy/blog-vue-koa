@@ -129,7 +129,7 @@ onMounted(() => {
                     .blog-time-tags {
                         color: var(--quote-color);
                         font-size: 0.875rem;
-                        margin-bottom: 6px;
+                        margin-bottom: 12px;
 
                         .blog-time {
                             margin-right: 10px;
@@ -147,8 +147,8 @@ onMounted(() => {
                     .blog-title {
                         font-size: 1.125rem;
                         font-weight: bold;
-                        margin-bottom: 6px;
-                        margin-top: 10px;
+                        margin-bottom: 10px;
+                        margin-top: 15px;
 
                         @media (max-width: 768px) {
                             font-size: 1rem;

@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
-import { ElMessage } from 'element-plus';
+import { ElMessage } from 'element-plus'
 
 // 复制内容到剪贴板
 const copyToClipboard = async (text, type) => {

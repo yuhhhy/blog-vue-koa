@@ -29,6 +29,7 @@ onMounted(() => {
             <RouterLink to="/home">主页</RouterLink>
             <RouterLink to="/archive">归档</RouterLink>
             <RouterLink to="/about">关于</RouterLink>
+            <RouterLink to="/links">友链</RouterLink>
         </div>
         <button @click="toggleTheme" class="theme-toggle">
             <span class="iconfont themeIcon" v-if="themeStore.theme === 'light'">&#xe886;</span>
@@ -47,6 +48,9 @@ onMounted(() => {
                         </el-dropdown-item>
                         <el-dropdown-item>
                             <RouterLink to="/about">关于</RouterLink>
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <RouterLink to="/links">友链</RouterLink>
                         </el-dropdown-item>
                     </el-dropdown-menu>
                 </template>

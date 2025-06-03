@@ -69,8 +69,8 @@ onMounted(async () => {
     }
 
     .tag {
-        border: 2px none var(--tag-color);
-        color: var(--tag-color);
+        border: 2px none var(--blue);
+        color: var(--blue);
         border-radius: 5px;
         cursor: pointer;
         margin: 30px 10px;

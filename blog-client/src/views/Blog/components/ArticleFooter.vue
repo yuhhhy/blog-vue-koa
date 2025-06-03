@@ -10,6 +10,9 @@ import CommentReply from './CommentReply.vue'
 const route = useRoute()
 const comments = ref([])
 const formState = ref(true) // 用于控制顶部表单的显示与隐藏
+const props = defineProps({
+  pageId: { type: String }
+})
 
 // 显示/隐藏顶部评论表单
 const toggleCommentForm = () => {
@@ -21,9 +24,9 @@ const toggleReplyForm = (comment) => {
   comment.showForm = !comment.showForm
 }
 
-// 获取评论
+// 获取评论，route.params.id对应博客的评论，props.pageId对应非博客页的评论（关于、友链）
 const getComments = () => {
-  apiGetComments(route.params.id || '-1').then(res => {
+  apiGetComments(route.params.id || props.pageId).then(res => {
     comments.value = res
   })
 }
@@ -52,7 +55,8 @@ onMounted(()=>{
 <template>
 <div class="article-footer">
   <!-- 顶部评论表单 -->
-  <span class="top-form" @click="toggleCommentForm">发表评论</span>
+  <span class="top-form" v-if="formState" @click="toggleCommentForm">收起</span>
+  <span class="top-form" v-else @click="toggleCommentForm">展开</span>
   <!-- parentId = '-1' 表示没有 parent 评论 -->
   <CommentForm 
     v-show="formState" 
