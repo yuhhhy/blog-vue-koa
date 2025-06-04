@@ -20,11 +20,11 @@
 ## 项目预览
 
 ### 首页
-![home](/public/images/docs1.jpg)
+![home](/public/images/doc_md-1.jpg)
 ### 归档页
-![archive](/public/images/docs2.jpg)
+![archive](/public/images/doc_md-2.jpg)
 ### 文章详情页
-![blog](/public/images/docs3.jpg)
+![blog](/public/images/doc_md-3.jpg)
 
 ## 实现功能
 ### 整体

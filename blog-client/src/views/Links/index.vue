@@ -1,12 +1,6 @@
 <script setup>
 import ArticleFooter from "../Blog/components/ArticleFooter.vue"
-import { ElMessage } from 'element-plus'
 
-// 复制内容到剪贴板
-const copyToClipboard = async (text, type) => {
-    await navigator.clipboard.writeText(text)
-    ElMessage.success(`${type}已复制`)
-}
 </script>
 
 <template>
@@ -17,7 +11,7 @@ const copyToClipboard = async (text, type) => {
 
                 <h1>友链</h1>
 
-                <!-- 友链区域，覆盖掉基础的Blog HTML样式 -->
+                <!-- 友链展示区域 -->
                 <div class="links-display">
                     <!-- 一条友链 -->
                     <div class="link-item" v-for="item in 4">
@@ -49,7 +43,7 @@ const copyToClipboard = async (text, type) => {
                     <p>友链格式与本站信息如下：</p>
                 <pre><code>
     <span>名称: </span><span>"一曝十寒"</span>
-    <span>描述: </span><span>"你好"</span>
+    <span>描述: </span><span>"学点前端、听点音乐、"</span>
     <span>地址: </span><span>"https://www.yuhhhy.cn"</span>
     <span>头像: </span><span>"https://image.example.com/avatar.jpg"</span>
                 </code></pre>
@@ -57,9 +51,10 @@ const copyToClipboard = async (text, type) => {
                 <h2>申请方式</h2>
                     <ol>
                         <li>在当前页面评论区评论👇</li>
-                        <li>或者你也可以给<a href="javascript:void(0)" @click="copyToClipboard('yuhhhy109@163.com', '邮箱')">我的邮箱✉️</a>发送邮件</li>
+                        <address>
+                            <li>或者你也可以给我的邮箱✉️<a href="mailto:yuhhhy109@163.com">yuhhhy109@163.com</a>发送邮件</li>
+                        </address>
                     </ol>
-                    
             </div>
             <!-- 评论区域 -->
             <ArticleFooter :pageId="'0'"></ArticleFooter>
@@ -214,7 +209,10 @@ const copyToClipboard = async (text, type) => {
                     border-radius: 0;
                 }
             }
-        
+
+            address {
+                font-style: normal;
+            }
         }
     }
     @media (max-width: 768px) {

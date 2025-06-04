@@ -13,13 +13,11 @@ const copyToClipboard = async (text, type) => {
 <template>
     <div class="footer-info">
         <div class="left-footer">
-            <div><p>© 2025 一曝十寒. All rights reserved. </p></div>
+            <div><p>© 2025 一曝十寒.</p></div>
             <div><p>赣ICP备2025063071号</p></div>
         </div>
         <div class="right-footer">
-            <RouterLink to="/about" class="info-title">关于</RouterLink>
-            <RouterLink to="/archive" class="info-title">归档</RouterLink>
-            <RouterLink to="/" class="info-title">友链</RouterLink>
+            <RouterLink to="/info" class="info-title">信息</RouterLink>
             <el-popover
                 class="footer-popover"
                 popper-class="popover"
@@ -38,6 +36,13 @@ const copyToClipboard = async (text, type) => {
                     title="点击复制微信号"
                     @click="copyToClipboard('yzczhdyy109', '微信号')">
                     &#xe601;
+                </span>
+                <span 
+                    class="iconfont" 
+                    style="color:#ccc; font-size: 18px; margin-top: 3px;"
+                    title="点击复制邮箱"
+                    @click="copyToClipboard('yuhhhy109@163.com', '邮箱')">
+                    &#xe6af;
                 </span>
                 <template #reference>
                     <div class="info-title">
@@ -73,7 +78,7 @@ const copyToClipboard = async (text, type) => {
 
     .right-footer {
         display: flex;
-        gap: 50px;
+        gap: 25px;
 
         .info-title {
             transition: color 0.3s ease;
