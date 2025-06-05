@@ -100,7 +100,8 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                         img {
                             border-radius: 50%;
                             height: 75px;
-                            width: 75px;
+                            min-width: 75px;
+                            margin: 0;
                         }
                     }
 

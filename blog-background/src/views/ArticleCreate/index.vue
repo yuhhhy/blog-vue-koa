@@ -5,7 +5,7 @@ import countWords from '@/utils/wordCount.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { apiCreateBlog } from '@/api/blog.js'
 import { apiCreateBlogContent } from '@/api/blogContent.js'
-import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount } from '@/api/websiteData.js'
+import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount, apiUpdateWebsiteArticle } from '@/api/websiteData.js'
 
 // 提交数据
 let blog = {}
@@ -64,6 +64,8 @@ const createBlogAndBlogContent = async () => {
     apiUpdateWebsiteLastUpdate()
     // 更新站点总字数
     apiUpdateWebsiteTotalWordCount()
+    // 更新网站总博客数
+    apiUpdateWebsiteArticle()
     
     ElMessageBox.alert('提交成功', '提示', {
     confirmButtonText: '确定',

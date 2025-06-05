@@ -31,3 +31,12 @@ export function apiUpdateWebsiteTotalWordCount() {
         requireAuth: true
     })
 }
+
+// 更新网站总博客数
+export function apiUpdateWebsiteArticle() {
+    return request({
+        url: '/website/article',
+        method: 'PUT',
+        requireAuth: true
+    })
+} 

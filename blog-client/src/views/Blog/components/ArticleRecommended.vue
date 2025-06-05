@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { apiGetPrevArticle, apiGetNextArticle } from '@/api/blog.js'
 import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const prevBlog = ref({})
@@ -30,40 +31,75 @@ watch(() => route.params.id, async (newId) => {
   }
 }, { immediate: true })  // 这会在组件挂载时自动执行一次
 
+const handlePrevClick = () => {
+  ElMessage.warning('已经是最新一篇博客')
+}
+
+const handleNextClick = () => {
+  ElMessage.warning('已经是最后一篇博客')
+}
+
 </script>
 
 <template>
   <div class="recommend-container">
-    <RouterLink 
-      class="article-nav" 
-      :style="{ backgroundImage: `url(${prevBlog?.coverImage || '/src/assets/images/notfound.jpg'})` }"
-      :to="prevBlog?.link || ''">
-      <div class="nav-label">上一篇</div>
-      <div class="nav-content">
-        <div v-if="prevBlog !== null" class="title">
+    <!-- 上一篇 -->
+    <template v-if="prevBlog?.link">
+      <RouterLink 
+        class="article-nav" 
+        :style="{ backgroundImage: prevBlog?.coverImage ? `url(${prevBlog.coverImage})` : 'none' }"
+        :to="prevBlog.link">
+        <div class="nav-label">上一篇</div>
+        <div class="nav-content">
+          <div class="title">
             {{ prevBlog.title }}
+          </div>
         </div>
-        <div v-else>
+      </RouterLink>
+    </template>
+    <template v-else>
+      <div 
+        class="article-nav"
+        :style="{ backgroundImage: prevBlog?.coverImage ? `url(${prevBlog.coverImage})` : 'none'}"
+        @click="handlePrevClick">
+        <div class="nav-label">上一篇</div>
+        <div class="nav-content">
+          <div class="title">
             已经是最新一篇博客
+          </div>
         </div>
       </div>
-    </RouterLink>
-    
-    <RouterLink 
-      class="article-nav"
-      :style="{ backgroundImage: `url(${nextBlog?.coverImage || '/src/assets/images/notfound.jpg'})` }"
-      :to="nextBlog?.link || ''">
-      <div class="nav-label">下一篇</div>
-      <div class="nav-content">
-        <div v-if="nextBlog !== null" class="title">
+    </template>
+
+    <!-- 下一篇 -->
+    <template v-if="nextBlog?.link">
+      <RouterLink 
+        class="article-nav"
+        :style="{ backgroundImage: nextBlog?.coverImage ? `url(${nextBlog.coverImage})` : 'none' }"
+        :to="nextBlog.link">
+        <div class="nav-label">下一篇</div>
+        <div class="nav-content">
+          <div class="title">
             {{ nextBlog.title }}
+          </div>
         </div>
-        <div v-else>
+      </RouterLink>
+    </template>
+    <template v-else>
+      <div 
+        class="article-nav"
+        :style="{ backgroundImage: nextBlog?.coverImage ? `url(${nextBlog.coverImage})` : 'none' }"
+        @click="handleNextClick">
+        <div class="nav-label">下一篇</div>
+        <div class="nav-content">
+          <div class="title">
             已经是最后一篇博客
+          </div>
         </div>
       </div>
-    </RouterLink>
+    </template>
   </div>
+
 </template>
 
 <style scoped lang="scss">
@@ -84,6 +120,7 @@ watch(() => route.params.id, async (newId) => {
     color: white;
     text-shadow: 1px 1px 1px black;
     font-weight: bold;
+    cursor: pointer;
     
     // 内容布局
     .nav-label {

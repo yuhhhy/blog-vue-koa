@@ -79,6 +79,9 @@
             font-family: 'Helvetica Neue', Arial, sans-serif;
             color: var(--light-dark);
 
+            img {
+                display: inline;
+            }
 
             h1 {
                 font-size: 2em;

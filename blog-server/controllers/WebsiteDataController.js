@@ -207,6 +207,13 @@ export const updateWebsiteComment = async (ctx) => {
     ctx.body = websiteData
 }
 
+// 更新网站总博客数
+export const updateWebsiteArticle = async (ctx) => {
+    const websiteData = await WebsiteData.updateDailyData('article')
+    ctx.status = 200
+    ctx.body = websiteData
+}
+
 // 更新网站最后更新时间
 export const updateWebsiteLastUpdate = async (ctx) => {
     const lastUpdate = await WebsiteData.findOneAndUpdate(
@@ -236,4 +243,3 @@ export const updataWebsitetotalWordCount = async (ctx) => {
     ctx.status = 200
     ctx.body = result
 }
-
