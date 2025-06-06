@@ -81,6 +81,7 @@
 
             img {
                 display: inline;
+                margin: 0;
             }
 
             h1 {

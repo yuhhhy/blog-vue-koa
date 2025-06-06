@@ -6,9 +6,9 @@ export const useUserStore = defineStore('user', () => {
     // 持久化存储
     const userData = ref(JSON.parse(localStorage.getItem('userData')) || {})
 
-    // 用户验证登录 逻辑易被破解，需更改！！2
+    // 用户登录认证检查
     const isAuthenticated = computed(() => {
-        return Reflect.ownKeys(userData.value).length !== 0
+        return Reflect.ownKeys(userData.value).length !== 0 && userData.value.token !== undefined
     })
 
     function setUserData(data) {

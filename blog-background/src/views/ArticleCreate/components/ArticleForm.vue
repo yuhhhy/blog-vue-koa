@@ -1,6 +1,8 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useUserStore } from '@/stores/userStore'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits(['articleSubmit'])
 const formRef = ref(null)
@@ -59,6 +61,27 @@ const handleSubmit = () => {
       }).catch(() => {
       })
   })
+}
+
+const userStore = useUserStore()
+const router = useRouter()
+
+// 可以添加图片上传api接口改为api上传
+
+// 图片上传前验证是否登录
+const beforeUpload = () => {
+  if (!userStore.isAuthenticated) {
+    ElMessage.warning("请先登录")
+    router.push('/login')
+    // 取消上传请求
+    abort()
+  }
+
+  if (userStore.userData.role !== 'admin') {
+    ElMessage.warning("请先获得管理员权限")
+    // 取消上传请求
+    abort()
+  }
 }
 
 // 图片文件上传成功，返回文件数据
@@ -121,6 +144,7 @@ const uploadError = (file) => {
           action="http://localhost:3000/api/upload/image"
           list-type="picture-card"
           :limit="1"
+          :before-upload="beforeUpload"
           :on-success="uploadSuccess"
           :on-error="uploadError"
         >

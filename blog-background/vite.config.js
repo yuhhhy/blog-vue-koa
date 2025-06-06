@@ -20,7 +20,7 @@ export default defineConfig({
     }
   },
   server: {
-    // 启动端口
-    port: 8096,
+    // 项目启动端口
+    port: 8096
   }
 })

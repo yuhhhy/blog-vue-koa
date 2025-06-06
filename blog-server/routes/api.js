@@ -5,6 +5,7 @@ import { getWebsiteData, getWebsiteDataCount, updateWebsiteVisit, updateWebsiteV
 import { getAllComments, getComments, createComment, reviewComment, deleteComment, updateComment } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
+import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
 
 const router = new Router({ prefix: '/api' })
 
@@ -154,6 +155,21 @@ router.post('/upload/image', async (ctx) => {
     ctx.status = 200
     ctx.body = ctx.request.file
 })
+
+/**
+ * Links API
+ */
+// 获取所有友链
+router.get('/links', getLinks)
+
+// 创建友链
+router.post('/links', createLink)
+
+// 删除友链
+router.delete('/links/:id', deleteLink)
+
+// 更新友链
+router.put('/links/:id', updateLink)
 
 
 export default router

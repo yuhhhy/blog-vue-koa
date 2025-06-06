@@ -4,9 +4,8 @@ import KEY from '../config/key.js'
 export const authMiddleware = async (ctx, next) => {
     const requireAuth = ctx.request.headers['require-auth']
 
+    // 如果前端请求请求头有 require-auth: true，则需要校验 token
     if (requireAuth) {
-        // 如果前端请求请求头有 require-auth: true，则需要校验 token
-
 
         // 检查是否登录
         const authorization = ctx.request.headers.authorization

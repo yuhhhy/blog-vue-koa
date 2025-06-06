@@ -2,13 +2,16 @@
 import "~/vditor/src/assets/less/index.less"
 import Vditor from 'vditor'
 import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useArticleStore } from '@/stores/articleStore.js'
+import { useUserStore } from '@/stores/userStore.js'
 
 const vditorEl = ref()
 const timer = ref(null)
 const emit = defineEmits(['vblur'])
 const props = defineProps(['content'])
 const articleStore = useArticleStore()
+const userStore = useUserStore()
 
 // 编辑界面判断是否切换编辑的文章
 if (props.content) {
@@ -61,7 +64,21 @@ onMounted(() => {
                     articleStore.setLastOneEdit(false)
                 }
             }
-        }
+        },
+        // 图片上传配置
+        // 没有设置不允许未登录和非管理员用户上传图片
+        upload: {
+            // 必须设置上传的文件字段名为 file，符合后端配置
+            fieldName: 'file',
+            url: 'http://localhost:3000/api/upload/image', // 设置上传接口URL
+            accept: 'image/jpeg',  // 明确指定接受JPEG格式
+            success: (editor, msg) => {
+                const response = JSON.parse(msg)
+                setTimeout(() => {
+                    ElMessage.success(`上传成功：${response.filename}`)
+                }, 5000)
+            }
+        },
     })
 })
 
