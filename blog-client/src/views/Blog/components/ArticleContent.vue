@@ -164,6 +164,19 @@ onUpdated(() => {
             margin: 1em 0;
             font-style: italic;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+            border: 1px solid var(--submit-button);
+
+            th, td {
+                padding: 12px 15px;
+                text-align: left;
+                border: 1px solid var(--submit-button);
+            }
+        }
     }
 }
 

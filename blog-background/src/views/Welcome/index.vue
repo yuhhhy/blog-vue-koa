@@ -25,7 +25,7 @@ async function fetchData() {
 
     // 更新热力图表数据
     heatmapData.value = data.article.data
-    
+    articleCount.value = data.article.total 
 
     // 初始化图表
     initTopCards()
@@ -352,6 +352,7 @@ const initMainChart = () => {
 }
 
 const heatmapData = ref([])
+const articleCount = ref(0)
 
 // 文章统计图表 - 热力图
 const initArticleChart = () => {
@@ -451,6 +452,21 @@ const initArticleChart = () => {
       type: 'heatmap',
       coordinateSystem: 'calendar',
       data: getYearlyData('2025')
+    },
+    // 添加文章总数显示
+    graphic: {
+      elements: [
+        {
+          type: 'text',
+          right: 32,
+          bottom: 160,
+          style: {
+            text: `total: ${articleCount.value}`,
+            font: '14px sans-serif',
+            fill: '#333'
+          }
+        }
+      ]
     }
   })
 }

@@ -44,6 +44,11 @@ const routes = [
                 component: () => import('@/views/Info/index.vue')
             }
         ]
+    },
+    {
+        path: '/404',
+        name: '404',
+        component: () => import('@/views/404/index.vue')
     }
 ]
 
@@ -68,6 +73,11 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from) => {
+    // 添加404路由捕获
+    if (!to.matched.length) {
+        return '/404'
+    }
+
     // 如果是锚点导航，不做处理
     if (to.hash) {
         return
