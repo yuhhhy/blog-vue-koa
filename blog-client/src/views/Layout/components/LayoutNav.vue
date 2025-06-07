@@ -26,10 +26,10 @@ onMounted(() => {
 <template>
     <div class="nav" :class="{ unshow: y >= 64 }">
         <div class="nav-links">
-            <RouterLink to="/home">主页</RouterLink>
-            <RouterLink to="/archive">归档</RouterLink>
-            <RouterLink to="/about">关于</RouterLink>
-            <RouterLink to="/links">友链</RouterLink>
+            <RouterLink to="/home"><span class="iconfont" style="font-size: 15px; margin-right: 7px;">&#xe606;</span>主页</RouterLink>
+            <RouterLink to="/archive"><span class="iconfont" style="font-size: 15px; margin-right: 8px;">&#xe605;</span>归档</RouterLink>
+            <RouterLink to="/about"><span class="iconfont" style="font-size: 15px; margin-right: 7px;">&#xe64e;</span>关于</RouterLink>
+            <RouterLink to="/links"><span class="iconfont" style="font-size: 15px; margin-right: 6px;">&#xe73e;</span>友链</RouterLink>
         </div>
         <button @click="toggleTheme" class="theme-toggle">
             <span class="iconfont themeIcon" v-if="themeStore.theme === 'light'">&#xe886;</span>

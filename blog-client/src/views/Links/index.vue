@@ -1,5 +1,16 @@
 <script setup>
 import ArticleFooter from "../Blog/components/ArticleFooter.vue"
+import { getLinks } from "@/api/links.js"
+import { ref, onMounted } from "vue"
+
+const links = ref([])
+
+onMounted(async () => {
+    const res = await getLinks()
+    links.value = res
+    console.log(links.value)
+    
+})
 
 </script>
 
@@ -14,47 +25,44 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                 <!-- 友链展示区域 -->
                 <div class="links-display">
                     <!-- 一条友链 -->
-                    <div class="link-item" v-for="item in 4">
+                    <div class="link-item" v-for="link in links">
                         <div class="link-avatar">
-                            <img src="@/assets/images/linkicon.png" alt="link-avatar">
+                            <a :href="link.site" target="_blank">
+                                <img :src="link.avatar" alt="link-avatar">
+                            </a>
                         </div>
                         <div class="link-info">
-                            <div class="link-title">idealclover</div>
-                            <div class="link-motto">Stay simple, stay naive.</div>
-                        </div>
-                    </div><div class="link-item" v-for="item in 4">
-                        <div class="link-avatar">
-                            <img src="https://bu.dusays.com/2024/10/25/671b2438203a6.gif" alt="link-avatar">
-                        </div>
-                        <div class="link-info">
-                            <div class="link-title">维基萌</div>
-                            <div class="link-motto">萌即是正义！时不时分享一些 ACG 活动记录与有趣代码的小站！</div>
+                            <a :href="link.site" target="_blank" style="color: var(--light-dark);">
+                                <div class="link-title">{{ link.name }}</div>
+
+                            </a>
+                            <div class="link-motto">{{ link.description }}</div>
                         </div>
                     </div>
                 </div>
 
                 <h2>友链申请规则</h2>
-                    <ul>
-                        <li>✅您的网站在中国大陆区域能够正常访问</li>
-                        <li>✅您的网站需要有可读的内容</li>
-                        <li>✅麻烦先为您的网站添加本站友链</li>
-                        <li>✅我会根据内容质量添加友链~谢谢🎉</li>
-                    </ul>
-                    <p>友链格式与本站信息如下：</p>
+                <ul>
+                    <li>✅您的网站在中国大陆区域能够正常访问</li>
+                    <li>✅您的网站需要有可读的内容</li>
+                    <li>✅麻烦先为您的网站添加本站友链</li>
+                    <li>✅我会根据内容质量添加友链~谢谢🎉</li>
+                </ul>
+                <p>友链格式与本站信息如下：</p>
                 <pre><code>
     <span>名称: </span><span>"一曝十寒"</span>
-    <span>描述: </span><span>"学点前端、听点音乐、"</span>
-    <span>地址: </span><span>"https://www.yuhhhy.cn"</span>
+    <span>简介: </span><span>"学点前端、听点音乐、"</span>
+    <span>网站: </span><span>"https://www.yuhhhy.cn/"</span>
     <span>头像: </span><span>"https://image.example.com/avatar.jpg"</span>
                 </code></pre>
 
                 <h2>申请方式</h2>
-                    <ol>
-                        <li>在当前页面评论区评论👇</li>
-                        <address>
-                            <li>或者你也可以给我的邮箱✉️<a href="mailto:yuhhhy109@163.com">yuhhhy109@163.com</a>发送邮件</li>
-                        </address>
-                    </ol>
+                <ol>
+                    <li>在当前页面评论区评论👇</li>
+                    <address>
+                        <li>或者你也可以给我的邮箱✉️<a href="mailto:yuhhhy109@163.com">yuhhhy109@163.com</a>发送邮件</li>
+                    </address>
+                </ol>
             </div>
             <!-- 评论区域 -->
             <ArticleFooter :pageId="'0'"></ArticleFooter>
@@ -91,6 +99,7 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                     background-color: var(--links-background);
                     display: flex;
                     flex-direction: row;
+
 
                     .link-avatar {
                         background: linear-gradient(to right, var(--white), var(--links-background));

@@ -9,47 +9,73 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
             <!-- 内容区域 -->
             <div class="about-article-content">
                 <h1>关于我</h1>
-                    <ul>
-                        <li><strong>基本信息</strong>：大二学生，江西人，坐标长沙</li>
-                    </ul>
+                <ul>
+                    <li><strong>基本信息</strong>：大二学生，江西人，坐标长沙</li>
+                </ul>
 
-                    <ul>
-                        <li><strong>兴趣爱好</strong>：
-                            <ul>
-                                <li><strong>音乐</strong>：喜欢<span title="含电子元素的我都喜欢">电子音乐</span>、<span title="喜欢的P主有：久眯、合目、ilem、椎名もた、40mP…">VOCALOID</span>、流行</li>
-                                <li><strong>运动</strong>：<span title="从小就开始打了">羽毛球</span>、跑步</li>
-                                <li><strong>阅读</strong>：<span title="然而并没有读多少">会买很多书</span>，尤其喜欢：《2001太空漫游》、《卡拉马佐夫兄弟》、契诃夫的小说、刘慈欣的小说，近期在看漫画《火之鸟》</li>
-                                <li><strong>影视</strong>：喜欢的电影有《寄生虫》、《情书》、《花束般的恋爱》，喜欢的番剧有《It's MyGO!!!!!》、<span title="中文名叫铃音">《Serial Experiments Lain》</span>、《Just Because!》、《龙与虎》</li>
-                                <li><strong>游戏</strong>：玩过决战平安京、战地5、CS2等</li>
-                            </ul>
-                        </li>
-                    </ul>
+                <ul>
+                    <li><strong>兴趣爱好</strong>：
+                        <ul>
+                            <li><strong>音乐</strong>：喜欢<span title="含电子元素的我都喜欢">电子音乐</span>、<span
+                                    title="喜欢的P主有：久眯、合目、ilem、椎名もた、40mP…">VOCALOID</span>、流行</li>
+                            <li><strong>运动</strong>：<span title="从小就开始打了">羽毛球</span>、跑步</li>
+                            <li><strong>阅读</strong>：<span
+                                    title="然而并没有读多少">会买很多书</span>，尤其喜欢：《2001太空漫游》、《卡拉马佐夫兄弟》、契诃夫的小说、刘慈欣的小说，近期在看漫画《火之鸟》
+                            </li>
+                            <li><strong>影视</strong>：喜欢的电影有《寄生虫》、《情书》、《花束般的恋爱》，喜欢的番剧有《It's MyGO!!!!!》、<span
+                                    title="中文名叫铃音">《Serial Experiments Lain》</span>、《Just Because!》、《龙与虎》</li>
+                            <li><strong>游戏</strong>：玩过决战平安京、战地5、CS2等</li>
+                        </ul>
+                    </li>
+                </ul>
 
-                    <ul>
-                        <li><strong>个人特色/技能</strong>：
-                            <ul>
-                                <li>关注社会新闻，读过一点<ruby>马<rp>(</rp><rt>mǎ</rt><rp>)</rp>经<rp>(</rp><rt>liè</rt><rp>)</rp></ruby></li>
-                                <li>会弹<ruby>一<rp>(</rp><rt>chū</rt><rp>)</rp>点<rp>(</rp><rt>xué</rt><rp>)</rp>点<rp>(</rp><rt>zhě</rt><rp>)</rp></ruby>吉他，研究一点作曲</li>
-                            </ul>
-                        </li>
-                    </ul>
+                <ul>
+                    <li><strong>个人特色/技能</strong>：
+                        <ul>
+                            <li>关注社会新闻，读过一点<ruby>马<rp>(</rp>
+                                    <rt>mǎ</rt>
+                                    <rp>)</rp>经<rp>(</rp>
+                                    <rt>liè</rt>
+                                    <rp>)</rp>
+                                </ruby></li>
+                            <li>会弹<ruby>一<rp>(</rp>
+                                    <rt>chū</rt>
+                                    <rp>)</rp>点<rp>(</rp>
+                                    <rt>xué</rt>
+                                    <rp>)</rp>点<rp>(</rp>
+                                    <rt>zhě</rt>
+                                    <rp>)</rp>
+                                </ruby>吉他，研究一点作曲</li>
+                        </ul>
+                    </li>
+                </ul>
 
-                <h1>博主的话</h1>
-                    <ul style="list-style: none;">
-                        <li><p>在建立我的个人博客时，我翻看了许多的博客站点，它们有的近期刚刚更新，但是更多的是一两年都没有没有新的内容了，这让我思考博客的意义。因为我知道我是一个对许多事情都三分钟热度的人（我们名字“一曝十寒”大概也因此而起），所以我不想让这个称呼一语成谶，而是希望能够做到坚持不懈，我也最钦佩能坚持不懈把一件事一直做下去的人。我知道这不单单需要热情与冲劲，更需要长远的规划。🤔</p></li>
-                        <li><p>还有一件我意识到的事情是，在互联网这片土地上，有时最珍贵的并不是多么厉害的技术或者知识，而是真实的态度。我希望我的个人博客能够成为一个让我真实地展示自己，或许也与大家分享想法、交流感受的空间！😄</p></li>
-                    </ul>
-                    
+                <h1>为什么要做这个博客？</h1>
+                <ul style="list-style: none;">
+                    <li>
+                        <p>……
+                        </p>
+                    </li>
+                    <li>
+                        <p>在建立我的个人博客时，我翻看了许多的博客站点，它们有的近期刚刚更新，但是更多的是一两年都没有没有新的内容了，这让我思考博客的意义。因为我知道我是一个对许多事情都三分钟热度的人（我们名字“一曝十寒”大概也因此而起），所以我不想让这个称呼一语成谶，而是希望能够做到坚持不懈，我也最钦佩能坚持不懈把一件事一直做下去的人。我知道这不单单需要热情与冲劲，更需要长远的规划。🤔
+                        </p>
+                    </li>
+                    <li>
+                        <p>还有一件我意识到的事情是，在互联网这片土地上，有时最珍贵的并不是多么厉害的技术或者知识，而是真实的态度。我希望我的个人博客能够成为一个让我真实地展示自己，或许也与大家分享想法、交流感受的空间！😄
+                        </p>
+                    </li>
+                </ul>
+
                 <h2>朋友</h2>
-                    <ul>
-                        <li><a href="https://v.douyin.com/h-Lzt62UbIQ/ 3@9.com :3pm" target="_blank">25020jason1728</a></li>
-                    </ul>
+                <ul>
+                    <li><a href="https://v.douyin.com/h-Lzt62UbIQ/ 3@9.com :3pm" target="_blank">25020jason1728</a></li>
+                </ul>
                 <h3>可能对我有启发的博客</h3>
-                    <ul>
-                        <li><a href="https://idealclover.top/" target="_blank">idealclover</a></li>
-                        <li><a href="https://blog.fiveth.cc/" target="_blank">fiveth</a></li>
-                        <li><a href="https://liuyuyang.net/" target="_blank">liuyuyang</a></li>
-                    </ul>
+                <ul>
+                    <li><a href="https://idealclover.top/" target="_blank">idealclover</a></li>
+                    <li><a href="https://blog.fiveth.cc/" target="_blank">fiveth</a></li>
+                    <li><a href="https://liuyuyang.net/" target="_blank">liuyuyang</a></li>
+                </ul>
             </div>
             <!-- 评论区域 -->
             <ArticleFooter :pageId="'-1'"></ArticleFooter>

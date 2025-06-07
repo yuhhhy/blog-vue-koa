@@ -117,7 +117,7 @@ onUpdated(() => {
                     color: #357cef;
                 }
                 &.token.keyword {
-                    color: #6ba3d3;
+                    color: #31b2d6;
                 }
                 &.token.function {
                     color: #C678DD;
@@ -126,7 +126,7 @@ onUpdated(() => {
                     color: #aaa;
                 }
                 &.token.string {
-                    color: #50a14f;
+                    color: #0dae0d;
                 }
                 &.token.constant {
                     color: #d00d87;
@@ -138,7 +138,10 @@ onUpdated(() => {
                     color: #d00d87;
                 }
                 &.token.operator {
-                    color: #b27934;
+                    color: #98885E;
+                }
+                &.token.comment {
+                    color: #98C379;
                 }
             }
         }

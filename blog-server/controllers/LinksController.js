@@ -9,20 +9,27 @@ export const getLinks = async (ctx) => {
 
 // 创建友链
 export const createLink = async (ctx) => {
-    const { name, description, site, avatar } = ctx.request.body
-    const link = new Links({ name, description, site, avatar })
+    console.log(ctx.request.body)
+    
+    const { id, name, description, site, avatar } = ctx.request.body
+    const link = new Links({ id, name, description, site, avatar })
     await link.save()
+    ctx.status = 201
+    ctx.body = link
 }
 
 // 删除友链
 export const deleteLink = async (ctx) => {
     const { id } = ctx.params
     await Links.findOneAndDelete({ id })
+    ctx.status = 204
 }
 
 // 更新友链
 export const updateLink = async (ctx) => {
     const { id } = ctx.params
     const { name, description, site, avatar } = ctx.request.body
-    await Links.findOneAndUpdate({ id }, { name, description, site, avatar })
+    const updatedLink = await Links.findOneAndUpdate({ id }, { name, description, site, avatar })
+    ctx.status = 200
+    ctx.body = updatedLink
 }
