@@ -173,12 +173,14 @@ async function deleteComment() {
     <!-- 评论状态 -->
     <el-table-column width="80" label="评论状态">
       <template #default="scope">
+        <!-- 未审核的评论在client端是默认展示的 -->
         <el-tag
           :type="scope.row.reviewed === true ? 'success' : 'warning'"
           disable-transitions
           >{{ scope.row.reviewed === true ? '已审' : '待审' }}</el-tag
         >
-        <el-tag
+        <!-- 对于已经审核的评论，才展示是否通过 -->
+        <el-tag v-if="scope.row.reviewed === true"
           :type="scope.row.reviewPassed === true ? 'success' : 'danger'"
           disable-transitions
           class="mt-2"

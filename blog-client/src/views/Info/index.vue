@@ -43,6 +43,7 @@
                         <li>2025.05.13 进行ICP备案</li>
                         <li>2025.05.11 开始写博客的后端代码</li>
                         <li>2025.05.02 部署于Vercel <img src="@/assets/images/vercel.svg" alt="vercel_icon" style="width: 18px; height: 18px; position: relative; top: 2px;">，这时还是静态页面</li>
+                        <li>2025.04.14 开始写博客前端代码</li>
                         <li>2025.04.14 打算做自己的个人博客</li>
                     </ul>
                     

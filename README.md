@@ -63,7 +63,9 @@ blog-vue-koa/
 │   │   └─ main.js              // 初始化Vue实例的入口文件
 │   ├─ index.html               // 项目入口文件
 │   ├─ package-lock.json
-│   └─ package.json             // 项目依赖
+│   ├─ package.json             // 项目依赖
+│   ├─ ...                      // 其他配置文件
+│   └─ vite.config.js           // vite配置文件
 ├─ blog-client/             // Vue 博客前端
 │   ├─ src/                     // 项目源码
 │   │   ├─ api/                 // 前端api接口
@@ -77,7 +79,8 @@ blog-vue-koa/
 │   │   └─ main.js              // 初始化Vue实例的入口文件
 │   ├─ index.html               // 项目入口文件
 │   ├─ package-lock.json
-│   └─ package.json             // 项目依赖
+│   ├─ package.json             // 项目依赖
+│   └─ vite.config.js           // vite配置文件
 ├─ blog-server/             // Koa 后端项目
 │   │   ├─ config/              // 配置文件
 │   │   ├─ controllers/         // 控制器
@@ -87,15 +90,12 @@ blog-vue-koa/
 │   │   ├─ app.js               // 应用主入口文件
 │   │   ├─ package-lock.json
 │   |   └─ package.json         // 项目依赖
-├─ public/                  // 静态资源
-│   ├─ images                   // 图片资源
-│   └─ posts                    // 文章资源
-├─ scripts/                 // 脚本
-│   └─ generate-posts.js        // 生成文章数据的脚本
-├─ .gitignore                   // 忽略文件
+├─ images/                  // 图片资源
+├─ .gitignore                   // git忽略文件
+├─ LICENSE                      // 开源协议
 ├─ package-lock.json            // 锁定版本
 ├─ package.json                 // 统一管理脚本
-└─  README.md
+└─  README.md                   // 项目说明文档
 ```
 
 
