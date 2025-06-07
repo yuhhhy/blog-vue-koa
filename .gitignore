@@ -32,3 +32,6 @@ lerna-debug.log*
 .dockerignore
 Dockerfile
 compose.yaml
+
+# public文件夹
+/public/
