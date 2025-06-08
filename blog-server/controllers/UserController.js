@@ -20,7 +20,7 @@ export const userLogin = async (ctx) => {
             email: user.email,
             role: user.role,
         }
-        const token = jwt.sign(payload, KEY, { expiresIn: '10h' })
+        const token = jwt.sign(payload, KEY, { expiresIn: '2d' }) // token过期时间为2day
 
         ctx.status = 200
         ctx.body = {

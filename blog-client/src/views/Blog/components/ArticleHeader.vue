@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { apiUpdateBlogLikeCount } from '@/api/blogContent.js'
 import { useLikeStore } from '@/stores/likeStore.js'
 import { apiGetComments } from '@/api/comment'
-
+import { getFormatDate } from '@/utils/date.js'
 
 const props = defineProps(['blogData'])
 const route = useRoute()
@@ -52,6 +52,7 @@ getCommentNumber()
         <div class="header-left">
             <div class="view-count">
                 <span>阅读 {{ blogData.viewCount }}</span>
+                <span v-if="blogData.createTime != blogData.updateTime" style="margin-left: 14px;"> 最后更新于 {{ getFormatDate(blogData.updateTime) }}</span>
             </div>
         </div>
         <div class="header-right">

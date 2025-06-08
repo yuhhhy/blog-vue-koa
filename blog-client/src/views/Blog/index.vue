@@ -89,7 +89,7 @@ onMounted(() => {
             <!-- 相关信息 -->
             <div class="blog-title">{{ blogData.title }}</div>
             <div class="blog-info">
-                <div class="blog-date">{{ getFormatDate(blogData.createTime) }}</div>
+                <span>创建时间 {{ getFormatDate(blogData.createTime) }} </span>
                 <div class="blog-author">作者 {{ blogData.author }}</div>
                 <div class="blog-word-count">字数 {{ blogData.wordCount }}</div>
             </div>
@@ -135,6 +135,7 @@ img {
     .blog-header {
         position: relative;
         color: #fff;
+        font-family: var(--font-serif);
 
         .banner {
             width: 100%;
@@ -173,7 +174,7 @@ img {
             justify-content: space-evenly;
             width: 100%;
             position: absolute;
-            bottom: 20px;
+            bottom: 25px;
 
             >div {
                 height: 30px;
