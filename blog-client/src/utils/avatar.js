@@ -10,13 +10,8 @@ function getQQNumber(email) {
 // 生成头像url
 export async function getAvatar(email) {
     try {
-        // 1. 优先尝试获取QQ头像
-        const qqNumber = getQQNumber(email)
-        if (qqNumber) {
-            return `https://q1.qlogo.cn/g?b=qq&nk=${qqNumber}&s=100`  // 获取QQ头像
-        }
-        
-        // 2. 尝试获取Gravatar头像
+
+        // 1. 优先尝试获取Gravatar头像
         const hash = sha256(email.trim().toLowerCase()).toString()
         const gravatarUrls = [
             'https://weavatar.com/avatar/',
@@ -36,6 +31,12 @@ export async function getAvatar(email) {
                 continue
             }
         }
+
+        // 2. 尝试获取QQ头像
+        const qqNumber = getQQNumber(email)
+        if (qqNumber) {
+            return `https://q1.qlogo.cn/g?b=qq&nk=${qqNumber}&s=100`  // 获取QQ头像
+                }
         
         // 3. 如果都失败了，返回默认头像
         return '/src/assets/images/user_default.png'

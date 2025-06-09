@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useBlogList } from '@/composables/useBlogList'
+import { computed } from 'vue'
 
 const route = useRoute()
 const { blogList, fetchBlogList } = useBlogList()
@@ -36,6 +37,28 @@ watch(() => route.query.tag, () => {
   filterPostsByTag()
 })
 
+// 按年份分组并排序
+const groupedTimeline = computed(() => {
+  const result = []
+  const yearMap = {}
+  
+  blogList.value.forEach(post => {
+    const year = post.createTime.substring(0, 4)
+    if (!yearMap[year]) {
+      yearMap[year] = true
+      result.push({
+        isYear: true,
+        year: year
+      })
+    }
+    result.push({
+      isYear: false,
+      post: post
+    })
+  })
+  
+  return result
+})
 </script>
 
 <template>
@@ -59,18 +82,27 @@ watch(() => route.query.tag, () => {
       <div v-else-if="route.query.tag && !postsByTag.length" class="noPosts">很抱歉，还没有这类文章……</div>
 
       <!-- 无路由参数时显示 -->
-      <el-timeline-item 
-        v-else 
-        v-for="item in blogList" 
-        :timestamp="item.createTime.substring(0, 10)" 
-        type="primary" 
-        class="timeline-item"
-      >
-        <RouterLink :to="item.link" class="timeline-item__link">    
-          <span  class="timeline-item__title">{{ item.title }}</span>
-        </RouterLink>
-      </el-timeline-item>
-      
+      <template v-else>
+        <template v-for="item in groupedTimeline" :key="item.isYear ? item.year : item.post.id">
+          <el-timeline-item 
+            v-if="item.isYear"
+            :timestamp="item.year + '年'"
+            type="primary"
+            placement="top"
+            class="year-marker"
+          />
+          <el-timeline-item 
+            v-else
+            :timestamp="item.post.createTime.substring(0, 10)"
+            type="primary"
+            class="timeline-item"
+          >
+            <RouterLink :to="item.post.link" class="timeline-item__link">    
+              <span class="timeline-item__title">{{ item.post.title }}</span>
+            </RouterLink>
+          </el-timeline-item>
+        </template>
+      </template>
     </el-timeline>
   </div>
 </template>
@@ -100,5 +132,18 @@ watch(() => route.query.tag, () => {
       padding-top: 40px;
       padding-left: 20px;
     }
+}
+.year-marker {
+  :deep(.el-timeline-item__timestamp) {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  :deep(.el-timeline-item__node) {
+    width: 16px;
+    height: 16px;
+    left: -4px;
+  }
 }
 </style>
