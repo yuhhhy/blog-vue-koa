@@ -1,5 +1,6 @@
 <script setup>
 import Sidebar from '@/components/Sidebar/index.vue'
+import Banner from './components/Banner.vue'
 import { ref, onMounted } from 'vue'
 import { apiGetBlogList } from '@/api/blog.js'
 const blogList = ref([])
@@ -18,9 +19,7 @@ onMounted(() => {
 <template>
     <div class="home-container">
         <!-- banner -->
-        <div class="home-banner">
-            <span class="motto">少说漂亮话，多做平凡事。</span>
-        </div>
+        <Banner></Banner>
         <div class="home-content">
             <!-- 博客列表 -->
             <div class="home-main">
@@ -49,39 +48,6 @@ onMounted(() => {
     flex-direction: column;
     margin-top: 64px;
     min-height: calc(100vh - 75px);
-
-    .home-banner {
-        width: 100%;
-        height: 400px;
-        --s: 200px; /* control the size */
-        background: repeating-conic-gradient(
-                from 30deg,
-                #0000 0 120deg,
-                var(--c3) 0 180deg
-            )
-            calc(0.5 * var(--s)) calc(0.5 * var(--s) * 0.577),
-            repeating-conic-gradient(
-            from 30deg,
-            var(--c1) 0 60deg,
-            var(--c2) 0 120deg,
-            var(--c3) 0 180deg
-            );
-        background-size: var(--s) calc(var(--s) * 0.577);
-
-        color: var(--dark);
-        font-size: 4rem;
-        font-weight: 700;
-        font-family: "Google Sans", arial, sans-serif;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center; // 文字居中
-
-        @media (max-width: 768px) {
-            height: 200px;
-            font-size: 2rem;
-        }
-    }
 
     .home-content {
         background-color: var(--light);
