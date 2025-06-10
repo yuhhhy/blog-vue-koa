@@ -62,7 +62,7 @@ function handleMouseEnter() {
         <div class="bg-image"></div>
         <div class="card-content">
           <h1 class="title">Frontend Developer</h1>
-          <p class="subtitle">Music Lover & Reader</p>
+          <p class="subtitle">Music Lover & Story Reader</p>
         </div>
         <div ref="gImg" class="gradient"></div>
       </div>
@@ -189,11 +189,11 @@ function handleMouseEnter() {
                         linear-gradient(
                             115deg, 
                             transparent 0%,
-                            rgba(40, 58, 75, 0.2) calc(var(--per) - 15%),
-                            rgba(0, 0, 0, 0.1) var(--per), 
+                            rgba(40, 58, 75, 0.1) calc(var(--per) - 15%),
+                            rgba(0, 0, 0, 0.2) var(--per), 
                             rgba(255, 255, 255, 0.3) calc(var(--per) + 15%),
                             rgba(255, 255, 255, 0.5) calc(var(--per) + 25%),
-                            rgba(30, 45, 60, 0.4) calc(var(--per) + 45%),
+                            rgba(30, 45, 60, 0.3) calc(var(--per) + 45%),
                             transparent 100%
                         );
                     mix-blend-mode: overlay;

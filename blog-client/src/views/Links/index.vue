@@ -26,7 +26,7 @@ onMounted(async () => {
                 <p>我会认真拜访你的“空间”，如果感觉有缘分，就会将你加入我的友链列表。即使暂时不互相加为友链，也期待与你成为朋友或交流想法！感谢每一位愿意分享小站的朋友！</p>
 
                 <h1>朋友们</h1>
-
+                <p>以下是目前与我互相陪伴的站点，点击头像即可探索他们的世界🚀 如果你也想出现在这里，请继续往下看规则~</p>
                 <!-- 友链展示区域 -->
                 <div class="links-display">
                     <!-- 一条友链 -->
@@ -48,11 +48,13 @@ onMounted(async () => {
 
                 <h2>友链申请规则</h2>
                 <ul>
-                    <li>✅您的网站在中国大陆区域能够正常访问</li>
+                    <li>✅您的网站在中国大陆区域能够正常访问（如果使用海外服务器，建议启用CDN加速）</li>
                     <li>✅您的网站需要需与我的博客主题有一定关联性（如前端技术、个人成长、生活记录），或更新稳定</li>
                     <li>✅麻烦先为您的网站添加本站友链</li>
                     <li>✅我会根据内容质量添加友链~谢谢</li>
+                    <li>❌不接受纯商业推广、采集站、或包含敏感内容的站点</li>
                 </ul>
+
                 <p>友链申请格式与本站信息如下：</p>
                 <pre><code>
     <span>名称: </span><span>"一曝十寒"</span>
@@ -218,7 +220,7 @@ onMounted(async () => {
 
                 code {
                     font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
-                    color: var(--code-color);
+                    color: var(--light-dark);
                     background: none;
                     padding: 0;
                     border-radius: 0;

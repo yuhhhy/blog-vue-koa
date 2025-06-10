@@ -1,11 +1,34 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
+import { useRoute } from 'vue-router'
 
 const { y } = useWindowScroll()
 const themeStore = useThemeStore()
+const lastScrollTop = ref(0)
+const shouldHideNav = ref(false)
+const route = useRoute()
+
+// 计算属性，检查当前是否在博客页面
+const isInBlogPage = computed(() => {
+  return route.path.startsWith('/blog')
+})
+
+// 监听滚动位置变化
+watch(y, (newY) => {
+  // 判断滚动方向
+  if (newY > lastScrollTop.value) {
+    // 向下滚动，隐藏导航栏
+    shouldHideNav.value = true
+  } else {
+    // 向上滚动，显示导航栏
+    shouldHideNav.value = false
+  }
+  // 更新上一次的滚动位置
+  lastScrollTop.value = newY > 0 ? newY : 0
+})
 
 const toggleTheme = () => {
     document.documentElement.classList.remove(themeStore.theme)
@@ -20,11 +43,10 @@ onMounted(() => {
     // 每次打开网站，即Nav挂载，访问量增加
     apiUpdateWebsiteVisit()
 })
-
 </script>
 
 <template>
-    <div class="nav" :class="{ unshow: y >= 64 }">
+    <div class="nav" :class="{ unshow: shouldHideNav && y > 64 }">
         <div class="nav-links">
             <RouterLink to="/home"><span class="iconfont" style="font-size: 15px; margin-right: 7px;">&#xe606;</span>主页</RouterLink>
             <RouterLink to="/archive"><span class="iconfont" style="font-size: 15px; margin-right: 8px;">&#xe605;</span>归档</RouterLink>
@@ -57,8 +79,13 @@ onMounted(() => {
             </el-dropdown>
         </div>
     </div>
-    <!-- 回到顶部 -->
-    <el-backtop :right="16" :bottom="100" style="color: var(--white); background-color: rgba(88, 183, 255, 0.8)" />
+    <!-- 只在博客页面显示回到顶部按钮 -->
+    <el-backtop 
+        v-if="isInBlogPage" 
+        :right="16" 
+        :bottom="100" 
+        style="color: var(--white); background-color: rgba(88, 183, 255, 0.8)" 
+    />
 </template>
 
 <style lang="scss" scoped>
@@ -71,6 +98,7 @@ onMounted(() => {
     left: 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    transition: all 0.5s;
 
     .nav-links {
         display: none;

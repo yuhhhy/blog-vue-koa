@@ -9,7 +9,7 @@ const themeStore = useThemeStore();
         <div class="author-avatar">
             <img src="@/assets/images/avatar.jpg" alt="my avatar">
         </div>
-        <span id="author-name">一曝十寒</span>
+        <span id="author-name">yuhhhy</span>
         <div id="author-words">
             <p>纵使不安彷徨 即便茫然无措 也依然迈步前行是为什么？</p>
         </div>
