@@ -101,6 +101,7 @@ async function deleteComment() {
   :data="comments" 
   row-key="id" 
   :row-class-name="tableRowClassName"
+  max-height="743px"
   >
     <!-- 头像 -->
     <el-table-column label="头像" width="100">

@@ -1,19 +1,57 @@
 <script setup>
-import { ref, reactive, watch } from "vue"
-import { useRoute,useRouter } from "vue-router"
+import { ref, reactive, watch, onMounted, onBeforeUnmount } from "vue"
+import { useRoute, useRouter } from "vue-router"
 import { useUserStore } from "@/stores/userStore.js"
+import { useNotificationStore } from "@/stores/notificationStore.js"
 
 const userStore = useUserStore()
+const notificationStore = useNotificationStore()
 const route = useRoute()
 const router = useRouter()
 const routeList = ref([])
 
-// 消息通知
-const notifications = reactive({
-    comments: 0,
-    links: 0,
-    system: 0
+// 监听路由变化
+watch(() => route.path, () => {
+    routeList.value = route.path.split("/")
+    routeList.value.shift()
+    
+    // 当进入评论管理页面时，重置评论通知计数
+    if (route.path.includes('/comment/pending')) {
+        notificationStore.resetCommentsCount()
+    }
+    
+    // 当进入友链管理页面时，重置友链通知计数
+    if (route.path.includes('/links')) {
+        notificationStore.resetLinksCount()
+    }
+}, { immediate: true })
+
+// 组件挂载时获取通知数据
+onMounted(() => {
+    if (userStore.isAuthenticated) {
+        fetchNotifications()
+        
+        // 设置定时刷新通知 (每分钟刷新一次)
+        const timer = setInterval(fetchNotifications, 60000)
+        
+        // 组件卸载时清除定时器
+        onBeforeUnmount(() => {
+            clearInterval(timer)
+        })
+    }
 })
+
+// 用户登录状态变化时，重新获取通知
+watch(() => userStore.isAuthenticated, (newVal) => {
+    if (newVal) {
+        fetchNotifications()
+    }
+})
+
+// 获取所有通知
+async function fetchNotifications() {
+    await notificationStore.refreshAllNotifications()
+}
 
 function handleLogout() {
     userStore.clearUserData()
@@ -22,17 +60,9 @@ function handleLogout() {
 function handleLogin() {
     router.push('/login')
 }
-
-// 监听，面包屑随路由改变
-watch(() => route.path, () => {
-    routeList.value = route.path.split("/")
-    routeList.value.shift()
-}, { immediate: true })
-
 </script>
 
 <template>
-
     <div class="ml-52 h-14 flex items-center justify-between px-5 border-b border-slate-300">
         <!-- 左侧 -->
         <div>
@@ -57,7 +87,14 @@ watch(() => route.path, () => {
                 <!-- 用户名 -->
                 <template #reference>
                     <div class="cursor-pointer text-gray-500 hover:text-blue-500 mr-5 text-base">
-                        <el-badge :value="1" class="item cursor-pointer" is-dot :show-zero="false" :offset="[5, 5]">
+                        <!-- 使用总通知数量来显示红点 -->
+                        <el-badge 
+                            :value="notificationStore.totalNotifications" 
+                            class="item cursor-pointer" 
+                            :show-zero="false"
+                            is-dot
+                            :offset="[5, 5]"
+                        >
                             {{ userStore.userData.username }}
                         </el-badge>
                     </div>
@@ -72,18 +109,21 @@ watch(() => route.path, () => {
                     </div>
                     <RouterLink to="/comment/pending" class="cursor-pointer hover:bg-gray-200 p-2">
                         <span class=" text-blue-500">待审评论</span>
-                        <span class="text-red-500 text-xs ml-1" v-if="notifications.comments">({{ notifications.comments
-                            }})</span>
+                        <span class="text-red-500 text-xs ml-1" v-if="notificationStore.pendingCommentsCount">
+                            ({{ notificationStore.pendingCommentsCount }})
+                        </span>
                     </RouterLink>
                     <RouterLink to="/links" class="cursor-pointer hover:bg-gray-200 p-2">
                         <span class="text-blue-500">友链申请</span>
-                        <span class="text-red-500 text-xs ml-1" v-if="notifications.links">({{ notifications.links
-                            }})</span>
+                        <span class="text-red-500 text-xs ml-1" v-if="notificationStore.pendingLinksCount">
+                            ({{ notificationStore.pendingLinksCount }})
+                        </span>
                     </RouterLink>
                     <RouterLink to="/" class="cursor-pointer hover:bg-gray-200 p-2">
                         <span class="text-blue-500">系统通知</span>
-                        <span class="text-red-500 text-xs ml-1" v-if="notifications.system">({{ notifications.system
-                            }})</span>
+                        <span class="text-red-500 text-xs ml-1" v-if="notificationStore.unreadSystemCount">
+                            ({{ notificationStore.unreadSystemCount }})
+                        </span>
                     </RouterLink>
                     <div class="cursor-pointer hover:text-blue-500 p-2" @click="handleLogout">
                         退出登录
@@ -105,5 +145,4 @@ watch(() => route.path, () => {
 </template>
 
 <style scoped>
- 
 </style>

@@ -55,7 +55,7 @@ async function deleteComment() {
 </script>
 
 <template>
-    <el-table :data="pendingComments" row-key="id">
+    <el-table :data="pendingComments" row-key="id" max-height="743px">
         <!-- 头像 -->
         <el-table-column label="头像" width="120">
             <template #default="scope">
