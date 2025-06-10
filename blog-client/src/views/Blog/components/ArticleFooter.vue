@@ -63,6 +63,7 @@ onMounted(()=>{
     :comments="comments" 
     :hasParent="false" 
     :parentId="'-1'"
+    :blogId="route.params.id || props.pageId"
     @updateComments="updateComments">
   </CommentForm>
   <!-- 一级评论列表 -->
@@ -97,6 +98,7 @@ onMounted(()=>{
         :comments="comment.replies" 
         :hasParent="true" 
         :parentId="comment.id"
+        :blogId="route.params.id || props.pageId"
         @updateComments="updateComments">
       </CommentForm>
       <!-- 非一级评论组件 -->

@@ -8,8 +8,6 @@ const links = ref([])
 onMounted(async () => {
     const res = await getLinks()
     links.value = res
-    console.log(links.value)
-    
 })
 
 </script>

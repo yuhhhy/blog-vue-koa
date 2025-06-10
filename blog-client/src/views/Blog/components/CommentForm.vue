@@ -23,6 +23,10 @@ const props = defineProps({
   parentId: {
     type: String,
     default: ''
+  },
+  blogId: {
+    type: String,
+    required: true
   }
 })
 
@@ -76,7 +80,7 @@ const doSubmit = async () => {
     let newComment = { 
         ...form,
         id: Date.now().toString(36),
-        blogId: route.params.id || '-1',
+        blogId: props.blogId,
         parentId: props.parentId,
         avatar: defaultAvatar,
         createTime: new Date(),
@@ -136,12 +140,6 @@ const insertEmoji = (emoji) => {
   // 在光标位置插入 emoji
   const text = form.content
   form.content = text.slice(0, start) + emoji + text.slice(end)
-  
-  // 使用 nextTick 确保 DOM 更新后再设置光标位置
-  nextTick(() => {
-    textarea.focus()
-    textarea.setSelectionRange(start + emoji.length, start + emoji.length)
-  })
 }
 </script>
 
