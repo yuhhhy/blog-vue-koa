@@ -474,10 +474,10 @@ const initArticleChart = () => {
 
 // 通知管理
 const notificationList = ref([
-  { type: '评论通知', count: 20, color: '#3B82F6', icon: 'ChatDotRound' },
-  { type: '互动通知', count: 15, color: '#F59E0B', icon: 'Star' },
-  { type: '订阅通知', count: 10, color: '#EC4899', icon: 'Bell' },
-  { type: '友链申请', count: 35, color: '#10B981', icon: 'Link' }
+  { type: '评论通知', count: 2, color: '#3B82F6', icon: 'ChatDotRound' },
+  { type: '互动通知', count: 5, color: '#F59E0B', icon: 'Star' },
+  { type: '订阅通知', count: 1, color: '#EC4899', icon: 'Bell' },
+  { type: '友链申请', count: 3, color: '#10B981', icon: 'Link' }
 ])
 </script>
 

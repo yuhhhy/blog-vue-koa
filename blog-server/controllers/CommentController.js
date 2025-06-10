@@ -22,7 +22,10 @@ export const getComments = async (ctx) => {
     // 否则会返回 Mongoose 文档对象，包含额外的方法和属性
     const comments = await Comment.find({
         blogId: id,
-        reviewPassed: { $ne: false }
+        $or: [
+            { reviewed: true, reviewPassed: { $ne: false } },
+            { reviewed: false }
+        ]
     }).lean()
 
     // 使用递归构建嵌套结构，返回对象数组给前端
@@ -124,5 +127,17 @@ export const updateComment = async (ctx) => {
     }  catch (error) {
         ctx.status = 500
         ctx.body = { message: '评论更新失败', error: error.message }
+    }
+}
+
+// 获取所有待审评论
+export const getPendingComments = async (ctx) => {
+    try {
+        const pendingComments = await Comment.find({ reviewed: false }).lean()
+        ctx.status = 200
+        ctx.body = pendingComments
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '获取待审评论失败', error: error.message }
     }
 }

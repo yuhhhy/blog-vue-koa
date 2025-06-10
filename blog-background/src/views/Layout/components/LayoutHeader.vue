@@ -1,12 +1,19 @@
 <script setup>
-import { ref, watch } from "vue"
+import { ref, reactive, watch } from "vue"
 import { useRoute,useRouter } from "vue-router"
-import { useUserStore } from "@/stores/userStore.js";
+import { useUserStore } from "@/stores/userStore.js"
 
 const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
 const routeList = ref([])
+
+// 消息通知
+const notifications = reactive({
+    comments: 0,
+    links: 0,
+    system: 0
+})
 
 function handleLogout() {
     userStore.clearUserData()
@@ -63,18 +70,21 @@ watch(() => route.path, () => {
                         </el-tag>
                         <div>{{ userStore.userData.email }}</div>
                     </div>
-                    <div class="cursor-pointer hover:bg-gray-200 p-2">
+                    <RouterLink to="/comment/pending" class="cursor-pointer hover:bg-gray-200 p-2">
                         <span class=" text-blue-500">待审评论</span>
-                        <span class="text-red-500 text-xs ml-1">(3)</span>
-                    </div>
-                    <div class="cursor-pointer hover:bg-gray-200 p-2">
+                        <span class="text-red-500 text-xs ml-1" v-if="notifications.comments">({{ notifications.comments
+                            }})</span>
+                    </RouterLink>
+                    <RouterLink to="/links" class="cursor-pointer hover:bg-gray-200 p-2">
                         <span class="text-blue-500">友链申请</span>
-                        <span class="text-red-500 text-xs ml-1">(5)</span>
-                    </div>
-                    <div class="cursor-pointer hover:bg-gray-200 p-2">
+                        <span class="text-red-500 text-xs ml-1" v-if="notifications.links">({{ notifications.links
+                            }})</span>
+                    </RouterLink>
+                    <RouterLink to="/" class="cursor-pointer hover:bg-gray-200 p-2">
                         <span class="text-blue-500">系统通知</span>
-                        <span class="text-red-500 text-xs ml-1">(1)</span>
-                    </div>
+                        <span class="text-red-500 text-xs ml-1" v-if="notifications.system">({{ notifications.system
+                            }})</span>
+                    </RouterLink>
                     <div class="cursor-pointer hover:text-blue-500 p-2" @click="handleLogout">
                         退出登录
                     </div>

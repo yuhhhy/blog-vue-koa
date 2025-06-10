@@ -97,7 +97,11 @@ async function deleteComment() {
 </script>
 
 <template>
-  <el-table :data="comments" row-key="id" :row-class-name="tableRowClassName">
+  <el-table 
+  :data="comments" 
+  row-key="id" 
+  :row-class-name="tableRowClassName"
+  >
     <!-- 头像 -->
     <el-table-column label="头像" width="100">
       <template #default="scope">

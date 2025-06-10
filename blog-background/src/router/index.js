@@ -35,9 +35,14 @@ const routes = [
                 component: () => import('../views/UserRecord/index.vue')
             },
             {
-                path: 'comment',
+                path: 'comment/manage',
                 name: 'CommentManage',
                 component: () => import('../views/CommentManage/index.vue')
+            },
+            {
+                path: 'comment/pending',
+                name: 'CommentPending',
+                component: () => import('../views/CommentPending/index.vue')
             },
             {
                 path: 'links',

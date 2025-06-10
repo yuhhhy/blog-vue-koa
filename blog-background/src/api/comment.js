@@ -39,3 +39,11 @@ export function apiDeleteComment(id) {
         requireAuth: true
     })
 }
+
+// 获取待审核评论
+export function apiGetPendingComments() {
+    return request({
+        url: '/comment/pending',
+        method: 'GET',
+    })
+}
