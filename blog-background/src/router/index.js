@@ -32,7 +32,10 @@ const routes = [
             {
                 path: 'user/record',
                 name: 'UserRecord',
-                component: () => import('../views/UserRecord/index.vue')
+                component: () => import('../views/UserRecord/index.vue'),
+                meta: {
+                    requiresAdmin: true // 需要admin权限
+                }
             },
             {
                 path: 'comment/manage',
@@ -64,16 +67,19 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from) => {
-    
-    // 检查用户是否已登录 未登录跳转登录页
+    // 检查用户是否已登录
     const userStore = useUserStore()
-    if (
-        !userStore.isAuthenticated &&
-        // 避免无限重定向
-        to.name !== 'Login'
-    ) {
+    
+    // 如果路由需要登录但用户未登录，重定向到登录页
+    if (!userStore.isAuthenticated && to.name !== 'Login') {
         ElMessage.warning('请先登录！')   
-        return { name: 'Login' } // 将用户重定向到登录页面
+        return { name: 'Login' }
+    }
+    
+    // 检查是否需要admin权限
+    if (to.meta.requiresAdmin && userStore.userData.role !== 'admin') {
+        ElMessage.warning('没有访问权限！')
+        return { path: from.path || '/' } // 回到之前的页面或首页
     }
 })
 
