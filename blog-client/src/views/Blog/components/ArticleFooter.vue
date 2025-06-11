@@ -7,6 +7,37 @@ import { apiGetComments } from '@/api/comment'
 import CommentForm from './CommentForm.vue'
 import CommentReply from './CommentReply.vue'
 
+// 导入表情包图片
+const biliEmojisFiles = import.meta.glob('/src/assets/images/bili-emojis/*.png', { eager: true })
+
+// 创建表情名称到路径的映射
+const emojiMap = {}
+Object.keys(biliEmojisFiles).forEach(path => {
+  const fileName = path.split('/').pop().replace('.png', '')
+  emojiMap[fileName] = biliEmojisFiles[path].default || path
+})
+
+// 解析评论内容中的表情标记
+function parseComment(content) {
+  if (!content) return ''
+  
+  // 安全处理：防止XSS攻击
+  let safeContent = content
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+  
+  // 替换表情标记为HTML图片标签
+  return safeContent.replace(/\[表情:(.*?)\]/g, (match, name) => {
+    const emojiPath = emojiMap[name]
+    return emojiPath ? 
+      `<img class="comment-emoji" src="${emojiPath}" alt="${name}" />` : 
+      match
+  })
+}
+
 const route = useRoute()
 const comments = ref([])
 const formState = ref(true) // 用于控制顶部表单的显示与隐藏
@@ -24,31 +55,34 @@ const toggleReplyForm = (comment) => {
   comment.showForm = !comment.showForm
 }
 
-// 获取评论，route.params.id对应博客的评论，props.pageId对应非博客页的评论（关于、友链）
-const getComments = () => {
-  apiGetComments(route.params.id || props.pageId).then(res => {
-    comments.value = res
-  })
+// 获取评论，添加延迟参数
+const getComments = (delay = 0) => {
+  setTimeout(() => {
+    apiGetComments(route.params.id || props.pageId).then(res => {
+      comments.value = res
+    })
+  }, delay)
 }
 
 // 自定义updateComments事件回调
 const updateComments = () => {
-  getComments()
+  getComments(500) // 延迟500毫秒获取评论
 }
+
 // 自定义replyUpdate事件回调
 const replyUpdate = () => {
-  getComments()
+  getComments(500) // 延迟500毫秒获取评论
 }
 
-// 监听路由参数变化，更新评论区
+// 组件加载时获取评论 - 不需要延迟
 watch(() => route.params.id, (newId) => {
   if (newId) {
-    getComments()
+    getComments(0)
   }
-}, { immediate: true })  // 确保组件首次加载时也执行，代替了onMounted
+}, { immediate: true })
 
-onMounted(()=>{
-  getComments()
+onMounted(() => {
+  getComments(0) // 初次加载不需要延迟
 })
 </script>
 
@@ -68,7 +102,6 @@ onMounted(()=>{
   </CommentForm>
   <!-- 一级评论列表 -->
   <div class="comment-list">
-    <!-- 遍历所有一级评论 -->
     <div v-for="comment in comments" :key="comment.id" class="comment-item">
       <!-- 一级评论头部信息 -->
       <div class="comment-header">
@@ -89,9 +122,7 @@ onMounted(()=>{
         </div>
       </div>
       <!-- 一级评论内容 -->
-      <div class="comment-content">
-        {{ comment.content }}
-      </div>
+      <div class="comment-content" v-html="parseComment(comment.content)"></div>
       <!-- 一级评论回复表单 -->
       <CommentForm 
         v-if="comment.showForm" 
@@ -104,6 +135,7 @@ onMounted(()=>{
       <!-- 非一级评论组件 -->
       <CommentReply 
         :comment="comment"
+        :parseEmoji="parseComment"
         @replyUpdate="replyUpdate">
       </CommentReply>
     </div>
@@ -165,6 +197,19 @@ onMounted(()=>{
               padding: 0;
             }
           }
+        }
+      }
+
+      .comment-content {
+        margin: 10px 0 10px 63px;
+        line-height: 1.6;
+        word-break: break-word;
+        .comment-emoji {
+          display: inline-block;
+          vertical-align: middle;
+          width: 24px;
+          height: 24px;
+          margin: 0 2px;
         }
       }
     }

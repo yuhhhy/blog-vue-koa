@@ -2,7 +2,12 @@
 import CommentForm from './CommentForm.vue'
 import { getFormatDate } from '@/utils/date'
 
-defineProps(['comment'])
+// 添加parseEmoji参数接收表情解析函数
+const props = defineProps({
+  comment: Object,
+  parseEmoji: Function  // 接收从父组件传来的解析函数
+})
+
 const emit = defineEmits(['replyUpdate'])
 
 // 显示/隐藏回复表单
@@ -10,9 +15,9 @@ const toggleReplyForm = (comment) => {
   comment.showForm = !comment.showForm
 }
 
-// updateComments 回调
-const updateComments = () => {
-    emit('replyUpdate')
+// 统一处理所有更新事件，确保正确向上传递
+const handleUpdate = () => {
+  emit('replyUpdate')
 }
 </script>
 
@@ -38,23 +43,27 @@ const updateComments = () => {
                 </div>
             </div>
         </div>
-        <!-- 评论内容 -->
-        <div class="comment-content">
-            {{ reply.content }}
-        </div>
-        <!-- 二级评论回复表单 -->
+        
+        <!-- 评论内容 - 使用v-html和表情解析函数 -->
+        <div class="comment-content" v-html="parseEmoji ? parseEmoji(reply.content) : reply.content"></div>
+        
+        <!-- 二级评论回复表单 - 修改事件处理器 -->
         <CommentForm 
           v-if="reply.showForm" 
           :comments="reply.replies" 
-          :hasParent="reply.hasParent" 
+          :hasParent="true" 
           :parentId="reply.id"
-          @updateComments="updateComments"></CommentForm>
-        <!-- 递归地显示更深层级回复 -->
+          :blogId="comment.blogId"
+          @updateComments="handleUpdate">  <!-- 使用统一的处理函数 -->
+        </CommentForm>
+          
+        <!-- 递归显示更深层级回复 - 修改事件处理器 -->
         <CommentReply 
-          v-if="reply.replies.length > 0" 
+          v-if="reply.replies && reply.replies.length > 0" 
           :comment="reply"
-          @replyUpdate="updateComments"  
-          />
+          :parseEmoji="parseEmoji"
+          @replyUpdate="handleUpdate">  <!-- 使用统一的处理函数 -->
+        </CommentReply>
     </div>
 </div>
 </template>
@@ -72,6 +81,22 @@ const updateComments = () => {
 
     .comment-reply {
         margin-bottom: 15px;
+        
+        /* 添加表情图片样式 */
+        :deep(.comment-emoji) {
+          display: inline-block;
+          vertical-align: middle;
+          width: 24px;
+          height: 24px;
+          margin: 0 2px;
+        }
+    }
+    
+    /* 评论内容样式 */
+    .comment-content {
+        margin: 10px 0 10px 58px;  /* 缩进与头像对齐 */
+        line-height: 1.6;
+        word-break: break-word;
     }
 }
 </style>

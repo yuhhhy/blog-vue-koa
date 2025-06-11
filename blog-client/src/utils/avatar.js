@@ -22,8 +22,6 @@ export async function getAvatar(email) {
             return qqAvatarUrl
         }
     } catch (error) {
-        console.warn('获取QQ头像失败:', error)
-        // 失败后继续尝试Gravatar
     }
 
     // 2. 尝试获取Gravatar头像
@@ -44,13 +42,10 @@ export async function getAvatar(email) {
                     return response.url
                 }
             } catch (error) {
-                console.warn(`Gravatar镜像 ${url} 获取失败:`, error)
                 continue  // 继续尝试下一个镜像
             }
         }
     } catch (error) {
-        console.warn('获取Gravatar头像失败:', error)
-        // 失败后继续尝试其他方法或返回默认头像
     }
     
     // 3. 如果以上都失败，返回默认头像

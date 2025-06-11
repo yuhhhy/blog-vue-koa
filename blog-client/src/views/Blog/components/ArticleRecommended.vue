@@ -20,7 +20,6 @@ const getRecommendedBlogs = async () => {
     prevBlog.value = prevRes.found ? prevRes.prevBlog : null
     nextBlog.value = nextRes.found ? nextRes.nextBlog : null
   } catch (error) {
-    console.error('获取推荐文章失败:', error)
   }
 }
 
