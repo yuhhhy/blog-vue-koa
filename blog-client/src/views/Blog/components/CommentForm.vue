@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { apiCreateComment, apiUpdateComment } from '@/api/comment.js'
@@ -141,6 +141,11 @@ const insertEmoji = (emoji) => {
   const text = form.content
   form.content = text.slice(0, start) + emoji + text.slice(end)
 }
+
+// 计算属性：根据是否有父评论决定占位符文本
+const placeholderText = computed(() => {
+  return props.hasParent ? '回复楼主...' : '写下你的评论...'
+})
 </script>
 
 <template>
@@ -169,14 +174,14 @@ const insertEmoji = (emoji) => {
         />
       </el-form-item>
     </div>
-    <!-- 评论内容区域 -->
+    <!-- 评论内容区域 - 修改这里的placeholder -->
     <el-form-item prop="content">
       <el-input
         ref="textareaRef"
         v-model="form.content"
         type="textarea"
         :autosize="{ minRows: 2 }"
-        placeholder="写下你的评论..."
+        :placeholder="placeholderText"
       />
     </el-form-item>
     <!-- 表情和提交 -->

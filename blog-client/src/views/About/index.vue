@@ -206,27 +206,23 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
         
         }
     }
+
     @media (max-width: 768px) {
         padding: 0;
         flex-direction: column;
 
-        .about-aritcle {
+        .about-article {
             margin-right: 0;
-            margin-bottom: 20px;
+            box-shadow: none;
+            border-radius: 0;
 
             .about-article-content {
                 padding-bottom: 30px;
                 padding-left: 15px;
                 padding-right: 15px;
 
-                h1, h2, h3, h4 
-                {
-                    font-size: 20px;
-                }
-
-                p, ul, ol, li, code, pre, blockquote 
-                {
-                    font-size: 14px;
+                ul {
+                    padding-left: 1.5em;
                 }
             }
         }

@@ -128,14 +128,13 @@ onMounted(()=>{
   /* 评论列表样式 */
   .comment-list {
     .comment-item {
-      padding: 10px 20px;
+      padding: 15px 20px;
       background: var(--white);
       border-top: 1px solid rgba(0, 0, 0, 0.05);
       
       .comment-header {
         display: flex;
         gap: 15px;
-        margin-bottom: 15px;
         
         .el-avatar {
           width: 48px;
@@ -148,7 +147,6 @@ onMounted(()=>{
           display: flex;
           flex-direction: column;
           padding-top: 5px;
-          font-size: 14px;
 
           .comment-name {
             &:hover {
@@ -159,6 +157,7 @@ onMounted(()=>{
           .comment-meta {
             display: flex;
             align-items: center;
+            font-size: 0.8rem;
             gap: 10px;
             .reply-btn {
               color: var(--blue);
@@ -169,6 +168,13 @@ onMounted(()=>{
         }
       }
     }
+  }
+}
+@media screen and (max-width: 768px) {
+  .article-footer {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0 15px 10px 15px;
   }
 }
 </style>

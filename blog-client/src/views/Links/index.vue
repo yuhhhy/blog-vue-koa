@@ -237,7 +237,8 @@ onMounted(async () => {
 
         .links-article {
             margin-right: 0;
-            margin-bottom: 20px;
+            box-shadow: none;
+            border-radius: 0;
 
             .links-article-content {
                 padding-bottom: 30px;
@@ -246,16 +247,6 @@ onMounted(async () => {
 
                 .links-display {
                     grid-template-columns: repeat(1, 1fr);
-                }
-
-                h1, h2, h3, h4 
-                {
-                    font-size: 20px;
-                }
-
-                p, ul, ol, li, code, pre, blockquote 
-                {
-                    font-size: 14px;
                 }
             }
         }

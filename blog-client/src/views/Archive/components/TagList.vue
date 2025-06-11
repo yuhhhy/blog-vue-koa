@@ -64,10 +64,6 @@ onMounted(async () => {
     row-gap: 20px;
     column-gap: 0;
 
-    @media screen and (max-width: 768px) {
-        padding: 0;
-    }
-
     .tag {
         border: 2px none var(--blue);
         color: var(--blue);
@@ -91,6 +87,16 @@ onMounted(async () => {
             background-color: var(--blue);
             color: var(--white);
             box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+    }
+
+    // @media 一定要放在想要覆盖样式的后面，否则不生效
+    @media screen and (max-width: 768px) {
+        padding: 0;
+        row-gap: 14px;
+
+        .tag {
+            margin: 0;
         }
     }
 }

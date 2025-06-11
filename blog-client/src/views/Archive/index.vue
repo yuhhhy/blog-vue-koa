@@ -39,6 +39,7 @@ import Timeline from './components/Timeline.vue'
         }
     }
 }
+
 @media (max-width: 768px) {
     .archive-container{
         background-color: var(--white);
