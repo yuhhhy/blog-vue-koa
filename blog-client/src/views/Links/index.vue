@@ -87,6 +87,7 @@ onMounted(async () => {
         background-color: var(--white);
         border-radius: 10px;
         flex: 1;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
         .links-article-content {
             padding: 0 30px 30px 30px;

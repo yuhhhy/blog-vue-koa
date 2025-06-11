@@ -21,10 +21,13 @@
     display: flex;
     flex-wrap: wrap;
     border-radius: 10px;
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 
     &:hover {
-        box-shadow: 2px 2px 5px var(--dark);
-        transition: 0.4s;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
     }
 
     .blog-tags-header{
