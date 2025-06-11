@@ -3,6 +3,7 @@ import Sidebar from '@/components/Sidebar/index.vue'
 import Banner from './components/Banner.vue'
 import { ref, onMounted } from 'vue'
 import { apiGetBlogList } from '@/api/blog.js'
+
 const blogList = ref([])
 
 async function getBlogList() {
@@ -10,9 +11,36 @@ async function getBlogList() {
     blogList.value = response
 }
 
+// 创建图片懒加载指令，支持非懒加载选项
+const vLazy = {
+  mounted(el, binding) {
+    const shouldLoadImmediately = binding.modifiers.immediate;
+    
+    // 如果需要立即加载，直接设置背景图片并返回
+    if (shouldLoadImmediately) {
+      el.style.backgroundImage = `url(${binding.value})`;
+      return;
+    }
+    
+    // 否则使用懒加载
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { // 当元素进入视口
+          el.style.backgroundImage = `url(${binding.value})`;
+          // 解除观察
+          observer.unobserve(el);
+        }
+      });
+    }, { threshold: 0.01 }); // 当元素有1%进入视口时触发
+    
+    // 开始观察元素
+    observer.observe(el);
+  }
+}
+
 onMounted(() => {
     // 获取后台数据
-    getBlogList()
+    getBlogList();
 })
 </script>
 
@@ -23,15 +51,23 @@ onMounted(() => {
         <div class="home-content">
             <!-- 博客列表 -->
             <div class="home-main">
-                <RouterLink v-for="blog in blogList" :to="`/blog/${blog.id}`" class="blog">
-                    <div class="blog-img" :style="{ 'background-image': `url(${blog.coverImage})` }">
-                    </div>
+                <RouterLink v-for="(blog, index) in blogList" :key="blog.id" :to="`/blog/${blog.id}`" class="blog">
+                    <!-- 前8个使用immediate修饰符立即加载，后面的懒加载 -->
+                    <div 
+                      class="blog-img" 
+                      v-if="index < 8" 
+                      v-lazy.immediate="blog.coverImage"
+                    ></div>
+                    <div 
+                      class="blog-img" 
+                      v-else 
+                      v-lazy="blog.coverImage"
+                    ></div>
                     <div class="blog-intro">
-
                         <div class="blog-title">{{ blog.title }}</div>
                         <div class="blog-time-tags">
                             <span class="blog-time">{{ blog.createTime.substring(0, 10) }}</span>
-                            <span class="blog-tag" v-for="tag in blog.tags">{{ tag }}</span>
+                            <span class="blog-tag" v-for="tag in blog.tags" :key="tag">{{ tag }}</span>
                         </div>
                     </div>
                 </RouterLink>
@@ -86,6 +122,14 @@ onMounted(() => {
                     height: 200px;
                     background-size: cover;
                     background-position: center;
+                    position: relative;
+                    transition: filter 0.3s ease;
+                    
+                    // 加载占位效果
+                    &:not([style*="url("]) {
+                      background-color: #f0f0f0;
+                      animation: pulse 2.5s infinite;
+                    }
                 }
 
                 .blog-intro {
@@ -124,5 +168,17 @@ onMounted(() => {
             }
         }
     }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }
 </style>
