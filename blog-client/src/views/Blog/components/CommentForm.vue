@@ -4,7 +4,10 @@ import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { apiCreateComment, apiUpdateComment } from '@/api/comment.js'
 import { apiUpdateWebsiteComment } from '@/api/websiteData.js'
-import { getAvatar } from '@/utils/avatar';
+import { getAvatar } from '@/utils/avatar'
+
+// 导入bili-emojis目录下的所有PNG图片
+const biliEmojisFiles = import.meta.glob('/src/assets/images/bili-emojis/*.png', { eager: true })
 
 const emit = defineEmits(['updateComments'])
 const route = useRoute()
@@ -121,25 +124,68 @@ const doSubmit = async () => {
   }
 }
 
+// 处理成数组格式
+const biliEmojis = Object.keys(biliEmojisFiles).map(path => {
+  const fileName = path.split('/').pop().replace('.png', '')
+  return {
+    name: fileName, 
+    path: biliEmojisFiles[path].default || path
+  }
+})
 
 // 添加 emoji 列表
-const emojis = ['😀', '😊', '🤣', '😍', '🤔', '😮', '😴', '😭', '😡', '🥰', '👍', '👋', '🎉', '❤️', '✨']
+const emojis = [
+  '😀', '😁', '😆', '😅', '🤣', '😊', '🙃', '🫠', '😉', '😇',
+  '🥰', '😍', '😘', '😙', '🥲', '😋', '🤪', '😎', '🫢', '🤔',
+  '🫡', '🤮', '🤧', '🥵', '🥶', '😮', '🥹', '😭', '😱', '😤',
+  '😡', '🤡', '🙄', '😮', '😅', '🙃', '😘', '🥲', '😴', '😭',
+  '👍', '👋', '🎉', '❤️', '✨'
+]
+
+// 添加颜文字列表
+const kaomojis = ['(⌒▽⌒)', '(￣▽￣)', '(。・ω・。)', '(≧∇≦)', '(´・ω・`)', 
+                 '(〜￣△￣)〜', '(°▽°)', '(⊙_⊙)', '(╥﹏╥)', '(ㆆᴗㆆ)', 
+                 '(๑•̀ㅂ•́)و', '(ノ°ο°)ノ', '(´･_･`)', 'ヾ(≧▽≦*)o', '(*^_^*)']
+
+// 当前选中的表情类型，添加'bili'
+const activeEmojiType = ref('emoji') // 'emoji', 'kaomoji', 或 'bili'
 
 // 添加 textarea 的引用
 const textareaRef = ref(null)
 
-// 优化后的插入 emoji 方法
+// 修改插入表情方法，支持图片表情
 const insertEmoji = (emoji) => {
-  const textarea = textareaRef.value.textarea // 获取 el-input 组件的 textarea 元素
+  const textarea = textareaRef.value.textarea
   if (!textarea) return
   
-  // 保存当前选区位置
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
-  
-  // 在光标位置插入 emoji
   const text = form.content
-  form.content = text.slice(0, start) + emoji + text.slice(end)
+  
+  // 判断是文本表情还是图片表情
+  if (typeof emoji === 'object' && emoji.name) {
+    // 对于B站表情，插入 [表情:名称] 格式的标识符
+    const emojiCode = `[表情:${emoji.name}]`
+    form.content = text.slice(0, start) + emojiCode + text.slice(end)
+    
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start + emojiCode.length, start + emojiCode.length)
+    }, 10)
+  } else {
+    // 普通文本表情
+    form.content = text.slice(0, start) + emoji + text.slice(end)
+    
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(start + emoji.length, start + emoji.length)
+    }, 10)
+  }
+}
+
+// 切换表情类型
+const switchEmojiType = (type) => {
+  activeEmojiType.value = type
 }
 
 // 计算属性：根据是否有父评论决定占位符文本
@@ -190,7 +236,7 @@ const placeholderText = computed(() => {
         <!-- 添加表情的弹出框 -->
         <el-popover
           placement="top"
-          :width="200"
+          :width="300"
           trigger="click"
           popper-class="emoji-popover"
         >
@@ -199,7 +245,10 @@ const placeholderText = computed(() => {
               <span class="emoji-icon">😊</span>
             </el-button>
           </template>
-          <div class="emoji-container">
+          
+          
+          <!-- 表情容器 -->
+          <div class="emoji-container" v-if="activeEmojiType === 'emoji'">
             <span
               v-for="emoji in emojis"
               :key="emoji"
@@ -209,12 +258,60 @@ const placeholderText = computed(() => {
               {{ emoji }}
             </span>
           </div>
+          
+          <!-- 颜文字容器 -->
+          <div class="emoji-container" v-else-if="activeEmojiType === 'kaomoji'">
+            <span
+              v-for="kaomoji in kaomojis"
+              :key="kaomoji"
+              class="kaomoji-item"
+              @click="insertEmoji(kaomoji)"
+            >
+              {{ kaomoji }}
+            </span>
+          </div>
+          
+          <!-- B站表情容器 -->
+          <div class="emoji-container bili-container" v-else>
+            <span
+              v-for="biliEmoji in biliEmojis"
+              :key="biliEmoji.name"
+              class="bili-emoji-item"
+              @click="insertEmoji(biliEmoji)"
+            >
+              <img :src="biliEmoji.path" :alt="biliEmoji.name" class="bili-emoji-image">
+            </span>
+          </div>
+
+          <!-- 表情类型选择器 -->
+          <div class="emoji-type-selector">
+            <span 
+              :class="['emoji-type-item', { active: activeEmojiType === 'emoji' }]" 
+              @click="switchEmojiType('emoji')"
+            >
+              Emoji
+            </span>
+            <span 
+              :class="['emoji-type-item', { active: activeEmojiType === 'kaomoji' }]" 
+              @click="switchEmojiType('kaomoji')"
+            >
+              颜文字
+            </span>
+            <span 
+              :class="['emoji-type-item', { active: activeEmojiType === 'bili' }]" 
+              @click="switchEmojiType('bili')"
+            >
+              B站表情
+            </span>
+          </div>
+
         </el-popover>
+        
         <!-- 提交按钮 -->
         <el-button @click="onSubmit" class="comment-form-submit">
           提交
         </el-button>
-    </div>
+      </div>
     </el-form-item>
   </el-form>
 </template>
@@ -347,4 +444,100 @@ const placeholderText = computed(() => {
     }
   }
 
+  /* 添加表情类型选择器样式 */
+.emoji-type-selector {
+  display: flex;
+  border-bottom: 1px solid var(--lightgrey);
+  margin-bottom: 8px;
+  
+  .emoji-type-item {
+    flex: 1;
+    text-align: center;
+    padding: 5px 0;
+    cursor: pointer;
+    color: var(--quote-color);
+    font-size: 14px;
+    
+    &:hover {
+      color: var(--blue);
+    }
+    
+    &.active {
+      color: var(--blue);
+      border-bottom: 2px solid var(--blue);
+    }
+  }
+}
+
+/* 表情容器样式 */
+.emoji-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  max-height: 200px;
+  overflow-y: auto;
+  
+  .emoji-item, .kaomoji-item {
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s, background-color 0.2s;
+    border-radius: 4px;
+    
+    &:hover {
+      background-color: var(--lightgrey);
+    }
+  }
+  
+  .emoji-item {
+    font-size: 18px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .kaomoji-item {
+    font-size: 13px;
+    margin: 5px 2px;
+    width: 30%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* B站表情样式 */
+  &.bili-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .bili-emoji-item {
+    cursor: pointer;
+    padding: 4px;
+    transition: all 0.2s;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover {
+      background-color: var(--lightgrey);
+    }
+    
+    .bili-emoji-image {
+      margin: 0;
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+  }
+}
+
+/* 确保emoji弹窗样式正确且有足够空间 */
+:deep(.emoji-popover) {
+  padding: 12px;
+  max-width: 320px;
+}
 </style>

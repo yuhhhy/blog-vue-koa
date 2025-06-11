@@ -22,7 +22,6 @@ async function getComments() {
 function tableRowClassName({ row }) {
   return `row-${row.id}`
 }
-
 // 获取父级评论内容
 function getParentContent(parentId) {
   const parentComment = comments.value.find(comment => comment.id === parentId)
