@@ -22,8 +22,8 @@
                     <h1>评论头像如何获取？</h1>
                     <p>头像会通过评论信息填写的邮箱地址获取：</p>
                     <ol>
-                        <li>首先会尝试获取Gravatar头像</li>
-                        <li>如果Gravatar头像获取失败且邮箱为QQ邮箱，那么通过 https://q1.qlogo.cn/g?b=qq&nk=${qqNumber}&s=100 获取QQ头像</li>
+                        <li>如果是QQ邮箱，那么会通过 https://q1.qlogo.cn/g?b=qq&nk=${qqNumber}&s=100 获取QQ头像</li>
+                        <li>如果是其他，尝试获取 Gravatar 头像</li>
                     </ol>
                     <p>关于 <a href="https://en.gravatar.com" target="_blank">Gravatar <img src="@/assets/images/gravatar.svg" alt="gravatar_icon" style="width: 16px; height: 16px; position: relative; top: 1px;"></a>（需要科学上网）</p>
 
