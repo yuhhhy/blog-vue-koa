@@ -57,15 +57,15 @@ getCommentNumber()
         </div>
         <div class="header-right">
             <div class="action-btn like">
-                <div class="iconfont" :class="{ liked: liked }" @click="handleLike" >&#xe707;</div>
+                <div class="iconfont icon-like" style="cursor: pointer;" :class="{liked: liked}" @click="handleLike" ></div>
                 <span>{{ blogData.likeCount }}</span>
             </div>
             <div class="action-btn comment">
-                <div class="iconfont">&#xe613;</div>
+                <div class="iconfont icon-ic_talk_line" style="cursor: pointer;"></div>
                 <span>{{ commentNumber }}</span>
             </div>
             <div class="action-btn share">
-                <div class="iconfont">&#xe65a;</div>
+                <div class="iconfont icon-share" style="cursor: pointer;"></div>
             </div>
         </div>
     </div>

@@ -48,14 +48,15 @@ onMounted(() => {
 <template>
     <div class="nav" :class="{ unshow: shouldHideNav && y > 64 }">
         <div class="nav-links">
-            <RouterLink to="/home"><span class="iconfont" style="font-size: 15px; margin-right: 7px;">&#xe606;</span>主页</RouterLink>
-            <RouterLink to="/archive"><span class="iconfont" style="font-size: 15px; margin-right: 8px;">&#xe605;</span>归档</RouterLink>
-            <RouterLink to="/about"><span class="iconfont" style="font-size: 15px; margin-right: 7px;">&#xe64e;</span>关于</RouterLink>
-            <RouterLink to="/links"><span class="iconfont" style="font-size: 15px; margin-right: 6px;">&#xe73e;</span>友链</RouterLink>
+            
+            <RouterLink to="/home"><span class="iconfont icon-home" style="font-size: 15px; margin-right: 7px;"></span>主页</RouterLink>
+            <RouterLink to="/archive"><span class="iconfont icon-archive" style="font-size: 15px; margin-right: 8px;"></span>归档</RouterLink>
+            <RouterLink to="/about"><span class="iconfont icon-svgabout" style="font-size: 15px; margin-right: 7px;"></span>关于</RouterLink>
+            <RouterLink to="/links"><span class="iconfont icon-link" style="font-size: 15px; margin-right: 6px;"></span>友链</RouterLink>
         </div>
         <button @click="toggleTheme" class="theme-toggle">
-            <span class="iconfont themeIcon" v-if="themeStore.theme === 'light'">&#xe886;</span>
-            <span class="iconfont themeIcon" v-else style="color: #fff;">&#xea26;</span>
+            <span class="iconfont icon-sun themeIcon" v-if="themeStore.theme === 'light'"></span>
+            <span class="iconfont icon-moon themeIcon" v-else style="color: #fff;"></span>
         </button>
         <div class="el-drop-down">
             <el-dropdown placement="top-start">
@@ -141,6 +142,7 @@ onMounted(() => {
     }
 
     .themeIcon {
+        font-size: 1.2rem;
         position: absolute;
         top: 22px;
         right: 30px;

@@ -134,7 +134,10 @@ function handleLogin() {
             <!-- 用户未登录 -->
             <el-popover v-else>
                 <template #reference>
-                    <div class="iconfont cursor-pointer hover:text-blue-500 mr-5">&#xe6bc;</div>
+                    <!-- IconFont的 Symbol 引用 -->
+                    <svg class="icon cursor-pointer hover:text-blue-500 mr-5" aria-hidden="true">
+                        <use xlink:href="#icon-user"></use>
+                    </svg>
                 </template>
                 <div class="flex flex-col content-center p-2">
                     <div class="cursor-pointer hover:text-blue-500" @click="handleLogin">去登录</div>

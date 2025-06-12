@@ -24,25 +24,22 @@ const copyToClipboard = async (text, type) => {
                 placement="top"
             >
                 <span 
-                    class="iconfont" 
-                    style="color:#ccc; font-size: 22px;"
+                    class="iconfont icon-qq" 
+                    style="color:#ccc; font-size: 22px; cursor: pointer;"
                     title="点击复制QQ号"
                     @click="copyToClipboard('281423846', 'QQ号')">
-                    &#xe604;
                 </span>
                 <span 
-                    class="iconfont" 
-                    style="color:#ccc; font-size: 24px;"
+                    class="iconfont icon-weixin" 
+                    style="color:#ccc; font-size: 24px; cursor: pointer;"
                     title="点击复制微信号"
                     @click="copyToClipboard('yzczhdyy109', '微信号')">
-                    &#xe601;
                 </span>
                 <span 
-                    class="iconfont" 
-                    style="color:#ccc; font-size: 18px; margin-top: 3px;"
+                    class="iconfont icon-youxiang-" 
+                    style="color:#ccc; font-size: 18px; margin-top: 3px; cursor: pointer;"
                     title="点击复制邮箱"
                     @click="copyToClipboard('yuhhhy109@163.com', '邮箱')">
-                    &#xe6af;
                 </span>
                 <template #reference>
                     <div class="info-title">
