@@ -63,7 +63,7 @@ onMounted(async () => {
 
                 <h2>申请方式</h2>
                 <ol>
-                    <li>在当前页面评论区评论👇</li>
+                    <li>在当前页面评论区评论</li>
                     <address>
                         <li>或者你也可以给我的邮箱✉️<a href="mailto:yuhhhy109@163.com">yuhhhy109@163.com</a>发送邮件</li>
                     </address>
