@@ -1,12 +1,15 @@
 import axios from "axios"
 import { ElMessage } from 'element-plus'
-import { useUserStore } from "@/stores/userStore"
-import router from "@/router"
+import { useUserStore } from "./../stores/userStore"
+import cfg from "./../config/index.js"
+import router from "./../router"
 const userStore = useUserStore()
 
+// 读取配置文件中的baseApi地址
+const baseApi = cfg.baseApi
 // 创建 Axios 实例对象，添加全局配置
 const request = axios.create({
-    baseURL: 'http://localhost:3000/api',
+    baseURL: baseApi,
     timeout: 8000
 })
 

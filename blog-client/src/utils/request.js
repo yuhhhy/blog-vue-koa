@@ -1,7 +1,10 @@
 import axios from "axios"
+import cfg from "../config/index.js"
+
+const baseApi = cfg.baseApi
 
 const request = axios.create({
-    baseURL: 'http://localhost:3000/api', // 后端API地址
+    baseURL: baseApi, // 后端API地址
     timeout: 8000,
 })
 
