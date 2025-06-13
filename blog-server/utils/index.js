@@ -28,8 +28,6 @@ export const parseIp = (ip) => {
     const query = new IP2Region({ disableIpv6: true })
     const res = query.search(ip)
     
-    console.log('访客信息', res, 'ip:', ip)
-    
     const { province, city, isp } = res
     return `${province} ${city} ${isp}` // 这里可以根据需要返回更多信息
 }

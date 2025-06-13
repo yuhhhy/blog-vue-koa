@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url'
 import { storage } from './config/upload.js'
 import { authMiddleware } from './middlewares/auth.js'
 import envConfig from './config/env.js'
-import { env } from 'process'
+import logger from './config/logger.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -31,14 +31,13 @@ app.use(cors({
     credentials: true // 允许携带 Cookie
 }))
 
-// 对所有请求进行打印
+// 日志中间件
 app.use(async (ctx, next) => {
-    const auth = ctx.request.headers['require-auth'] ? 'auth' : 'noAuth'
-    if(envConfig.currentEnv === 'development') {
-        console.log(`${ctx.request.method} | ${ctx.request.url} | ${auth}`)
-    }
+    const msg = `[${ctx.request.method}] (${ctx.request.headers['require-auth'] ? 'auth' : 'noAuth'}) ${ctx.request.url}`
+    logger.info(msg)
     await next()
 })
+
 
 // 解析 request.body
 app.use(bodyParser())
