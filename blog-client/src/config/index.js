@@ -7,8 +7,8 @@ const envConfig = {
         baseUrl: 'http://localhost:3000'
     },
     production: {
-        baseApi: 'http://localhost:3000/api',
-        baseUrl: 'http://localhost:3000'
+        baseApi: 'https://api.yuhhhy.cn/api',
+        baseUrl: 'https://api.yuhhhy.cn'
     }
 }
 

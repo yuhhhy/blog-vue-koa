@@ -9,10 +9,13 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { storage } from './config/upload.js'
 import { authMiddleware } from './middlewares/auth.js'
+import envConfig from './config/env.js'
+import { env } from 'process'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+// 创建 Koa 实例
 const app = new Koa()
 
 // 连接数据库
@@ -20,21 +23,28 @@ connectDB()
 
 // 解决跨域问题
 app.use(cors({
-    origin: '*'
+    origin: (ctx) => {
+        const allowedOrigins = envConfig.allowOrigins
+        const origin = ctx.request.header.origin
+        return allowedOrigins.includes(origin) ? origin : false
+    },
+    credentials: true // 允许携带 Cookie
 }))
 
 // 对所有请求进行打印
 app.use(async (ctx, next) => {
     const auth = ctx.request.headers['require-auth'] ? 'auth' : 'noAuth'
-    console.log(`${ctx.request.method} | ${ctx.request.url} | ${auth}`)
+    if(envConfig.currentEnv === 'development') {
+        console.log(`${ctx.request.method} | ${ctx.request.url} | ${auth}`)
+    }
     await next()
 })
 
 // 解析 request.body
 app.use(bodyParser())
 
-// 代理静态资源目录，让前端可以访问到public目录下的文件
-app.use(serve(path.join(__dirname, '../public')))
+// 代理静态资源，让前端可以访问到后端指定目录下的文件
+app.use(serve(path.join(__dirname, envConfig.staticResourceFilePath)))
 
 // 处理文件上传
 const upload = multer({ storage })
@@ -47,6 +57,6 @@ app.use(authMiddleware)
 app.use(router.routes())
 app.use(router.allowedMethods())
 
-app.listen(3000, '0.0.0.0') // 监听所有网络接口（0.0.0.0）
+app.listen(envConfig.port , '0.0.0.0') // 监听所有网络接口（0.0.0.0）
 
-console.log('Server is running on http://localhost:3000')
+console.log(`Server is running on port ${envConfig.port}`)

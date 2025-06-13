@@ -21,7 +21,7 @@
 
 ### 首页
 ![home](/images/doc_md-1.jpg)
-### 归档页
+### 归档页（黑暗模式展示）
 ![archive](/images/doc_md-2.jpg)
 ### 文章详情页
 ![blog](/images/doc_md-3.jpg)
