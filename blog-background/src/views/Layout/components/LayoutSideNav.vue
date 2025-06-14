@@ -47,7 +47,31 @@ const siderNavItems = [
     {
         title: '友链',
         link: '/links',
+    },
+    {
+        title: '功能',
+        children: [
+            {
+                title: '甘特图',
+                link: '/functions/ganttchart'
+            }
+        ]
+
     }
+    
+    // {
+    //     title: '设置',
+    //     children: [
+    //         {
+    //             title: '站点设置',
+    //             link: '/settings/site'
+    //         },
+    //         {
+    //             title: 'SEO设置',
+    //             link: '/settings/seo'
+    //         }
+    //     ]
+    // }
     // {
     //     title: '通知',
     //     children: [

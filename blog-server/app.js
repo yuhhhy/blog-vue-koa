@@ -38,7 +38,6 @@ app.use(async (ctx, next) => {
     await next()
 })
 
-
 // 解析 request.body
 app.use(bodyParser())
 
@@ -56,6 +55,6 @@ app.use(authMiddleware)
 app.use(router.routes())
 app.use(router.allowedMethods())
 
-app.listen(envConfig.port , '0.0.0.0') // 监听所有网络接口（0.0.0.0）
+app.listen(envConfig.port , '0.0.0.0') // 监听所有 IP 地址
 
 console.log(`Server is running on port ${envConfig.port}`)

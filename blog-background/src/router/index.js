@@ -51,6 +51,11 @@ const routes = [
                 path: 'links',
                 name: 'Links',
                 component: () => import('../views/Links/index.vue')
+            },
+            {
+                path: 'functions/ganttchart',
+                name: 'GanttChart',
+                component: () => import('../views/Functions/GanttChart/index.vue')
             }
         ]
     },
