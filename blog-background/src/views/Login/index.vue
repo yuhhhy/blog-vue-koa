@@ -8,7 +8,7 @@ import { useUserStore } from '@/stores/userStore.js'
 const router = useRouter()
 const fromRef = ref(null)
 const form = reactive({
-  username: 'admin', // 用户名字段
+  username: 'test1', // 用户名字段
   password: '123456'  // 密码字段
 })
 const rules = {
