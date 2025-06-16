@@ -28,8 +28,19 @@ app.use(cors({
         const origin = ctx.request.header.origin
         return allowedOrigins.includes(origin) ? origin : false
     },
-    credentials: true // 允许携带 Cookie
+    credentials: true, // 允许携带 Cookie
+    allowHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With', 'require-auth'], // 允许的请求头
+    maxAge: 86400 // 缓存预检请求结果24小时(秒)，减少OPTIONS请求
 }))
+
+// 增加一个OPTIONS请求处理中间件，快速响应预检请求
+app.use(async (ctx, next) => {
+    if (ctx.method === 'OPTIONS') {
+        ctx.status = 204; // 预检请求成功状态码
+        return;
+    }
+    await next();
+});
 
 // 日志中间件
 app.use(async (ctx, next) => {
@@ -42,7 +53,12 @@ app.use(async (ctx, next) => {
 app.use(bodyParser())
 
 // 代理静态资源，让前端可以访问到后端指定目录下的文件
-app.use(serve(path.join(__dirname, envConfig.staticResourceFilePath)))
+if(envConfig.currentEnv === 'development') {
+    app.use(serve(path.join(__dirname, envConfig.staticResourceFilePath)))
+} else {
+    // 生产环境下，静态资源路径可能需要根据实际部署情况调整
+    app.use(serve(envConfig.staticResourceFilePath))
+}
 
 // 处理文件上传
 const upload = multer({ storage })
