@@ -1,6 +1,7 @@
 // CORS配置
 // 允许跨域的源
 
+
 const envConfig = {
     development: {
         currentEnv: 'development',
@@ -17,9 +18,15 @@ const envConfig = {
         port: 3000,
         allowOrigins: [
             'https://yuhhhy.cn',
-            'https://admin.yuhhhy.cn'
+            'https://www.yuhhhy.cn',
+            'https://admin.yuhhhy.cn',
+            'https://42.192.41.225',
+            'http://yuhhhy.cn',
+            'http://www.yuhhhy.cn',
+            'http://admin.yuhhhy.cn',
+            'http://42.192.41.225',
         ],
-        staticResourceFilePath: '../public'
+        staticResourceFilePath: '/var/www/public'
     }
 }
 
