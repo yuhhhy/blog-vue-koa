@@ -164,11 +164,12 @@ function handleMouseEnter() {
                     padding: 1.5rem;
                     
                     .title {
-                        font-size: 2.5rem;
+                        font-size: 1.5rem;
+                        margin-bottom: 0;
                     }
                     
                     .subtitle {
-                        font-size: 1.2rem;
+                        font-size: 1rem;
                     }
                 }
             }

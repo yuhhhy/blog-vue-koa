@@ -90,7 +90,6 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                 <ul>
                     <li><a href="https://idealclover.top/" target="_blank">idealclover</a></li>
                     <li><a href="https://blog.fiveth.cc/" target="_blank">fiveth</a></li>
-                    <li><a href="https://liuyuyang.net/" target="_blank">liuyuyang</a></li>
                 </ul>
             </div>
             <!-- 评论区域 -->

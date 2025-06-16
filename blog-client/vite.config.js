@@ -1,10 +1,61 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import viteCompression from 'vite-plugin-compression'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import viteImagemin from 'vite-plugin-imagemin'
+
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    // Gzip 压缩插件
+    viteCompression({
+      verbose: true // 是否在控制台输出压缩结果
+    }),
+    // 图片压缩插件
+    viteImagemin({
+
+      // 添加过滤器排除banner.jpg
+      filter: /^(?!.*banner).*\.(jpe?g|png|gif|webp|svg)$/i,
+
+      gifsicle: {
+        optimizationLevel: 7,
+        interlaced: false,
+      },
+      optipng: {
+        optimizationLevel: 7,
+      },
+      mozjpeg: {
+        quality: 20,
+      },
+      pngquant: {
+        quality: [0.8, 0.9],
+        speed: 4,
+      },
+      svgo: {
+        plugins: [
+          {
+            name: 'removeViewBox',
+          },
+          {
+            name: 'removeEmptyAttrs',
+            active: false,
+          },
+        ],
+      },
+    }),
+    // 自动导入 Element Plus 组件和相关 API
+    AutoImport({
+      resolvers: [ElementPlusResolver()],
+    }),
+    Components({
+      resolvers: [ElementPlusResolver()],
+    }),
+  ],
   assetsInclude: ['**/*.md'], // 支持md文件
   resolve: {
     alias: {

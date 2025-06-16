@@ -16,12 +16,6 @@ a {
     color: inherit;
 }
 
-@media screen and (max-width: 768px) {
-    html, body {
-        font-size: 20px;
-    }
-}
-
 /* 选中文本的背景颜色 */
 ::selection {
     background: #ffffb7;
