@@ -1,5 +1,7 @@
 import { Comment } from '../models/CommentSchema.js'
 import { WebsiteData } from '../models/WebsiteDataSchema.js'
+import { Blog } from '../models/BlogSchema.js'
+import { sendEmail } from '../utils/sendEmail.js'
 
 /**
  * Comment Controller
@@ -139,5 +141,49 @@ export const getPendingComments = async (ctx) => {
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: '获取待审评论失败', error: error.message }
+    }
+}
+
+// 给父评论的邮箱发送邮件通知
+export const sendEmailNotification = async (ctx) => {
+    const { parentId, replyUsername, replyContent, blogId, createTime } = ctx.request.body
+    try {
+        const parentComment = await Comment.findOne({ id: parentId })
+
+        let blogLink = ''
+        let blogTitle = ''
+        
+        if (blogId == '-1') {
+            blogLink = 'http://yuhhhy.cn/about'
+            blogTitle = '一曝十寒/关于'
+        } else if (blogId == '0') {
+            blogLink = 'http://yuhhhy.cn/links'
+            blogTitle = '一曝十寒/友链'
+        } else {
+            blogLink = `http://yuhhhy.cn/blog/${blogId}`
+            const blog = await Blog.findOne({ id: blogId })
+            blogTitle = blog.title
+        }
+        
+        const data = {
+            blogTitle: blogTitle,
+            blogLink: blogLink,
+            username: parentComment.username,
+            commentTime: parentComment.createTime,
+            commentContent: parentComment.content,
+            commentEmail: parentComment.email,
+            replyTime: createTime,
+            replyUsername: replyUsername,
+            replyContent: replyContent
+        }
+
+        // 调用邮件发送服务，sendEmail 函数
+        await sendEmail(data)
+
+        ctx.status = 200
+        ctx.body = { message: '邮件通知已发送' }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '发送邮件通知失败', error: error.message }
     }
 }

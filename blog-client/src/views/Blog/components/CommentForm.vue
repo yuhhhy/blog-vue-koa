@@ -2,7 +2,7 @@
 import { ref, reactive, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { apiCreateComment, apiUpdateComment } from '@/api/comment.js'
+import { apiCreateComment, apiUpdateComment, apiSendEmailNotification } from '@/api/comment.js'
 import { apiUpdateWebsiteComment } from '@/api/websiteData.js'
 import { getAvatar } from '@/utils/avatar'
 
@@ -119,6 +119,19 @@ const doSubmit = async () => {
       // 触发更新评论
       emit('updateComments')
     }
+
+    // 如果是有父评论，给它父评论的邮箱发送邮件
+    if (props.hasParent && props.parentId) {
+      // 调用发送邮件的API
+      await apiSendEmailNotification(
+        props.parentId,
+        newComment.username,
+        newComment.content,
+        newComment.blogId,
+        newComment.createTime,
+      )
+    }
+
   } catch (error) {
     ElMessage.error(error)
   }
@@ -216,7 +229,7 @@ const placeholderText = computed(() => {
       <el-form-item prop="website">
         <el-input
           v-model="form.website" 
-          placeholder="网站 https://" 
+          placeholder="网站 http(s)://" 
         />
       </el-form-item>
     </div>

@@ -2,7 +2,7 @@ import Router from '@koa/router'
 import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { getWebsiteData, getWebsiteDataCount, updateWebsiteVisit, updateWebsiteView, updateWebsiteComment, updateWebsiteArticle, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
-import { getAllComments, getComments, createComment, reviewComment, deleteComment, updateComment, getPendingComments } from '../controllers/CommentController.js'
+import { getAllComments, getComments, createComment, reviewComment, deleteComment, updateComment, getPendingComments, sendEmailNotification } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
@@ -105,6 +105,9 @@ router.get('/comment/pending', getPendingComments)
 // 获取一个博客的所有评论
 router.get('/comment/:id', getComments)
 
+// 给父评论的邮箱发送邮件通知
+router.post('/comment/email', sendEmailNotification)
+
 // 创建新评论
 router.post('/comment', createComment)
 
@@ -116,7 +119,6 @@ router.delete('/comment/:id', deleteComment)
 
 // 更新评论
 router.put('/comment/:id', updateComment)
-
 
 
 

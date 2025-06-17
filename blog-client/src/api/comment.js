@@ -30,3 +30,18 @@ export function apiUpdateComment(data) {
         data
     })
 }
+
+// 给父评论的邮箱发送邮件通知
+export function apiSendEmailNotification(parentId, replyUsername, replyContent, blogId, createTime) {
+    return request({
+        url: '/comment/email',
+        method: 'POST',
+        data: {
+            parentId,
+            replyUsername,
+            replyContent,
+            blogId,
+            createTime
+        }
+    })
+}
