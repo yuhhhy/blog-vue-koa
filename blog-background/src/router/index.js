@@ -27,7 +27,10 @@ const routes = [
             {
                 path: 'user/manage',
                 name: 'UserManage',
-                component: () => import('../views/UserManage/index.vue')
+                component: () => import('../views/UserManage/index.vue'),
+                meta: {
+                    requiresAdmin: true
+                }
             },
             {
                 path: 'user/record',
