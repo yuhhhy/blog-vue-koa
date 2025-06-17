@@ -14,12 +14,15 @@ export const createVisitor = async (ctx) => {
     const browser = parseBrowser(ctx.request.headers['user-agent'])
     const today = new Date().toISOString().split('T')[0]
 
+    // 计算20分钟前的时间点
+    const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000)
+
     const existingVisitor = await Visitor.findOne({
         ip,
         browser,
         page,
         visitTime: {
-            $gte: new Date(today) // 如果今天访问过，则符合查找条件
+            $gte: twentyMinutesAgo // 如果今天20分钟内访问过，则符合查找条件
         }
     })
 

@@ -11,7 +11,7 @@ const themeStore = useThemeStore();
         </div>
         <span id="author-name">yuhhhy</span>
         <div id="author-words">
-            <p>纵使不安彷徨 即便茫然无措 也依然迈步前行是为什么？</p>
+            <p>纵使不安彷徨，即便茫然无措，也依然迈步前行</p>
         </div>
         <div class="author-social">
             <a href="https://github.com/yuhhhy" target="_blank">
