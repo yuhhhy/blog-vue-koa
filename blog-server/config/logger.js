@@ -12,6 +12,7 @@ const levels = {
     silly: 6
 }
 
+// 控制台格式
 const myFormat = combine(
     colorize(),
     timestamp({
@@ -22,18 +23,32 @@ const myFormat = combine(
     })
 )
 
+// 文件日志格式
+const fileFormat = combine(
+    timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    winston.format.json()
+)
+
+
 // 日志写入到文件
 const logger = winston.createLogger({
     // 设置日志等级
     levels: levels,
     level: 'info',
-    format: winston.format.json(),
+    format: fileFormat,
     defaultMeta: { service: 'blog-service' },
     transports: [
         // 写入错误等级小等于 error 的错误日志
-        new winston.transports.File({ filename: './log/error.log', level: 'error' }),
+        new winston.transports.File({ 
+            filename: './logs/error.log', 
+            level: 'error'
+        }),
         // 写入错误等级小于等于 info 的错误日志
-        new winston.transports.File({ filename: './log/combined.log' }),
+        new winston.transports.File({ 
+            filename: './logs/combined.log'
+        }),
     ],
 })
 
