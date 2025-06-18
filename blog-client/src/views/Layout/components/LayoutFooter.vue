@@ -13,36 +13,33 @@ const copyToClipboard = async (text, type) => {
 <template>
     <div class="footer-info">
         <div class="left-footer">
-            <div><p>© 2025 一曝十寒.</p></div>
-            <div><p>赣ICP备2025063071号</p></div>
+            <div>
+                <p>© 2025 一曝十寒.</p>
+            </div>
+            <div>
+                <p>赣ICP备2025063071号</p>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <img src="https://beian.mps.gov.cn/web/assets/logo01.6189a29f.png" alt="公安备案" style="width: 15px; height: 15px; position: relative; top: 2px;">
+                <p>赣公网安备36110202000678号</p>
+            </div>
+
         </div>
         <div class="right-footer">
             <RouterLink to="/info" class="info-title">信息</RouterLink>
-            <el-popover
-                class="footer-popover"
-                popper-class="popover"
-                placement="top"
-            >
-                <span 
-                    class="iconfont icon-qq" 
-                    style="color:#ccc; font-size: 22px; cursor: pointer;"
-                    title="点击复制QQ号"
+            <el-popover class="footer-popover" popper-class="popover" placement="top">
+                <span class="iconfont icon-qq" style="color:#ccc; font-size: 22px; cursor: pointer;" title="点击复制QQ号"
                     @click="copyToClipboard('281423846', 'QQ号')">
                 </span>
-                <span 
-                    class="iconfont icon-weixin" 
-                    style="color:#ccc; font-size: 24px; cursor: pointer;"
-                    title="点击复制微信号"
+                <span class="iconfont icon-weixin" style="color:#ccc; font-size: 24px; cursor: pointer;" title="点击复制微信号"
                     @click="copyToClipboard('yzczhdyy109', '微信号')">
                 </span>
-                <span 
-                    class="iconfont icon-youxiang-" 
-                    style="color:#ccc; font-size: 18px; margin-top: 3px; cursor: pointer;"
-                    title="点击复制邮箱"
+                <span class="iconfont icon-youxiang-"
+                    style="color:#ccc; font-size: 18px; margin-top: 3px; cursor: pointer;" title="点击复制邮箱"
                     @click="copyToClipboard('yuhhhy109@163.com', '邮箱')">
                 </span>
                 <template #reference>
-                    <div class="info-title">
+                    <div class="info-title contact">
                         联系
                     </div>
                 </template>
@@ -88,9 +85,15 @@ const copyToClipboard = async (text, type) => {
 
     @media (max-width: 768px) {
         padding: 0 20px;
+        
         .right-footer {
             gap: 20px;
+
+            .contact {
+                display: none;
+            }
         }
+
     }
     
 }
