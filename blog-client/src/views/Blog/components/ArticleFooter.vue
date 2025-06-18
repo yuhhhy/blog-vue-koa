@@ -6,6 +6,7 @@ import { getFormatDate } from '@/utils/date'
 import { apiGetComments } from '@/api/comment'
 import CommentForm from './CommentForm.vue'
 import CommentReply from './CommentReply.vue'
+import DOMPurify from 'dompurify' // 用于安全处理HTML内容
 
 // 导入表情包图片
 const biliEmojisFiles = import.meta.glob('/src/assets/images/bili-emojis/*.png', { eager: true })
@@ -20,14 +21,15 @@ Object.keys(biliEmojisFiles).forEach(path => {
 // 解析评论内容中的表情标记
 function parseComment(content) {
   if (!content) return ''
-  
-  // 安全处理：防止XSS攻击
-  let safeContent = content
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
+
+  // 将换行符转换为<br>标签
+  let processedContent = content.replace(/\n/g, '<br>')
+
+  // 使用DOMPurify清理HTML，以防止XSS攻击
+  let safeContent = DOMPurify.sanitize(processedContent, {
+    ALLOWED_TAGS: ['img', 'a', 'div', 'b', 'i', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'br'],
+    ALLOWED_ATTR: ['style', 'src', 'href', 'alt', 'target']
+  })
   
   // 替换表情标记为HTML图片标签
   return safeContent.replace(/\[表情:(.*?)\]/g, (match, name) => {
@@ -163,6 +165,25 @@ onMounted(() => {
       padding: 15px 20px;
       background: var(--white);
       border-top: 1px solid rgba(0, 0, 0, 0.05);
+
+      code {
+        font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+        color: var(--code-color);
+        background: var(--code-background);
+        padding: 0.2em 0.4em;
+        border-radius: 5px;
+      }
+
+      a {
+        color: var(--blue);
+        text-decoration: none;
+        &:hover {
+          &::after {
+            content: '（这是个外链哟）';
+            color: var(--blue);
+          }
+        }
+      }
       
       .comment-header {
         display: flex;

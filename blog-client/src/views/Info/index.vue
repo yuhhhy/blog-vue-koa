@@ -25,7 +25,19 @@
                 <p>使用ElementPlus <img src="@/assets/images/elementplus.svg" alt="elementplus_icon"
                         style="width: 72px; height: 18px; position: relative; top: 4px;"> 组件库</p>
 
-
+                <h1>关于评论</h1>
+                <p>本站的评论系统也是博主自己设计的哦~</p>
+                <p>已经做好针对XSS攻击的防护啦，用的是 <a href="https://www.npmjs.com/package/dompurify" target="_blank">DOMPurify</a> 这样一款库</p>
+                <p>
+                    多说一句，其实 DOMPurify 提供了针对一些 h5 标签放行的设置项哦，所以如果你会最基础的 HTML 的话，可以在评论中使用一些基本的 HTML 标签，比如：
+                    <code>img, a, div, b, i, ul, ol, li, blockquote, code, pre...</code>
+                    <br>
+                    还可以使用一些属性，比如：
+                    <code>style, src, href, alt, target...</code>
+                    <br>
+                </p>
+                <p>这样大家的评论就可以更丰富一些啦~ 可以给文本加粗，还可以添加链接、图片、代码块等等</p>
+                
                 <h1>评论头像如何获取？</h1>
                 <p>头像会通过评论信息填写的邮箱地址获取：</p>
                 <ol>
@@ -35,6 +47,7 @@
                 <p>关于 <a href="https://en.gravatar.com" target="_blank">Gravatar <img src="@/assets/images/gravatar.svg"
                             alt="gravatar_icon"
                             style="width: 16px; height: 16px; position: relative; top: 1px;"></a>（需要科学上网）</p>
+
 
                 <h1>RSS</h1>
                 <p>目前还在开发中哦……</p>
@@ -46,8 +59,7 @@
                 <p>网站源码采用<a href="https://www.gnu.org/licenses/gpl-3.0.zh-cn.html" target="_blank"> GPL <img
                             src="@/assets/images/GPLv3.svg" alt="GPLv3_icon" style="width: 36px; height: 20px;"></a>协议开源
                 </p>
-
-
+    
                 <h1>网站时间线</h1>
                 <ul>
                     <li>2025.06.18 公安备案通过</li>
@@ -171,6 +183,14 @@
                 color: var(--skyblue);
                 text-decoration: none;
                 word-break: break-word; // 文字折行
+            }
+
+            code {
+                font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+                color: var(--code-color);
+                background: var(--code-background);
+                padding: 0.2em 0.4em;
+                border-radius: 5px;
             }
 
             pre {
