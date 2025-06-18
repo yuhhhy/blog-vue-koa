@@ -11,6 +11,10 @@ import { storage } from './config/upload.js'
 import { authMiddleware } from './middlewares/auth.js'
 import envConfig from './config/env.js'
 import logger from './config/logger.js'
+import dotenv from 'dotenv'
+
+// 加载环境变量配置（.ENV 文件）
+dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
