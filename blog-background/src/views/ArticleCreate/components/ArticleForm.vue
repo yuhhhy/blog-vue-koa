@@ -3,6 +3,8 @@ import { reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
 import { useRouter } from 'vue-router'
+import cfg from '@/config/index.js'
+const baseApi = cfg.baseApi
 
 const emit = defineEmits(['articleSubmit'])
 const formRef = ref(null)
@@ -141,7 +143,7 @@ const uploadError = (file) => {
       <el-popover placement="top" width="173">
         <template #reference><el-button>上传文章封面</el-button></template>
         <el-upload
-          action="http://localhost:3000/api/upload/image"
+          :action="`${baseApi}/upload/image`"
           list-type="picture-card"
           :limit="1"
           :before-upload="beforeUpload"

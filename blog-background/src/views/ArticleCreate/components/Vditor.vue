@@ -5,6 +5,9 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useArticleStore } from '@/stores/articleStore.js'
 import { useUserStore } from '@/stores/userStore.js'
+import cfg from '@/config/index.js'
+const baseApi = cfg.baseApi
+
 
 const vditorEl = ref()
 const timer = ref(null)
@@ -70,7 +73,7 @@ onMounted(() => {
         upload: {
             // 必须设置上传的文件字段名为 file，符合后端配置
             fieldName: 'file',
-            url: 'http://localhost:3000/api/upload/image', // 设置上传接口URL
+            url: `${baseApi}/upload/image`, // 设置上传接口URL
             accept: 'image/jpeg',  // 明确指定接受JPEG格式
             success: (editor, msg) => {
                 const response = JSON.parse(msg)

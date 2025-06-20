@@ -1,6 +1,5 @@
 <script setup>
 import Sidebar from '@/components/Sidebar/index.vue'
-import Banner from './components/Banner.vue'
 import { ref, onMounted } from 'vue'
 import { apiGetBlogList } from '@/api/blog.js'
 
@@ -47,7 +46,6 @@ onMounted(() => {
 <template>
     <div class="home-container">
         <!-- banner -->
-        <Banner></Banner>
         <div class="home-content">
             <!-- 博客列表 -->
             <div class="home-main">
