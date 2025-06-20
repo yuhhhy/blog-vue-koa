@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { apiCreateComment, apiUpdateComment, apiSendEmailNotification } from '@/api/comment.js'
@@ -233,7 +233,15 @@ const placeholderText = computed(() => {
 
 // 选择头像生成方式：自定义URL或默认
 const avatarType = ref('')
-
+const previewAvatar = ref('/src/assets/images/user_default.png')
+// 监听input框的变化，自动更新头像URL
+const checkCostumAvatar = async () => {
+  if (avatarType.value === 'custom' && form.avatar) {
+    previewAvatar.value = form.avatar
+  } else if ((avatarType.value === 'default' || avatarType.value === '') && form.email) {
+    previewAvatar.value = await getAvatar(form.email)
+  }
+}
 </script>
 
 <template>
@@ -242,10 +250,15 @@ const avatarType = ref('')
 
     <div class="comment-form-input-row">
       <!-- 昵称 -->
-      <el-form-item prop="username">
+      <el-form-item prop="username" class="comment-form-username">
         <el-input
           v-model="form.username"
           placeholder="昵称*"
+        />
+        <img 
+          :src="previewAvatar" 
+          alt="" 
+          class="input-icon"
         />
       </el-form-item>
       <!-- 邮箱 -->
@@ -253,6 +266,7 @@ const avatarType = ref('')
         <el-input 
           v-model="form.email" 
           placeholder="电子邮箱*" 
+          @blur="checkCostumAvatar"
         />
       </el-form-item>
       <!-- 网站 -->
@@ -265,7 +279,7 @@ const avatarType = ref('')
       <!-- 头像选择器 -->
       <el-form-item>
         <div class="avatar-selector">
-          <el-radio-group v-model="avatarType" class="avatar-radio-group">
+          <el-radio-group v-model="avatarType" class="avatar-radio-group" @change="checkCostumAvatar">
             <el-radio-button value="default">默认获取</el-radio-button>
             <el-radio-button value="custom">自定义URL</el-radio-button>
           </el-radio-group>
@@ -278,6 +292,7 @@ const avatarType = ref('')
           v-model="form.avatar"
           placeholder="自定义头像URL"
           :disabled="avatarType !== 'custom'"
+          @blur="checkCostumAvatar"
         />
       </el-form-item>
 
@@ -396,10 +411,32 @@ const avatarType = ref('')
         grid-template-columns: 1fr;
       }
 
+      .comment-form-username {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        .input-icon {
+          position: absolute;
+          left: 10px;
+          width: 20px;
+          height: 20px;
+          clip-path: circle(50%);
+          overflow: hidden;
+          object-fit: contain;
+        }
+
+        :deep(.el-input__inner) {
+          padding-left: 26px; /* 留出空间给头像图标 */
+        }
+      }
+
       .el-input {
         all: unset;
         width: 100%;
         height: 32px;
+        position: relative;
         :deep(.el-input__wrapper) {
           all: unset;
         }
