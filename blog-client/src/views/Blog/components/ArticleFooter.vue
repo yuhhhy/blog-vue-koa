@@ -176,13 +176,6 @@ onMounted(() => {
 
       a {
         color: var(--blue);
-        text-decoration: none;
-        &:hover {
-          &::after {
-            content: '（这是个外链哟）';
-            color: var(--blue);
-          }
-        }
       }
       
       .comment-header {
@@ -225,6 +218,16 @@ onMounted(() => {
         margin: 10px 0 10px 63px;
         line-height: 1.6;
         word-break: break-word;
+
+        a {
+          &:hover {
+            text-decoration: underline;
+            &::after {
+              content: '（这是个外链哟）';
+              color: var(--blue);
+            }
+          }
+        }
         .comment-emoji {
           display: inline-block;
           vertical-align: middle;

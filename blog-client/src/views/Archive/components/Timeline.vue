@@ -122,6 +122,9 @@ const groupedTimeline = computed(() => {
     :deep(.timeline-item__title){
       font-size: 1rem;
       color: var(--light-dark);
+      &:hover {
+        color: var(--blue);
+      }
     }
     :deep(.el-timeline-item__node){
       background-color: var(--blue);

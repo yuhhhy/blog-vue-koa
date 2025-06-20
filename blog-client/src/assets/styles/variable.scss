@@ -6,7 +6,6 @@
     --light-dark: #444;
     --dark: #333;
     --black: #000;
-    --sapphire: #163375; // 蓝宝石色
 
     --border-color: #eee;
     --quote-color: #666;
@@ -34,6 +33,8 @@
     --cyan: #005072;
     --grape: #c850c0;
     --lavender: #c792ff;
+    --sapphire: #163375; // 蓝宝石色
+    --green: #2aadb2;
 }
 
 :root.dark {
@@ -44,7 +45,6 @@
     --light-dark: #dcdfe6;
     --dark: #fff;
     --black: #f5f5fa;
-    --sapphire: #2aadb2;
     
     --border-color: #333;
     --quote-color: #999;
@@ -72,4 +72,6 @@
     --cyan: #005072;
     --grape: #c850c0;
     --lavender: #c792ff;
+    --sapphire: #163375; // 蓝宝石色
+    --green: #2aadb2;
 }

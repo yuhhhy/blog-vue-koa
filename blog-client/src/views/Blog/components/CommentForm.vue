@@ -40,6 +40,7 @@ const form = reactive({
   email: '',
   website: '',
   content: '',
+  avatar: '',
 })
 // 表单校验规则、校验失败的ElMessage提示信息
 const rules = {
@@ -78,14 +79,31 @@ const onSubmit = () => {
 // 校验成功后的逻辑
 const doSubmit = async () => {
   try {
-    const defaultAvatar = '/src/assets/images/user_default.png'
+    let avatarURL = '/src/assets/images/user_default.png'
+
+    // 如果用户选择了自定义头像URL，则使用它，否则使用默认头像
+    if (avatarType.value === 'custom' && form.avatar) {
+      // 验证URL格式
+      try {
+        new URL(form.avatar) // 如果不是有效的URL会抛出错误
+        avatarURL = form.avatar
+      } catch (e) {
+        ElMessage.error('请输入有效的头像URL')
+        return
+      }
+    } else {
+      // 使用默认头像
+      avatarURL = '/src/assets/images/user_default.png'
+    }
+
+
     // 生成评论
     let newComment = { 
         ...form,
         id: Date.now().toString(36),
         blogId: props.blogId,
         parentId: props.parentId,
-        avatar: defaultAvatar,
+        avatar: avatarURL,
         createTime: new Date(),
         showForm: false,
         hasParent: props.hasParent,
@@ -101,6 +119,7 @@ const doSubmit = async () => {
     form.email = ''
     form.website = ''
     form.content = ''
+    form.avatar = ''
     // ElMessage提示信息
     ElMessage.success('评论成功！')
     
@@ -110,15 +129,20 @@ const doSubmit = async () => {
     // 更新网站评论数
     await apiUpdateWebsiteComment()
 
-    // 尝试获取Grvatar头像，更新新评论的头像
-    const avatarSrc = await getAvatar(userEmail)
 
-    if (avatarSrc) {
-      newComment.avatar = avatarSrc
-      await apiUpdateComment(newComment)
-      // 触发更新评论
-      emit('updateComments')
+    // 如果用户选择了默认头像或没有选择头像，则尝试自动获取头像
+    if (avatarType.value === 'default' || avatarType.value === '') {
+      // 尝试获取Grvatar头像，更新新评论的头像
+      const avatarSrc = await getAvatar(userEmail)
+
+      if (avatarSrc) {
+        newComment.avatar = avatarSrc
+        await apiUpdateComment(newComment)
+        // 触发更新评论
+        emit('updateComments')
+      }
     }
+
 
     // 如果是有父评论，给它父评论的邮箱发送邮件
     if (props.hasParent && props.parentId) {
@@ -205,17 +229,23 @@ const switchEmojiType = (type) => {
 const placeholderText = computed(() => {
   return props.hasParent ? '回复楼主...' : '写下你的评论...'
 })
+
+
+// 选择头像生成方式：自定义URL或默认
+const avatarType = ref('')
+
 </script>
 
 <template>
 <!-- 评论表单 -->
 <el-form :model="form" :rules="rules" ref="formRef" class="comment-form">
+
     <div class="comment-form-input-row">
       <!-- 昵称 -->
       <el-form-item prop="username">
         <el-input
           v-model="form.username"
-          placeholder="昵称*" 
+          placeholder="昵称*"
         />
       </el-form-item>
       <!-- 邮箱 -->
@@ -232,7 +262,27 @@ const placeholderText = computed(() => {
           placeholder="网站 http(s)://" 
         />
       </el-form-item>
+      <!-- 头像选择器 -->
+      <el-form-item>
+        <div class="avatar-selector">
+          <el-radio-group v-model="avatarType" class="avatar-radio-group">
+            <el-radio-button value="default">默认获取</el-radio-button>
+            <el-radio-button value="custom">自定义URL</el-radio-button>
+          </el-radio-group>
+        </div>
+      </el-form-item>
+
+      <!-- 自定义头像URL输入框 -->
+      <el-form-item v-if="avatarType === 'custom'">
+        <el-input
+          v-model="form.avatar"
+          placeholder="自定义头像URL"
+          :disabled="avatarType !== 'custom'"
+        />
+      </el-form-item>
+
     </div>
+
     <!-- 评论内容区域 - 修改这里的placeholder -->
     <el-form-item prop="content">
       <el-input
@@ -370,6 +420,52 @@ const placeholderText = computed(() => {
             background: linear-gradient(var(--white), var(--white)) padding-box, 
                         linear-gradient(135deg, #ff33b4, #c8ff00, #00ffff, #4400ff) border-box;
             }
+        }
+      }
+      
+      /* 头像选择器样式 */
+      .avatar-selector {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+
+        .avatar-radio-group {
+          width: 100%;
+          
+          :deep(.el-radio-button) {
+            flex: 1;
+            
+            &:first-child .el-radio-button__inner {
+              border-radius: 4px 0 0 4px;
+              border-right: none; // 去掉第一个按钮的右边框
+            }
+            
+            &:last-child .el-radio-button__inner {
+              border-radius: 0 4px 4px 0;
+            }
+            
+            .el-radio-button__inner {
+              width: 100%;
+              font-size: 14px;
+              padding: 6px 0;
+              border: 2px solid var(--lightgrey);
+              background-color: var(--white);
+              color: var(--light-dark);
+
+
+              &:hover {
+                background-color: var(--icon-background);
+              }
+            }
+            
+            &.is-active .el-radio-button__inner {
+              background-color: var(--blue);
+              border-color: var(--blue);
+              color: white;
+              box-shadow: none;
+            }
+          }
         }
       }
     }
