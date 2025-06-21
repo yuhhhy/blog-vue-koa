@@ -93,7 +93,7 @@ const doSubmit = async () => {
       }
     } else {
       // 使用默认头像
-      avatarURL = '/src/assets/images/user_default.png'
+      avatarURL = '/images/user_default.png'
     }
 
 
@@ -233,7 +233,7 @@ const placeholderText = computed(() => {
 
 // 选择头像生成方式：自定义URL或默认
 const avatarType = ref('')
-const previewAvatar = ref('/src/assets/images/user_default.png')
+const previewAvatar = ref('/images/user_default.png')
 // 监听input框的变化，自动更新头像URL
 const checkCostumAvatar = async () => {
   if (avatarType.value === 'custom' && form.avatar) {
