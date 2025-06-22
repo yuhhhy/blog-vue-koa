@@ -50,10 +50,10 @@ onMounted(() => {
             <!-- 博客列表 -->
             <div class="home-main">
                 <RouterLink v-for="(blog, index) in blogList" :key="blog.id" :to="`/blog/${blog.id}`" class="blog">
-                    <!-- 前8个使用immediate修饰符立即加载，后面的懒加载 -->
+                    <!-- 前6个使用immediate修饰符立即加载，后面的懒加载 -->
                     <div 
                       class="blog-img" 
-                      v-if="index < 8" 
+                      v-if="index < 6" 
                       v-lazy.immediate="blog.coverImage"
                     ></div>
                     <div 

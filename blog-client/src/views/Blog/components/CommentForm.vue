@@ -240,6 +240,8 @@ const checkCostumAvatar = async () => {
     previewAvatar.value = form.avatar
   } else if ((avatarType.value === 'default' || avatarType.value === '') && form.email) {
     previewAvatar.value = await getAvatar(form.email)
+  } else {
+    previewAvatar.value = '/images/user_default.png'
   }
 }
 </script>
