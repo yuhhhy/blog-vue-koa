@@ -17,38 +17,60 @@ const routes = [
                 path: '/home',
                 name: 'Home',
                 component: () => import('@/views/Home/index.vue'),
+                meta: {
+                    title: '一曝十寒'
+                }
             },
             {
                 path: 'archive/:tagName?',
                 name: 'Archive',
                 component: () => import('@/views/Archive/index.vue'),
+                meta: {
+                    title: '归档 | 一曝十寒'
+                }
             },
             {
                 path: 'about',
                 name: 'About',
                 component: () => import('@/views/About/index.vue'),
+                meta: {
+                    title: '关于 | 一曝十寒'
+                }
             },
             {
                 path: 'blog/:id',
                 name: 'Blog',
-                component: () => import('@/views/Blog/index.vue')
+                component: () => import('@/views/Blog/index.vue'),
+                meta: {
+                    title: '文章详情 | 一曝十寒',
+                    dynamicTitle: true
+                }
             },
             {
                 path: 'links',
                 name: 'Links',
-                component: () => import('@/views/Links/index.vue')
+                component: () => import('@/views/Links/index.vue'),
+                meta: {
+                    title: '友链 | 一曝十寒'
+                }
             },
             {
                 path: 'info',
                 name: 'Info',
-                component: () => import('@/views/Info/index.vue')
+                component: () => import('@/views/Info/index.vue'),
+                meta: {
+                    title: '相关信息 | 一曝十寒'
+                }
             }
         ]
     },
     {
         path: '/404',
         name: '404',
-        component: () => import('@/views/404/index.vue')
+        component: () => import('@/views/404/index.vue'),
+        meta: {
+            title: '404 | 一曝十寒'
+        }
     }
 ]
 
@@ -78,6 +100,11 @@ router.beforeEach(async (to, from) => {
         return '/404'
     }
 
+    // 设置页面标题
+    if (to.meta?.title && !to.meta.dynamicTitle) {
+        document.title = to.meta.title
+    }
+
     // 如果是锚点导航，不做处理
     if (to.hash) {
         return
@@ -91,7 +118,6 @@ router.beforeEach(async (to, from) => {
     const { role, page } = { role: 'client', page: to.name }
     await apiCreateVisitor({ role, page })
     await apiUpdateWebsiteView()
-
 })
 
 export default router

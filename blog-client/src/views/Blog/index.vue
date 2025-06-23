@@ -7,11 +7,13 @@ import ArticleFooter from './components/ArticleFooter.vue'
 import MarkdownIt from 'markdown-it'
 import markdownItTocAndAnchor from 'markdown-it-toc-and-anchor'
 
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
+import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
 import { apiGetBlogContent, apiUpdateBlogViewCount } from '@/api/blogContent.js'
 import { apiUpdateWebsiteView } from '@/api/websiteData.js'
 import { getFormatDate } from '@/utils/date.js'
+import config from '@/config/index.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -71,11 +73,62 @@ watch(
   { immediate: true } // 立即执行一次
 )
 
-
 onMounted(() => {
     getBlogContent()
     updateBlogViewCount()
     apiUpdateWebsiteView()
+})
+
+
+// 设置页面头部信息
+const pageTitle = computed(() => blogData.value?.title ? `${blogData.value.title} | 一曝十寒` : '博客文章 | 一曝十寒')
+const pageDescription = computed(() => {
+    if (!blogData.value?.content) return '一曝十寒 - 博客文章'
+    return blogData.value.content.replace(/#|\n|`|>|_|\*|\[|\]|\(|\)|!/g, '').slice(0, 150)
+})
+const pageKeywords = computed(() => {
+    if (!blogData.value?.title) return 'yuhhhy, 一曝十寒, 前端, 生活成长, Web, Vue, JavaScript, HTML, CSS'
+    
+    // 组合标题、标签
+    return [
+        blogData.value.title,
+        ...(blogData.value.tags || [])
+    ].filter(Boolean).join(',')
+})
+
+useHead({
+    title: pageTitle,
+    meta: [
+        {
+            name: 'description',
+            content: pageDescription
+        },
+        {
+            name: 'keywords',
+            content: pageKeywords
+        },
+        // Open Graph标签 - 用于社交媒体分享
+        {
+            property: 'og:title',
+            content: pageTitle
+        },
+        {
+            property: 'og:description',
+            content: pageDescription
+        },
+        {
+            property: 'og:image',
+            content: computed(() => config.baseUrl + blogData.value?.coverImage || '')
+        },
+        {
+            property: 'og:url',
+            content: computed(() => window.location.href)
+        },
+        {
+            property: 'og:type',
+            content: 'article'
+        }
+    ]
 })
 </script>
 
