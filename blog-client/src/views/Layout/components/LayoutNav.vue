@@ -1,11 +1,11 @@
 <script setup>
-import { onMounted, ref, watch, computed } from 'vue'
-import { useWindowScroll } from '@vueuse/core'
+import { onMounted, ref, computed, onUnmounted } from 'vue'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 import { useRoute } from 'vue-router'
 
-const { y } = useWindowScroll()
+// 替换 useWindowScroll
+const y = ref(0)
 const themeStore = useThemeStore()
 const lastScrollTop = ref(0)
 const shouldHideNav = ref(false)
@@ -16,8 +16,12 @@ const isInBlogPage = computed(() => {
   return route.path.startsWith('/blog')
 })
 
-// 监听滚动位置变化
-watch(y, (newY) => {
+// 原生的滚动事件处理函数
+const handleScroll = () => {
+  // 获取当前滚动位置
+  const newY = window.scrollY || window.pageYOffset
+  y.value = newY
+
   // 判断滚动方向
   if (newY > lastScrollTop.value) {
     // 向下滚动，隐藏导航栏
@@ -28,8 +32,9 @@ watch(y, (newY) => {
   }
   // 更新上一次的滚动位置
   lastScrollTop.value = newY > 0 ? newY : 0
-})
+}
 
+// 设置主题
 const toggleTheme = () => {
     document.documentElement.classList.remove(themeStore.theme)
     themeStore.toggleTheme();
@@ -37,11 +42,19 @@ const toggleTheme = () => {
 }
 
 onMounted(() => {
+    // 添加滚动事件监听器
+    window.addEventListener('scroll', handleScroll)
+    
     // document.documentElement 指向根元素 <html>
     document.documentElement.classList.add(themeStore.theme)
     
     // 每次打开网站，即Nav挂载，访问量增加
     apiUpdateWebsiteVisit()
+})
+
+// 组件卸载时移除事件监听器
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -54,7 +67,7 @@ onMounted(() => {
             <RouterLink to="/about"><span class="iconfont icon-svgabout" style="font-size: 15px; margin-right: 7px;"></span>关于</RouterLink>
             <RouterLink to="/links"><span class="iconfont icon-link" style="font-size: 15px; margin-right: 6px;"></span>友链</RouterLink>
         </div>
-        <button @click="toggleTheme" class="theme-toggle">
+        <button @click="toggleTheme" aria-label="theme-toggle-button" class="theme-toggle">
             <span class="iconfont icon-sun themeIcon" v-if="themeStore.theme === 'light'"></span>
             <span class="iconfont icon-moon themeIcon" v-else style="color: #fff;"></span>
         </button>

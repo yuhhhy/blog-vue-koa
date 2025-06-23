@@ -109,7 +109,7 @@ onMounted(() => {
       <div class="comment-header">
         <el-avatar :src="comment.avatar" :size="48" />
         <div class="comment-info">
-          <a v-if="comment.website" :href="comment.website" target="_blank" class="comment-name" :style="{ color: '#409eff' }">
+          <a v-if="comment.website" :href="comment.website" target="_blank" class="comment-name">
             {{ comment.username }}
           </a>
           <span v-else class="comment-name">
@@ -175,7 +175,7 @@ onMounted(() => {
       }
 
       a {
-        color: var(--blue);
+        color: var(--skyblue);
       }
       
       .comment-header {
@@ -194,11 +194,13 @@ onMounted(() => {
           flex-direction: column;
           padding-top: 5px;
 
-          .comment-name {
+          a.comment-name{
             &:hover {
               text-decoration: underline;
             }
           }
+
+
 
           .comment-meta {
             display: flex;
@@ -206,7 +208,7 @@ onMounted(() => {
             font-size: 0.8rem;
             gap: 10px;
             .reply-btn {
-              color: var(--blue);
+              color: var(--skyblue);
               font-size: 13px;
               padding: 0;
             }
