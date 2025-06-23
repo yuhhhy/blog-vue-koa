@@ -19,8 +19,8 @@ const copyToClipboard = async (text, type) => {
             <div>
                 <p>赣ICP备2025063071号</p>
             </div>
-            <div style="display: flex; gap: 5px;">
-                <img src="https://beian.mps.gov.cn/web/assets/logo01.6189a29f.png" alt="公安备案" style="width: 15px; height: 15px; position: relative; top: 2px;">
+            <div class="police">
+                <img src="https://beian.mps.gov.cn/web/assets/logo01.6189a29f.png" alt="公安备案">
                 <p>赣公网安备36110202000678号</p>
             </div>
 
@@ -63,10 +63,26 @@ const copyToClipboard = async (text, type) => {
 
     .left-footer {
         display: flex;
+        align-items: center;
+        justify-content: center;
         gap: 20px;
+        
         p {
             margin: 0;
             color: var(--light-dark);
+        }
+
+        .police {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            
+            img {
+                width: 15px;
+                height: 15px;
+                position: relative;
+                top: 2px;
+            }
         }
     }
 

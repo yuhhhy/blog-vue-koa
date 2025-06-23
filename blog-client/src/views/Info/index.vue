@@ -26,8 +26,8 @@
                         style="width: 72px; height: 18px; position: relative; top: 4px;"> 组件库</p>
 
                 <h1>关于评论</h1>
-                <p>本站的评论系统也是博主自己设计的哦~</p>
-                <p>已经做好针对XSS攻击的防护啦，用的是 <a href="https://www.npmjs.com/package/dompurify" target="_blank">DOMPurify</a> 这样一款库</p>
+                <p>本站的评论系统也是博主自己设计的哦~ 评论支持换行</p>
+                <p>已经做好针对XSS攻击的防护，用的是 <a href="https://www.npmjs.com/package/dompurify" target="_blank">DOMPurify</a> 这样一款库</p>
                 <p>
                     多说一句，其实 DOMPurify 提供了针对一些 h5 标签放行的设置项哦，所以如果你会最基础的 HTML 的话，可以在评论中使用一些基本的 HTML 标签，比如：
                     <code>img, a, div, b, i, ul, ol, li, blockquote, code, pre...</code>
