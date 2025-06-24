@@ -44,10 +44,14 @@ const handleNextClick = () => {
   <div class="recommend-container">
     <!-- 上一篇 -->
     <template v-if="prevBlog?.link">
-      <RouterLink 
-        class="article-nav" 
-        :style="{ backgroundImage: prevBlog?.coverImage ? `url(${prevBlog.coverImage})` : 'none' }"
-        :to="prevBlog.link">
+      <RouterLink class="article-nav" :to="prevBlog.link">
+        <img 
+          v-if="prevBlog?.coverImage" 
+          class="nav-bg-image" 
+          loading="lazy" 
+          :src="prevBlog.coverImage" 
+          alt="上一篇文章封面"
+        />
         <div class="nav-label">上一篇</div>
         <div class="nav-content">
           <div class="title">
@@ -59,7 +63,7 @@ const handleNextClick = () => {
     <template v-else>
       <div 
         class="article-nav"
-        :style="{ backgroundImage: prevBlog?.coverImage ? `url(${prevBlog.coverImage})` : 'none'}"
+        :style="{ backgroundImage: 'none'}"
         @click="handlePrevClick">
         <div class="nav-label">上一篇</div>
         <div class="nav-content">
@@ -73,9 +77,14 @@ const handleNextClick = () => {
     <!-- 下一篇 -->
     <template v-if="nextBlog?.link">
       <RouterLink 
-        class="article-nav"
-        :style="{ backgroundImage: nextBlog?.coverImage ? `url(${nextBlog.coverImage})` : 'none' }"
-        :to="nextBlog.link">
+        class="article-nav" :to="nextBlog.link">
+        <img 
+          v-if="nextBlog?.coverImage" 
+          class="nav-bg-image" 
+          loading="lazy" 
+          :src="nextBlog.coverImage" 
+          alt="下一篇文章封面"
+        />
         <div class="nav-label">下一篇</div>
         <div class="nav-content">
           <div class="title">
@@ -87,7 +96,7 @@ const handleNextClick = () => {
     <template v-else>
       <div 
         class="article-nav"
-        :style="{ backgroundImage: nextBlog?.coverImage ? `url(${nextBlog.coverImage})` : 'none' }"
+        :style="{ backgroundImage:'none' }"
         @click="handleNextClick">
         <div class="nav-label">下一篇</div>
         <div class="nav-content">
@@ -120,19 +129,35 @@ const handleNextClick = () => {
     text-shadow: 1px 1px 1px black;
     font-weight: bold;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    // 背景图片
+    .nav-bg-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      margin: 0;
+      border-radius: 8px;
+      z-index: 0;
+    }
     
     // 内容布局
     .nav-label {
-      padding: 15px 20px;
+      position: absolute;
+      left: 15px;
+      top: 20px;
       font-size: 1.1rem;
       z-index: 1;
     }
     .nav-content {
-      padding: 0 20px 15px;
+      position: absolute;
+      bottom: 15px;
+      left: 20px;
       z-index: 1;
-      display: flex;
-      align-items: flex-end;
-      height: calc(100% - 46px);
       font-style: italic;
 
       .title {

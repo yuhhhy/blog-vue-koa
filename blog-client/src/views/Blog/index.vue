@@ -4,9 +4,9 @@ import ArticleHeader from './components/ArticleHeader.vue'
 import ArticleContent from './components/ArticleContent.vue'
 import ArticleRecommended from './components/ArticleRecommended.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
+
 import MarkdownIt from 'markdown-it'
 import markdownItTocAndAnchor from 'markdown-it-toc-and-anchor'
-
 import { ref, onMounted, watch, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
@@ -28,11 +28,25 @@ const renderBlogContent = () => {
         html: true,
         linkify: true,
         typographer: true,
-    }).use(markdownItTocAndAnchor, {
+    })
+
+    // 添加图片懒加载
+    const defaultRender = md.renderer.rules.image || function(tokens, idx, options, env, self) {
+        return self.renderToken(tokens, idx, options)
+    }
+    
+    md.renderer.rules.image = function(tokens, idx, options, env, self) {
+        const token = tokens[idx]
+        token.attrPush(['loading', 'lazy'])
+        return defaultRender(tokens, idx, options, env, self)
+    }
+
+    md.use(markdownItTocAndAnchor, {
         tocCallback: function (tocMarkdown, tocArray, tocHtmlResult) {
             tocHtml.value = tocHtmlResult
         }
     })
+
     htmlContent.value = md.render(blogData.value.content)
 }
 

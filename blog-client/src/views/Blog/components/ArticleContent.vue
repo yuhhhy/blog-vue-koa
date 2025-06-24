@@ -70,6 +70,16 @@ onUpdated(() => {
             }
         }
 
+        b {
+            color: var(--b-color);
+        }
+
+        strong {
+            font-weight: normal;
+            color: #fff;
+            background-color: #0072EB;
+        }
+
         p {
             margin-bottom: 1.2em;
             font-size: 1rem;
@@ -117,7 +127,7 @@ onUpdated(() => {
                     color: #357cef;
                 }
                 &.token.keyword {
-                    color: #31b2d6;
+                    color: #0072EB;
                 }
                 &.token.function {
                     color: #C678DD;
@@ -125,24 +135,19 @@ onUpdated(() => {
                 &.token.punctuation {
                     color: #aaa;
                 }
-                &.token.string {
-                    color: #0dae0d;
-                }
                 &.token.constant {
-                    color: #d00d87;
+                    color: #b10a74;
                 }
                 &.token.literal-property.property {
-                    color: #d00d87;
+                    color: #b10a74;
                 }
                 &.token.property {
-                    color: #d00d87;
+                    color: #b10a74;
                 }
                 &.token.operator {
                     color: #98885E;
                 }
-                &.token.comment {
-                    color: #98C379;
-                }
+
             }
         }
 
