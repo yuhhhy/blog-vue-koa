@@ -6,7 +6,7 @@ const envConfig = {
         baseApi: 'http://localhost:3000/api'
     },
     production: {
-        baseApi: 'http://api.yuhhhy.cn/api',
+        baseApi: '/api',
     }
 }
 

@@ -7,7 +7,7 @@ const themeStore = useThemeStore();
 <template>
     <div class="sidebar-author">
         <div class="author-avatar">
-            <img src="@/assets/images/avatar.jpg" alt="my avatar">
+            <img src="@/assets/images/avatar.avif" alt="my avatar">
         </div>
         <span id="author-name">yuhhhy</span>
         <div id="author-words">

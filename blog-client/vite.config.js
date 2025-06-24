@@ -48,7 +48,7 @@ export default defineConfig({
         ],
       },
     }),
-    // 自动导入 Element Plus 组件和相关 API
+    // 按需自动导入 Element Plus 组件和相关 API
     AutoImport({
       resolvers: [ElementPlusResolver()],
     }),
@@ -56,7 +56,6 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
     }),
   ],
-  assetsInclude: ['**/*.md'], // 支持md文件
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src')

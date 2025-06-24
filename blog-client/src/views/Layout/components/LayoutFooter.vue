@@ -20,7 +20,7 @@ const copyToClipboard = async (text, type) => {
                 <p>赣ICP备2025063071号</p>
             </div>
             <div class="police">
-                <img src="https://beian.mps.gov.cn/web/assets/logo01.6189a29f.png" alt="公安备案">
+                <img src="@/assets/images/police.jpg" alt="公安备案">
                 <p>赣公网安备36110202000678号</p>
             </div>
 

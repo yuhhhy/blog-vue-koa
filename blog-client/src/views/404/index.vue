@@ -4,7 +4,7 @@
 
 <template>
     <div class="container">
-        <img src="@/assets/images/404.jpg" alt="404_image">
+        <img src="@/assets/images/404.avif" alt="404_image">
         <p>非常抱歉，您要访问的页面不存在~</p>
         <div>
             <RouterLink to="/home"><span>🏠回首页</span></RouterLink>

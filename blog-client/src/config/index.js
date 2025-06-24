@@ -7,8 +7,8 @@ const envConfig = {
         baseUrl: 'http://localhost:3000'
     },
     production: {
-        baseApi: 'http://api.yuhhhy.cn/api',
-        baseUrl: 'http://api.yuhhhy.cn'
+        baseApi: '/api',
+        baseUrl: 'https://yuhhhy.cn' // + /images/ 或 /api/ 会被代理到后端
     }
 }
 
