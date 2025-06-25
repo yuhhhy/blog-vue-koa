@@ -76,8 +76,8 @@ onUpdated(() => {
 
         strong {
             font-weight: normal;
-            color: #fff;
-            background-color: #0072EB;
+            color: var(--white);
+            background-color: var(--b-color);
         }
 
         p {
