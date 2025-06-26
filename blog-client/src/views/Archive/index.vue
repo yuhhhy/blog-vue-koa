@@ -24,7 +24,7 @@ import Timeline from './components/Timeline.vue'
 .archive-container {
     background-color: var(--light);
     color: var(--black);
-    margin-top: 64px;
+    padding-top: 64px;
     min-height: calc(100vh - 75px);
     
     .archive-main {

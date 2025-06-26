@@ -3,6 +3,7 @@
 </script>
 
 <template>
+<div class="info-container">
     <div class="info">
         <div class="info-article">
             <!-- 内容区域 -->
@@ -91,150 +92,155 @@
             </div>
         </div>
     </div>
+</div>
 </template>
 
 <style lang="scss" scoped>
-.info {
-    background-color: var(--light);
-    margin-top: 64px;
-    padding: 40px calc(17vw + 10px);
-    display: flex;
-    height: 100%;
+.info-container {
+    padding-top: 64px;
+    background-color: var(--white);
 
-    .info-article {
-        background-color: var(--white);
-        border-radius: 10px;
-        flex: 1;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    .info {
+        background-color: var(--light);
+        padding: 40px calc(17vw + 10px);
+        display: flex;
+        height: 100%;
+
+        .info-article {
+            background-color: var(--white);
+            border-radius: 10px;
+            flex: 1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
 
-        .info-article-content {
-            padding: 0 30px 30px 30px;
-            line-height: 1.8;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            color: var(--light-dark);
+            .info-article-content {
+                padding: 0 30px 30px 30px;
+                line-height: 1.8;
+                font-family: 'Helvetica Neue', Arial, sans-serif;
+                color: var(--light-dark);
 
-            img {
-                display: inline;
-                margin: 0;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-
-            h2 {
-                font-size: 1.8em;
-            }
-
-            h3 {
-                font-size: 1.6em;
-            }
-
-            h4 {
-                font-size: 1.4em;
-            }
-
-            h5 {
-                font-size: 1.2em;
-            }
-
-            h6 {
-                font-size: 1em;
-            }
-
-            h1, h2, h3, h4, h5, h6 
-            {
-                color: var(--blue);
-                margin: 1.5em 0 0.8em;
-                font-weight: 600;
-
-                a {
-                    display: none;
+                img {
+                    display: inline;
+                    margin: 0;
                 }
 
-                &:hover {
+                h1 {
+                    font-size: 2em;
+                }
+
+                h2 {
+                    font-size: 1.8em;
+                }
+
+                h3 {
+                    font-size: 1.6em;
+                }
+
+                h4 {
+                    font-size: 1.4em;
+                }
+
+                h5 {
+                    font-size: 1.2em;
+                }
+
+                h6 {
+                    font-size: 1em;
+                }
+
+                h1, h2, h3, h4, h5, h6 
+                {
+                    color: var(--blue);
+                    margin: 1.5em 0 0.8em;
+                    font-weight: 600;
+
                     a {
-                        display: inline;
+                        display: none;
+                    }
+
+                    &:hover {
+                        a {
+                            display: inline;
+                        }
                     }
                 }
-            }
 
-            p {
-                margin-bottom: 1.2em;
-                font-size: 1rem;
-            }
-
-            p[align="center"] {
-                font-size: 0.8rem;
-                color: var(--quote-color);
-            }
-
-            ul, ol {
-                padding-left: 2em;
-                margin: 1em 0;
-
-                li {
-                    margin-bottom: 0.6em;
-                    list-style-position: outside;
+                p {
+                    margin-bottom: 1.2em;
+                    font-size: 1rem;
                 }
-            }
 
-            a {
-                color: var(--skyblue);
-                text-decoration: none;
-                word-break: break-word; // 文字折行
-            }
+                p[align="center"] {
+                    font-size: 0.8rem;
+                    color: var(--quote-color);
+                }
 
-            code {
-                font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
-                color: var(--code-color);
-                background: var(--code-background);
-                padding: 0.2em 0.4em;
-                border-radius: 5px;
-            }
+                ul, ol {
+                    padding-left: 2em;
+                    margin: 1em 0;
 
-            pre {
-                background: var(--code-background);
-                padding: 0;
-                border-radius: 5px;
-                overflow-x: auto;
+                    li {
+                        margin-bottom: 0.6em;
+                        list-style-position: outside;
+                    }
+                }
+
+                a {
+                    color: var(--skyblue);
+                    text-decoration: none;
+                    word-break: break-word; // 文字折行
+                }
 
                 code {
                     font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
                     color: var(--code-color);
-                    background: none;
-                    padding: 0;
-                    border-radius: 0;
+                    background: var(--code-background);
+                    padding: 0.2em 0.4em;
+                    border-radius: 5px;
                 }
-            }
 
-            address {
-                font-style: normal;
+                pre {
+                    background: var(--code-background);
+                    padding: 0;
+                    border-radius: 5px;
+                    overflow-x: auto;
+
+                    code {
+                        font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+                        color: var(--code-color);
+                        background: none;
+                        padding: 0;
+                        border-radius: 0;
+                    }
+                }
+
+                address {
+                    font-style: normal;
+                }
             }
         }
-    }
-    @media (max-width: 768px) {
-        padding: 0;
-        flex-direction: column;
+        @media (max-width: 768px) {
+            padding: 0;
+            flex-direction: column;
 
-        .info-article {
-            margin-right: 0;
-            margin-bottom: 20px;
+            .info-article {
+                margin-right: 0;
+                margin-bottom: 20px;
 
-            .info-article-content {
-                padding-bottom: 30px;
-                padding-left: 30px;
-                padding-right: 30px;
+                .info-article-content {
+                    padding-bottom: 30px;
+                    padding-left: 30px;
+                    padding-right: 30px;
 
-                h1, h2, h3, h4 
-                {
-                    font-size: 20px;
-                }
+                    h1, h2, h3, h4 
+                    {
+                        font-size: 20px;
+                    }
 
-                p, ul, ol, li, code, pre, blockquote 
-                {
-                    font-size: 14px;
+                    p, ul, ol, li, code, pre, blockquote 
+                    {
+                        font-size: 14px;
+                    }
                 }
             }
         }

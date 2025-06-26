@@ -4,10 +4,15 @@ import LayoutFooter from './components/LayoutFooter.vue';
 </script>
 
 <template>
-    <LayoutNav />
-    <RouterView />
-    <LayoutFooter />
+    <div class="layout">
+        <LayoutNav />
+        <RouterView />
+        <LayoutFooter />
+    </div>
 </template>
 
 <style lang="scss" scoped>
+.layout { 
+    background-color: var(--white);
+}
 </style>

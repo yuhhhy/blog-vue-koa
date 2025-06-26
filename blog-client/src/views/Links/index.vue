@@ -13,6 +13,7 @@ onMounted(async () => {
 </script>
 
 <template>
+<div class="link-container">
     <div class="links">
         <div class="links-article">
             <!-- 内容区域 -->
@@ -73,180 +74,185 @@ onMounted(async () => {
             <ArticleFooter :pageId="'0'"></ArticleFooter>
         </div>
     </div>
+</div>
 </template>
 
 <style lang="scss" scoped>
-.links {
-    background-color: var(--light);
-    margin-top: 64px;
-    padding: 40px calc(17vw + 10px);
-    display: flex;
-    height: 100%;
-
-    .links-article {
-        background-color: var(--white);
-        border-radius: 10px;
-        flex: 1;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-        .links-article-content {
-            padding: 0 30px 30px 30px;
-            line-height: 1.8;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            color: var(--light-dark);
-
-            .links-display {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 20px;
-                
-                .link-item {
-                    border-radius: 8px;
-                    background-color: var(--links-background);
-                    display: flex;
-                    flex-direction: row;
-
-
-                    .link-avatar {
-                        background: linear-gradient(to right, var(--white), var(--links-background));
-                        height: 75px;
-                        width: 75px;
-
-                        img {
-                            border-radius: 50%;
-                            height: 75px;
-                            min-width: 75px;
-                            margin: 0;
-                        }
-                    }
-
-                    .link-info {
-                        padding-left: 15px;
-
-                        .link-title {
-                            font-size: 1.1rem;
-                            font-weight: bold;
-                            margin-bottom: 0.1em;
-                        }
-                        .link-motto {
-                            color: var(--light-dark);
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            display: -webkit-box;
-                            line-clamp: 2;  // 限制显示两行，多余部分用省略号
-                            -webkit-box-orient: vertical;
-                            line-height: 1.3;
-                        }
-
-                    }
-
-                }
-
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-
-            h2 {
-                font-size: 1.8em;
-            }
-
-            h3 {
-                font-size: 1.6em;
-            }
-
-            h4 {
-                font-size: 1.4em;
-            }
-
-            h5 {
-                font-size: 1.2em;
-            }
-
-            h6 {
-                font-size: 1em;
-            }
-
-            h1, h2, h3, h4, h5, h6 
-            {
-                color: var(--blue);
-                margin: 1.5em 0 0.8em;
-                font-weight: 600;
-
-                a {
-                    display: none;
-                }
-
-                &:hover {
-                    a {
-                        display: inline;
-                    }
-                }
-            }
-
-            p {
-                margin-bottom: 1.2em;
-                font-size: 1rem;
-            }
-
-            p[align="center"] {
-                font-size: 0.8rem;
-                color: var(--quote-color);
-            }
-
-            ul, ol {
-                padding-left: 2em;
-                margin: 1em 0;
-
-                li {
-                    margin-bottom: 0.6em;
-                    list-style-position: outside;
-                }
-            }
-
-            a {
-                color: var(--skyblue);
-                text-decoration: none;
-                word-break: break-word; // 文字折行
-            }
-
-            pre {
-                background: var(--code-background);
-                padding: 0;
-                border-radius: 5px;
-                overflow-x: auto;
-
-                code {
-                    font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
-                    color: var(--light-dark);
-                    background: none;
-                    padding: 0;
-                    border-radius: 0;
-                }
-            }
-
-            address {
-                font-style: normal;
-            }
-        }
-    }
-    @media (max-width: 768px) {
-        padding: 0;
-        flex-direction: column;
+.link-container {
+    padding-top: 64px;
+    background-color: var(--white);
+    
+    .links {
+        background-color: var(--light);
+        padding: 40px calc(17vw + 10px);
+        display: flex;
+        height: 100%;
 
         .links-article {
-            margin-right: 0;
-            box-shadow: none;
-            border-radius: 0;
+            background-color: var(--white);
+            border-radius: 10px;
+            flex: 1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
             .links-article-content {
-                padding-bottom: 30px;
-                padding-left: 30px;
-                padding-right: 30px;
+                padding: 0 30px 30px 30px;
+                line-height: 1.8;
+                font-family: 'Helvetica Neue', Arial, sans-serif;
+                color: var(--light-dark);
 
                 .links-display {
-                    grid-template-columns: repeat(1, 1fr);
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 20px;
+                    
+                    .link-item {
+                        border-radius: 8px;
+                        background-color: var(--links-background);
+                        display: flex;
+                        flex-direction: row;
+
+
+                        .link-avatar {
+                            background: linear-gradient(to right, var(--white), var(--links-background));
+                            height: 75px;
+                            width: 75px;
+
+                            img {
+                                border-radius: 50%;
+                                height: 75px;
+                                min-width: 75px;
+                                margin: 0;
+                            }
+                        }
+
+                        .link-info {
+                            padding-left: 15px;
+
+                            .link-title {
+                                font-size: 1.1rem;
+                                font-weight: bold;
+                                margin-bottom: 0.1em;
+                            }
+                            .link-motto {
+                                color: var(--light-dark);
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                display: -webkit-box;
+                                line-clamp: 2;  // 限制显示两行，多余部分用省略号
+                                -webkit-box-orient: vertical;
+                                line-height: 1.3;
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                h1 {
+                    font-size: 2em;
+                }
+
+                h2 {
+                    font-size: 1.8em;
+                }
+
+                h3 {
+                    font-size: 1.6em;
+                }
+
+                h4 {
+                    font-size: 1.4em;
+                }
+
+                h5 {
+                    font-size: 1.2em;
+                }
+
+                h6 {
+                    font-size: 1em;
+                }
+
+                h1, h2, h3, h4, h5, h6 
+                {
+                    color: var(--blue);
+                    margin: 1.5em 0 0.8em;
+                    font-weight: 600;
+
+                    a {
+                        display: none;
+                    }
+
+                    &:hover {
+                        a {
+                            display: inline;
+                        }
+                    }
+                }
+
+                p {
+                    margin-bottom: 1.2em;
+                    font-size: 1rem;
+                }
+
+                p[align="center"] {
+                    font-size: 0.8rem;
+                    color: var(--quote-color);
+                }
+
+                ul, ol {
+                    padding-left: 2em;
+                    margin: 1em 0;
+
+                    li {
+                        margin-bottom: 0.6em;
+                        list-style-position: outside;
+                    }
+                }
+
+                a {
+                    color: var(--skyblue);
+                    text-decoration: none;
+                    word-break: break-word; // 文字折行
+                }
+
+                pre {
+                    background: var(--code-background);
+                    padding: 0;
+                    border-radius: 5px;
+                    overflow-x: auto;
+
+                    code {
+                        font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+                        color: var(--light-dark);
+                        background: none;
+                        padding: 0;
+                        border-radius: 0;
+                    }
+                }
+
+                address {
+                    font-style: normal;
+                }
+            }
+        }
+        @media (max-width: 768px) {
+            padding: 0;
+            flex-direction: column;
+
+            .links-article {
+                margin-right: 0;
+                box-shadow: none;
+                border-radius: 0;
+
+                .links-article-content {
+                    padding-bottom: 30px;
+                    padding-left: 30px;
+                    padding-right: 30px;
+
+                    .links-display {
+                        grid-template-columns: repeat(1, 1fr);
+                    }
                 }
             }
         }
