@@ -122,6 +122,13 @@ onMounted(async () => {
                                 height: 75px;
                                 min-width: 75px;
                                 margin: 0;
+
+                                // 旋转效果，离开时反向
+                                &:hover {
+                                    transform: rotate(720deg);
+                                    transition: transform 0.5s ease-in-out;
+                                }
+                                transition: transform 0.5s ease-in-out;
                             }
                         }
 
@@ -132,6 +139,9 @@ onMounted(async () => {
                                 font-size: 1.1rem;
                                 font-weight: bold;
                                 margin-bottom: 0.1em;
+                                &:hover {
+                                    color: var(--blue);
+                                }
                             }
                             .link-motto {
                                 color: var(--light-dark);

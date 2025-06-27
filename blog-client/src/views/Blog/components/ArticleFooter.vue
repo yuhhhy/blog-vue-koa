@@ -109,9 +109,11 @@ onMounted(() => {
       <div class="comment-header">
         <el-avatar :src="comment.avatar" :size="48" />
         <div class="comment-info">
-          <a v-if="comment.website" :href="comment.website" target="_blank" class="comment-name">
-            {{ comment.username }}
-          </a>
+          <span  v-if="comment.website" >
+            <a :href="comment.website" target="_blank" class="comment-name">
+              {{ comment.username }}
+            </a>
+          </span>
           <span v-else class="comment-name">
             {{ comment.username }}
           </span>
@@ -200,13 +202,14 @@ onMounted(() => {
             }
           }
 
-
-
           .comment-meta {
             display: flex;
             align-items: center;
             font-size: 0.8rem;
             gap: 10px;
+            .comment-time {
+              cursor: default;
+            }
             .reply-btn {
               color: var(--skyblue);
               font-size: 13px;
@@ -226,7 +229,7 @@ onMounted(() => {
             text-decoration: underline;
             &::after {
               content: '（这是个外链哟）';
-              color: var(--blue);
+              color: var(--skyblue);
             }
           }
         }
