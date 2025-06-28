@@ -1,4 +1,5 @@
 import { Visitor } from '../models/VisitorSchema.js'
+import { WebsiteData } from '../models/WebsiteDataSchema.js'
 import { getIp, parseIp, parseBrowser } from '../utils/index.js' 
 
 /**
@@ -12,7 +13,10 @@ export const createVisitor = async (ctx) => {
     const ip = getIp(ctx)
     const address = parseIp(ip)
     const browser = parseBrowser(ctx.request.headers['user-agent'])
-    const today = new Date().toISOString().split('T')[0]
+    
+    // 使用本地时间获取今天的日期
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
     // 计算20分钟前的时间点
     const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000)
@@ -22,7 +26,7 @@ export const createVisitor = async (ctx) => {
         browser,
         page,
         visitTime: {
-            $gte: twentyMinutesAgo // 如果今天20分钟内访问过，则符合查找条件
+            $gte: twentyMinutesAgo
         }
     })
 
@@ -40,6 +44,7 @@ export const createVisitor = async (ctx) => {
         ctx.body = { message: 'Visitor created successfully', visitor }
     }
 }
+
 
 // 获取访客列表 分页查询
 export const getVisitorList = async (ctx) => {
@@ -69,12 +74,100 @@ export const getVisitorList = async (ctx) => {
 
 // 删除访客记录
 export const deleteVisitor = async (ctx) => {  
-    const { id } = ctx.request.params
-    const deletedVisitor = await Visitor.findByIdAndDelete(id)
+    const { id } = ctx.params
+    
+    try {
+        // 先查找要删除的访客记录
+        const visitorToDelete = await Visitor.findById(id)
+        
+        if (!visitorToDelete) {
+            ctx.status = 404
+            ctx.body = { message: '访客记录不存在' }
+            return
+        }
 
-    ctx.status = 200
-    ctx.body = {
-        message: '访客记录删除成功',
-        deletedVisitor
+        // 获取访客记录的日期（使用本地时区）
+        const visitDate = new Date(visitorToDelete.visitTime)
+        visitDate.setHours(0, 0, 0, 0)
+
+        // 删除访客记录
+        await Visitor.findByIdAndDelete(id)
+
+        // 1. 更新总计数据
+        await WebsiteData.updateOne(
+            {},
+            {
+                $inc: {
+                    'visit.total': -1,
+                    'view.total': -visitorToDelete.viewNum
+                }
+            }
+        )
+
+        // 2. 减少 visit.dailyData 中对应日期的计数
+        const visitUpdateResult = await WebsiteData.updateOne(
+            {
+                'visit.dailyData.date': visitDate
+            },
+            {
+                $inc: {
+                    'visit.dailyData.$.count': -1
+                }
+            }
+        )
+
+        // 3. 减少 view.dailyData 中对应日期的计数
+        const viewUpdateResult = await WebsiteData.updateOne(
+            {
+                'view.dailyData.date': visitDate
+            },
+            {
+                $inc: {
+                    'view.dailyData.$.count': -visitorToDelete.viewNum
+                }
+            }
+        )
+
+        // 4. 清理计数为0或负数的日期项
+        if (visitUpdateResult.matchedCount > 0) {
+            await WebsiteData.updateOne(
+                {},
+                {
+                    $pull: {
+                        'visit.dailyData': {
+                            date: visitDate,
+                            count: { $lte: 0 }
+                        }
+                    }
+                }
+            )
+        }
+
+        if (viewUpdateResult.matchedCount > 0) {
+            await WebsiteData.updateOne(
+                {},
+                {
+                    $pull: {
+                        'view.dailyData': {
+                            date: visitDate,
+                            count: { $lte: 0 }
+                        }
+                    }
+                }
+            )
+        }
+
+        ctx.status = 200
+        ctx.body = {
+            message: '访客记录删除成功',
+            deletedVisitor: visitorToDelete
+        }
+    } catch (error) {
+        console.error('删除访客记录失败:', error)
+        ctx.status = 500
+        ctx.body = { 
+            message: '删除访客记录失败', 
+            error: error.message 
+        }
     }
 }
