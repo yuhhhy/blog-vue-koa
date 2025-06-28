@@ -104,7 +104,10 @@ router.beforeEach(async (to, from) => {
     if (to.meta?.title && !to.meta.dynamicTitle) {
         document.title = to.meta.title
     }
+})
 
+// 在路由导航完成后执行统计，不会阻塞页面渲染
+router.afterEach((to, from) => {
     // 如果是锚点导航，不做处理
     if (to.hash) {
         return
@@ -114,10 +117,12 @@ router.beforeEach(async (to, from) => {
         return
     }
     
-    // 路由切换时创建访客记录
-    const { role, page } = { role: 'client', page: to.name }
-    await apiCreateVisitor({ role, page })
-    await apiUpdateWebsiteView()
+    // 延迟执行统计请求，确保页面渲染完成
+    setTimeout(async () => {
+        const { role, page } = { role: 'client', page: to.name }
+        await apiCreateVisitor({ role, page })
+        await apiUpdateWebsiteView()
+    }, 3000) // 延迟3秒执行
 })
 
 export default router

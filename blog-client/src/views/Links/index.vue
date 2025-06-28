@@ -58,8 +58,8 @@ onMounted(async () => {
                 <pre><code>
     <span>名称: </span><span>"一曝十寒"</span>
     <span>简介: </span><span>"纵使不安彷徨，即便茫然无措，也依然迈步前行"</span>
-    <span>网站: </span><span>"http://yuhhhy.cn/"</span>
-    <span>头像: </span><span>"http://yuhhhy.cn/images/avatar.jpg"</span>
+    <span>网站: </span><span>"https://yuhhhy.cn/"</span>
+    <span>头像: </span><span>"https://yuhhhy.cn/images/avatar.jpg"</span>
                 </code></pre>
 
                 <h2>申请方式</h2>
@@ -120,6 +120,7 @@ onMounted(async () => {
                             img {
                                 border-radius: 50%;
                                 height: 75px;
+                                width: 75px;
                                 min-width: 75px;
                                 margin: 0;
 
