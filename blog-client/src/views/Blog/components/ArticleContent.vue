@@ -156,12 +156,15 @@ onUpdated(() => {
             padding: 1em;
             border-radius: 5px;
             overflow-x: auto;
+            max-width: 100%;
 
             code {
                 color: var(--code-color);
                 background: none;
                 padding: 0;
                 border-radius: 0;
+                overflow-x: auto;
+                
             }
         }
 

@@ -254,24 +254,28 @@ img {
         padding: 40px calc(7vw + 10px);
         display: flex;
         height: 100%;
+        max-width: 100vw;      // 限制最大宽度
+        // 不能设置 overflow-x: hidden，因为需要 blog-sidebar 的 sticky 需要父元素的 overflow: visible
 
         .blog-aritcle {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
             flex: 1;
             background-color: var(--white);
             border-radius: 15px;
+            min-width: 0;          // 允许 flex 项目收缩
+            overflow-x: hidden;
 
-            .blog-aritcle-item{
+            .blog-aritcle-item {
                 margin-bottom: 30px;
+                max-width: 100%;
             }
         }
 
         .blog-sidebar {
             width: 300px;
             min-width: 260px;
-            height: auto; // 高度自适应
-            min-height: 100%; // 撑开.blog-sidebar
+            height: auto;
+            min-height: 100%;
             display: flex;
             flex-direction: column;
         }
