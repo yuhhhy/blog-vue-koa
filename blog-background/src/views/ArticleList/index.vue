@@ -137,21 +137,21 @@ async function UpdateBlog(id) {
 </script>
 
 <template>
-  <el-table :data="tableData" stripe>
+  <el-table :data="tableData" stripe max-height="743px">
     <el-table-column
       prop="createTime"
       label="创建日期"
-      width="160">
+      width="140">
     </el-table-column>
     <el-table-column
       prop="title"
       label="标题"
-      width="450">
+      width="420">
     </el-table-column>
     <el-table-column
       prop="tags"
       label="标签"
-      width="300">
+      width="240">
       <template #default="scope">
         <el-tag
           v-for="tag in scope.row.tags"
@@ -164,14 +164,19 @@ async function UpdateBlog(id) {
       </template>
     </el-table-column>
     <el-table-column
+      prop="wordCount"
+      label="字数"
+      width="110">
+    </el-table-column>
+    <el-table-column
       prop="viewCount"
       label="浏览量"
-      width="120">
+      width="110">
     </el-table-column>
     <el-table-column
       prop="likeCount"
       label="点赞量"
-      width="120">
+      width="90">
     </el-table-column>
     <el-table-column fixed="right" label="管理">
       <template #default="scope">

@@ -96,7 +96,7 @@ async function handleConfirm() {
     <button class="bg-blue-400 text-white w-10 h-7 rounded-lg m-2" @click="handleAddLink">+</button>
   </div>
   <!-- 友链表格 -->
-  <el-table :data="tableData">
+  <el-table :data="tableData" max-height="703px">
     <el-table-column label="头像" width="140">
       <template #default="scope">
         <el-image style="width: 50px; height: 50px" :src="scope.row.avatar" :preview-src-list="[scope.row.avatar]"

@@ -108,12 +108,12 @@ async function deleteComment() {
         <img
           :src="scope.row.avatar"
           alt="avatar"
-          style="width:40px;height:40px;border-radius:50%;object-fit:cover"
+          style="width:40px;height:40px;border-radius:50%;object-fit:cover;"
         />
       </template>
     </el-table-column>
     <!-- 昵称 -->
-    <el-table-column width="150" prop="username">
+    <el-table-column width="120" prop="username">
       <template #header>
         <div class="text-blue-400">昵称</div>
       </template>
