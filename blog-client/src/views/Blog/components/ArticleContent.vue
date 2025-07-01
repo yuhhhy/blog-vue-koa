@@ -13,9 +13,10 @@ onUpdated(() => {
 </script>
 
 <template>
-    <div class="article-content">
-        <div v-html="htmlContent" class="markdown-content"></div>
-    </div>
+    <article class="article-content">
+        <div v-html="htmlContent" class="markdown-content">
+        </div>
+    </article>
 </template>
 
 <!-- 这个不能加scoped，因为是全局的html样式 -->

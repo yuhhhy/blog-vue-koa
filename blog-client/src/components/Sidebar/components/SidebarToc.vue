@@ -44,6 +44,7 @@ defineProps({
         color: var(--blue);
         font-size: 0.9rem;
         line-height: 1.5;
+        overflow-y: auto;
     }
     :deep(ul), :deep(ol) {
         padding-left: 2em;
