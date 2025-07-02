@@ -18,6 +18,7 @@ async function fetchData() {
     Object.assign(topData.value.visit, data.visit)
     Object.assign(topData.value.comment, data.comment)
 
+
     // 更新主图表初始数据
     mainData.value.view.weekData = data.view.data
     mainData.value.visit.weekData = data.visit.data
@@ -98,12 +99,18 @@ const initTopCards = () => {
     series: [{
       data: topData.value.view.data,
       type: 'line',
-      smooth: true,
       showSymbol: false,
       areaStyle: { color: '#82BEFF' },
       lineStyle: { color: '#82BEFF' }
     }]
   })
+
+
+  // 生成topData.value.view.rate
+  const lastDay = topData.value.view.data.length - 1
+  const todayView = topData.value.view.data[lastDay] || 0
+  const yesterdayView = topData.value.view.data[lastDay - 1] || 0
+  topData.value.view.rate = yesterdayView === 0 ? 0 : ((todayView - yesterdayView) / yesterdayView * 100).toFixed(2)
 
   // 访问量柱状图
   const visitChart = echarts.init(document.getElementById('visitChart'))

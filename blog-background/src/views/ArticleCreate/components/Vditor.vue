@@ -8,13 +8,13 @@ import { useUserStore } from '@/stores/userStore.js'
 import cfg from '@/config/index.js'
 const baseApi = cfg.baseApi
 
-
 const vditorEl = ref()
 const timer = ref(null)
 const emit = defineEmits(['vblur'])
 const props = defineProps(['content'])
 const articleStore = useArticleStore()
 const userStore = useUserStore()
+
 
 // 编辑界面判断是否切换编辑的文章
 if (props.content) {

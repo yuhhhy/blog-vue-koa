@@ -137,7 +137,7 @@ async function UpdateBlog(id) {
 </script>
 
 <template>
-  <el-table :data="tableData" stripe max-height="723px">
+  <el-table :data="tableData" stripe max-height="700px">
     <el-table-column
       prop="createTime"
       label="创建日期"
