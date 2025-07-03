@@ -2,7 +2,23 @@
 import { ref, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 
-// 示例任务数据
+// 常量定义
+const CONSTANTS = {
+  DAY_WIDTH: 30,
+  TASK_HEIGHT: 48,
+  HEADER_HEIGHT: 64,
+  MONTH_NAMES: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+  TASK_COLORS: {
+    BLUE: 'bg-blue-500',
+    GREEN: 'bg-green-500',
+    YELLOW: 'bg-yellow-500',
+    PURPLE: 'bg-purple-500',
+    RED: 'bg-red-500',
+    ORANGE: 'bg-orange-500'
+  }
+};
+
+// 优化任务数据结构
 const tasks = ref([
   { 
     id: 1, 
@@ -10,7 +26,8 @@ const tasks = ref([
     startDate: '2025-06-10', 
     endDate: '2025-06-15',
     progress: 100,
-    color: 'bg-blue-500'
+    color: CONSTANTS.TASK_COLORS.BLUE,
+    description: '收集和分析项目需求'
   },
   { 
     id: 2, 
@@ -18,7 +35,8 @@ const tasks = ref([
     startDate: '2025-06-16', 
     endDate: '2025-06-22',
     progress: 70,
-    color: 'bg-green-500'
+    color: CONSTANTS.TASK_COLORS.GREEN,
+    description: 'UI/UX设计和技术架构设计'
   },
   { 
     id: 3, 
@@ -26,7 +44,8 @@ const tasks = ref([
     startDate: '2025-06-23', 
     endDate: '2025-07-10',
     progress: 30,
-    color: 'bg-yellow-500'
+    color: CONSTANTS.TASK_COLORS.YELLOW,
+    description: '前后端开发实现'
   },
   { 
     id: 4, 
@@ -34,7 +53,8 @@ const tasks = ref([
     startDate: '2025-07-11', 
     endDate: '2025-07-20',
     progress: 0,
-    color: 'bg-purple-500'
+    color: CONSTANTS.TASK_COLORS.PURPLE,
+    description: '功能测试和性能测试'
   }
 ]);
 
@@ -111,13 +131,9 @@ const getTaskStyle = (task) => {
   const taskDuration = Math.ceil((endDateObj - startDateObj) / (1000 * 60 * 60 * 24)) + 1;
   
   return {
-    marginLeft: `${taskStartDay * 30}px`,
-    width: `${taskDuration * 30}px`,
+    marginLeft: `${taskStartDay * CONSTANTS.DAY_WIDTH}px`,
+    width: `${taskDuration * CONSTANTS.DAY_WIDTH}px`,
   };
-};
-
-const getMonthNames = () => {
-  return ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
 };
 
 const handleTaskClick = (task) => {
@@ -126,7 +142,7 @@ const handleTaskClick = (task) => {
 
 // 计算容器宽度，确保没有多余空白
 const containerWidth = computed(() => {
-  return `${dateArray.value.length * 30}px`;
+  return `${dateArray.value.length * CONSTANTS.DAY_WIDTH}px`;
 });
 </script>
 
@@ -160,9 +176,9 @@ const containerWidth = computed(() => {
             v-for="(month, index) in monthLabels" 
             :key="index"
             class="border-r flex items-center justify-center font-semibold"
-            :style="{ width: `${month.width * 30}px` }"
+            :style="{ width: `${month.width * CONSTANTS.DAY_WIDTH}px` }"
           >
-            {{ getMonthNames()[month.month - 1] }}
+            {{ CONSTANTS.MONTH_NAMES[month.month - 1] }}
           </div>
         </div>
         
