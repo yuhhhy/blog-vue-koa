@@ -71,14 +71,8 @@ onUpdated(() => {
             }
         }
 
-        b {
+        b, strong {
             color: var(--b-color);
-        }
-
-        strong {
-            font-weight: normal;
-            color: var(--white);
-            background-color: var(--b-color);
         }
 
         p {
