@@ -114,6 +114,9 @@ git clone https://github.com/yuhhhy/blog-vue-koa.git
 - 下载MongoDB并启动MongoDB服务
 https://www.mongodb.com/try/download/community
 
+- 安装Nodejs
+https://nodejs.org/
+
 - 安装项目依赖
 ```
 cd blog-vue-koa
