@@ -1,4 +1,7 @@
 <script setup>
+/**
+ * 这是一个递归组件！
+ */
 import CommentForm from './CommentForm.vue'
 import { getFormatDate } from '@/utils/date'
 

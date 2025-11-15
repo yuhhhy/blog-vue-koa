@@ -1,5 +1,7 @@
 <script setup>
 import SideNavItem from '@/components/SideNavItem/index.vue'
+
+
 const siderNavItems = [
     {
         title: '首页',
@@ -49,14 +51,13 @@ const siderNavItems = [
         link: '/links',
     },
     {
-        title: '功能',
+        title: '文件',
         children: [
             {
-                title: '甘特图',
-                link: '/functions/ganttchart'
+                title: '图片文件',
+                link: '/files/imgfile'
             }
         ]
-
     }
     
     // {

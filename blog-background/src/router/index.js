@@ -12,12 +12,12 @@ const routes = [
             {        
                 path: 'welcome',
                 name: 'Welcome',
-                component: () => import('../views/Welcome/index.vue')
+                component: () => import('../views/Welcome/index.vue'),
             },
             {
                 path: 'article/list',
                 name: 'ArticleList',
-                component: () => import('../views/ArticleList/index.vue')
+                component: () => import('../views/ArticleList/index.vue'),
             },
             {
                 path: 'article/create',
@@ -56,9 +56,9 @@ const routes = [
                 component: () => import('../views/Links/index.vue')
             },
             {
-                path: 'functions/ganttchart',
-                name: 'GanttChart',
-                component: () => import('../views/Functions/GanttChart/index.vue')
+                path: 'files/imgfile',
+                name: 'ImgFile',
+                component: () => import('../views/Files/ImgFile/index.vue')
             }
         ]
     },

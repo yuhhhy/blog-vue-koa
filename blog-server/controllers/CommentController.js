@@ -32,12 +32,12 @@ export const getComments = async (ctx) => {
 
     // 使用递归构建嵌套结构，返回对象数组给前端
     const buildTree = (items, parentId = '-1') => {
-    return items
-        .filter(item => item.parentId === parentId)
-        .map(item => ({
-        ...item,
-        replies: buildTree(items, item.id)
-        }))
+        return items
+            .filter(item => item.parentId === parentId)
+            .map(item => ({
+            ...item,
+            replies: buildTree(items, item.id)
+            }))
     }
     ctx.status = 200
     ctx.body = buildTree(comments)
