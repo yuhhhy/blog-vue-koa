@@ -6,6 +6,7 @@ import { getAllComments, getComments, createComment, reviewComment, deleteCommen
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
+import { getImageFiles, deleteImageFile } from "../controllers/FilesController.js"
 
 const router = new Router({ prefix: '/api' })
 
@@ -180,5 +181,13 @@ router.delete('/links/:id', deleteLink)
 // 更新友链
 router.put('/links/:id', updateLink)
 
+
+
+/**
+ * Files API
+ */
+router.get('/files/images', getImageFiles);
+
+router.delete('/files/images/:filename', deleteImageFile);
 
 export default router

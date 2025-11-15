@@ -1,7 +1,11 @@
 <script setup>
-import { ref, computed, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
+import { apiGetImageList, apiDeleteImage } from '@/api/files.js';
+import cfg from '@/config/index.js';
+
+const baseApi = cfg.baseApi;
 
 const imageList = ref([]);
 const loading = ref(false);
@@ -16,70 +20,52 @@ const filteredImages = computed(() => {
     );
 });
 
-
-// 模拟文件上传
-const handleHttpRequest = (options) => {
-    const { file } = options;
-    const isImage = file.type.startsWith('image/');
-    if (!isImage) {
-        ElMessage.error('只能上传图片文件！');
-        return;
+// 从后端获取图片列表
+const fetchImageList = async () => {
+    loading.value = true;
+    try {
+        const res = await apiGetImageList();
+        imageList.value = res.data;
+    } catch (error) {
+        ElMessage.error('请求失败，请检查网络');
+    } finally {
+        loading.value = false;
     }
+};
 
-    const reader = new FileReader();
-    reader.onload = () => {
-        const newImage = {
-            id: Date.now(),
-            name: file.name,
-            size: file.size,
-            url: URL.createObjectURL(file), // 创建 Blob URL 用于预览和下载
-            uploadDate: new Date(),
-        };
-        imageList.value.unshift(newImage);
-        ElMessage.success('图片上传成功（纯前端模拟）');
-    };
-    reader.readAsDataURL(file);
+// 文件上传成功后的回调
+const handleUploadSuccess = (response, file) => {
+    ElMessage.success(`图片 "${file.name}" 上传成功`);
+    fetchImageList(); // 上传成功后刷新列表
+};
+
+// 文件上传失败的回调
+const handleUploadError = (error) => {
+    ElMessage.error('图片上传失败，请检查文件大小或网络');
 };
 
 // 删除图片
 const handleDelete = (row) => {
-    ElMessageBox.confirm(`确定要删除图片 "${row.name}" 吗？`, '警告', {
-        confirmButtonText: '确定',
+    ElMessageBox.confirm(`确定要删除图片 "${row.name}" 吗？此操作不可逆！`, '警告', {
+        confirmButtonText: '确定删除',
         cancelButtonText: '取消',
         type: 'warning',
-    }).then(() => {
-        const index = imageList.value.findIndex(img => img.id === row.id);
-        if (index !== -1) {
-            URL.revokeObjectURL(imageList.value[index].url); // 释放内存
-            imageList.value.splice(index, 1);
-            ElMessage.success('删除成功');
-        }
-    }).catch(() => {});
-};
-
-// 重命名图片
-const handleRename = (row) => {
-    ElMessageBox.prompt('请输入新的文件名', '重命名', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputValue: row.name,
-        inputValidator: (value) => {
-            if (!value) return '文件名不能为空';
-            return true;
-        },
-    }).then(({ value }) => {
-        const image = imageList.value.find(img => img.id === row.id);
-        if (image) {
-            image.name = value;
-            ElMessage.success('重命名成功');
+    }).then(async () => {
+        try {
+            await apiDeleteImage(row.name);
+            fetchImageList();
+            ElMessage.success('图片删除成功');
+        } catch (error) {
+            ElMessage.error('删除失败');
         }
     }).catch(() => {});
 };
 
 // 下载图片
 const handleDownload = (row) => {
+    // 使用后端提供的 URL 进行下载
     const link = document.createElement('a');
-    link.href = row.url;
+    link.href = `${row.url}`;
     link.download = row.name;
     document.body.appendChild(link);
     link.click();
@@ -87,14 +73,16 @@ const handleDownload = (row) => {
 };
 
 const formatSize = (size) => {
-    if (size === 0) return '0 B';
+    if (!size || size === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(size) / Math.log(k));
     return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-const formatDate = (date) => {
+const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat('zh-CN', {
         year: 'numeric',
         month: '2-digit',
@@ -104,9 +92,8 @@ const formatDate = (date) => {
     }).format(date);
 };
 
-onBeforeUnmount(() => {
-    // 组件卸载时，释放所有 Blob URL 以防止内存泄漏
-    imageList.value.forEach(img => URL.revokeObjectURL(img.url));
+onMounted(() => {
+    fetchImageList();
 });
 
 </script>
@@ -117,8 +104,11 @@ onBeforeUnmount(() => {
             <div class="flex justify-between items-center">
                 <span>图片管理</span>
                 <el-upload
+                    :action="`${baseApi}/upload/image`"
                     :show-file-list="false"
-                    :http-request="handleHttpRequest"
+                    :on-success="handleUploadSuccess"
+                    :on-error="handleUploadError"
+                    name="file"
                     accept="image/*"
                 >
                     <el-button type="primary">上传图片</el-button>
@@ -133,13 +123,14 @@ onBeforeUnmount(() => {
             class="mb-4"
         />
 
-        <el-table :data="filteredImages" v-loading="loading" empty-text="暂无图片，请点击右上角按钮上传">
+        <el-table :data="filteredImages" v-loading="loading" stripe empty-text="暂无图片，或无法连接到服务器">
             <el-table-column label="预览" width="120">
                 <template #default="{ row }">
                     <el-image
                         style="width: 80px; height: 80px; border-radius: 4px;"
-                        :src="row.url"
-                        :preview-src-list="[row.url]"
+                        :src="`${row.url}`"
+                        :preview-src-list="filteredImages.map(img => `${img.url}`)"
+                        :initial-index="filteredImages.findIndex(img => img.name === row.name)"
                         preview-teleported
                         fit="cover"
                         lazy
@@ -164,7 +155,6 @@ onBeforeUnmount(() => {
             <el-table-column label="操作" width="250" fixed="right">
                 <template #default="{ row }">
                     <el-button size="small" @click="handleDownload(row)">下载</el-button>
-                    <el-button size="small" type="primary" @click="handleRename(row)">重命名</el-button>
                     <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
                 </template>
             </el-table-column>
@@ -172,6 +162,6 @@ onBeforeUnmount(() => {
     </el-card>
 </template>
 
-<style>
-
+<style scoped>
 </style>
+

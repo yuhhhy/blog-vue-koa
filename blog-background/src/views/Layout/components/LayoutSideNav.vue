@@ -59,29 +59,6 @@ const siderNavItems = [
             }
         ]
     }
-    
-    // {
-    //     title: '设置',
-    //     children: [
-    //         {
-    //             title: '站点设置',
-    //             link: '/settings/site'
-    //         },
-    //         {
-    //             title: 'SEO设置',
-    //             link: '/settings/seo'
-    //         }
-    //     ]
-    // }
-    // {
-    //     title: '通知',
-    //     children: [
-    //         {
-    //             title: '通知管理',
-    //             link: '/notification/manage'
-    //         }
-    //     ]
-    // }
 ]
  
 </script>

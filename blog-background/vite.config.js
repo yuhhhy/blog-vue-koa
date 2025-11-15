@@ -37,6 +37,14 @@ export default defineConfig({
   },
   server: {
     // 项目启动端口
-    port: 8096
+    port: 8096,
+    // 代理请求，前端以/images开头的请求会被代理到后端的3000端口上 (http://localhost:3000/images)
+    // 实际生产环境需要在 Nginx上配置代理
+    proxy: {
+      '/images': {
+        target: 'http://localhost:3000', // 后端接口地址
+        changeOrigin: true
+      }
+    }
   }
 })
