@@ -44,6 +44,10 @@ export default defineConfig({
       '/images': {
         target: 'http://localhost:3000', // 后端接口地址
         changeOrigin: true
+      },
+      '/mds': {
+        target: 'http://localhost:3000', // 后端接口地址
+        changeOrigin: true
       }
     }
   }

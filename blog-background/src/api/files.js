@@ -26,3 +26,19 @@ export function apiDeleteImage(filename) {
     method: 'DELETE',
   });
 };
+
+// 获取 Markdown 文件列表
+export function apiGetMdList() {
+  return request({
+    url: '/files/mds',
+    method: 'GET',
+  });
+}
+
+// 删除 Markdown 文件
+export function apiDeleteMd(filename) {
+  return request({
+    url: `/files/mds/${filename}`,
+    method: 'DELETE',
+  });
+}

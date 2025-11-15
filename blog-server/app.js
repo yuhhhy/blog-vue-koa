@@ -7,7 +7,7 @@ import serve from 'koa-static'
 import multer from '@koa/multer'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { storage } from './config/upload.js'
+import { storage  } from "./config/upload.js";
 import { authMiddleware } from './middlewares/auth.js'
 import envConfig from './config/env.js'
 import logger from './config/logger.js'
@@ -65,7 +65,8 @@ if(envConfig.currentEnv === 'development') {
 }
 
 // 处理文件上传
-const upload = multer({ storage })
+const upload = multer({ storage });
+
 app.use(upload.single('file')) // 处理单个文件上传，注意这里的 'file' 要和前端上传时的 name 对应
 
 // 注册鉴权中间件

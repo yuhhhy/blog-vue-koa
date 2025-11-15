@@ -54,8 +54,12 @@ const siderNavItems = [
         title: '文件',
         children: [
             {
-                title: '图片文件',
+                title: '图片',
                 link: '/files/imgfile'
+            },
+            {
+                title: 'Markdown',
+                link: '/files/mdfile'
             }
         ]
     }

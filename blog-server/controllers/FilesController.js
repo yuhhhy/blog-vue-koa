@@ -6,10 +6,13 @@ import fs from "fs/promises";
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const imageDir = path.join(__dirname, "..", "..", "public", "images");
+const mdDir = path.join(__dirname, "..", "..", "public", "mds");
 
+// 获取图片列表
 export const getImageFiles = async (ctx) => {
-    const imageList = [];
     try {
+        const imageList = [];
+
         await fs.access(imageDir);
         const files = await fs.readdir(imageDir);
 
@@ -25,20 +28,16 @@ export const getImageFiles = async (ctx) => {
                 });
             }
         }
+        ctx.status = 200;
+        ctx.body = { success: true, data: imageList };
     } catch (error) {
-        if (error.code === 'ENOENT') {
-            ctx.status = 200;
-            ctx.body = { success: true, data: [] };
-            return; // 目录不存在，返回空列表
-        }
         ctx.status = 500;
         ctx.body = { success: false, message: '获取图片列表失败', error: error.message };
         return;
     }
-    ctx.status = 200;
-    ctx.body = { success: true, data: imageList };
 };
 
+// 删除图片文件
 export const deleteImageFile = async (ctx) => {
     const { filename } = ctx.params;
     const filePath = path.join(imageDir, filename);
@@ -51,4 +50,43 @@ export const deleteImageFile = async (ctx) => {
         ctx.status = 500;
         ctx.body = { success: false, message: '图片删除失败', error: error.message };
     } 
+};
+
+// 获取 Markdown 文件列表
+export const getMdFiles = async (ctx) => {
+  try {
+    // 确保目录存在，如果不存在则创建
+
+    const files = await fs.readdir(mdDir);
+    const mdList = [];
+    for (const file of files) {
+      if (path.extname(file).toLowerCase() === ".md") {
+        const filePath = path.join(mdDir, file);
+        const stats = await fs.stat(filePath);
+        mdList.push({
+          name: file,
+          url: `/mds/${file}`,
+          size: stats.size,
+          uploadDate: stats.birthtime,
+        });
+      }
+    }
+    ctx.body = { success: true, data: mdList };
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { success: false, message: "获取 Markdown 文件列表失败" };
+  }
+};
+
+// 删除 Markdown 文件
+export const deleteMdFile = async (ctx) => {
+  const { filename } = ctx.params;
+  try {
+    const filePath = path.join(mdDir, filename);
+    await fs.unlink(filePath);
+    ctx.body = { success: true, message: "删除成功" };
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { success: false, message: "删除失败" };
+  }
 };

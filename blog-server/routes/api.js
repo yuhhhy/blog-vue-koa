@@ -6,7 +6,7 @@ import { getAllComments, getComments, createComment, reviewComment, deleteCommen
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
-import { getImageFiles, deleteImageFile } from "../controllers/FilesController.js"
+import { getImageFiles, deleteImageFile, getMdFiles, deleteMdFile } from "../controllers/FilesController.js"
 
 const router = new Router({ prefix: '/api' })
 
@@ -158,15 +158,6 @@ router.get('/visitor', getVisitorList)
 router.delete('/visitor/:id', deleteVisitor)
 
 /**
- * Upload API
- */
-// 上传单张图片
-router.post('/upload/image', async (ctx) => {
-    ctx.status = 200
-    ctx.body = ctx.request.file
-})
-
-/**
  * Links API
  */
 // 获取所有友链
@@ -181,13 +172,33 @@ router.delete('/links/:id', deleteLink)
 // 更新友链
 router.put('/links/:id', updateLink)
 
-
-
 /**
  * Files API
  */
 router.get('/files/images', getImageFiles);
 
 router.delete('/files/images/:filename', deleteImageFile);
+
+router.get("/files/mds", getMdFiles);
+
+router.delete("/files/mds/:filename", deleteMdFile);
+
+
+/**
+ * Upload API
+ */
+
+// 上传单张图片
+router.post('/upload/image', async (ctx) => {
+    ctx.status = 200
+    ctx.body = ctx.request.file
+})
+
+// 上传单个Markdown文件
+router.post("/upload/md", async (ctx) => {
+    ctx.status = 200;
+    ctx.body = ctx.request.file;
+});
+
 
 export default router

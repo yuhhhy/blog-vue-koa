@@ -3,71 +3,76 @@ import { useUserStore } from '@/stores/userStore.js'
 import { ElMessage } from 'element-plus'
 
 const routes = [
-    {
-        path: '/',
-        name: 'Home',
-        redirect: '/welcome',
-        component: () => import('../views/Home.vue'),
-        children: [
-            {        
-                path: 'welcome',
-                name: 'Welcome',
-                component: () => import('../views/Welcome/index.vue'),
-            },
-            {
-                path: 'article/list',
-                name: 'ArticleList',
-                component: () => import('../views/ArticleList/index.vue'),
-            },
-            {
-                path: 'article/create',
-                name: 'ArticleCreate',
-                component: () => import('../views/ArticleCreate/index.vue')
-            },
-            {
-                path: 'user/manage',
-                name: 'UserManage',
-                component: () => import('../views/UserManage/index.vue'),
-                meta: {
-                    requiresAdmin: true
-                }
-            },
-            {
-                path: 'user/record',
-                name: 'UserRecord',
-                component: () => import('../views/UserRecord/index.vue'),
-                meta: {
-                    requiresAdmin: true // 需要admin权限
-                }
-            },
-            {
-                path: 'comment/manage',
-                name: 'CommentManage',
-                component: () => import('../views/CommentManage/index.vue')
-            },
-            {
-                path: 'comment/pending',
-                name: 'CommentPending',
-                component: () => import('../views/CommentPending/index.vue')
-            },
-            {
-                path: 'links',
-                name: 'Links',
-                component: () => import('../views/Links/index.vue')
-            },
-            {
-                path: 'files/imgfile',
-                name: 'ImgFile',
-                component: () => import('../views/Files/ImgFile/index.vue')
-            }
-        ]
-    },
-    {
-        path: '/login',
-        name: 'Login',
-        component: () => import('../views/Login/index.vue')
-    }
-]
+  {
+    path: "/",
+    name: "Home",
+    redirect: "/welcome",
+    component: () => import("../views/Home.vue"),
+    children: [
+      {
+        path: "welcome",
+        name: "Welcome",
+        component: () => import("../views/Welcome/index.vue"),
+      },
+      {
+        path: "article/list",
+        name: "ArticleList",
+        component: () => import("../views/ArticleList/index.vue"),
+      },
+      {
+        path: "article/create",
+        name: "ArticleCreate",
+        component: () => import("../views/ArticleCreate/index.vue"),
+      },
+      {
+        path: "user/manage",
+        name: "UserManage",
+        component: () => import("../views/UserManage/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
+      },
+      {
+        path: "user/record",
+        name: "UserRecord",
+        component: () => import("../views/UserRecord/index.vue"),
+        meta: {
+          requiresAdmin: true, // 需要admin权限
+        },
+      },
+      {
+        path: "comment/manage",
+        name: "CommentManage",
+        component: () => import("../views/CommentManage/index.vue"),
+      },
+      {
+        path: "comment/pending",
+        name: "CommentPending",
+        component: () => import("../views/CommentPending/index.vue"),
+      },
+      {
+        path: "links",
+        name: "Links",
+        component: () => import("../views/Links/index.vue"),
+      },
+      {
+        path: "files/imgfile",
+        name: "ImgFile",
+        component: () => import("../views/Files/ImgFile/index.vue"),
+      },
+      {
+        path: "files/mdfile",
+        name: "MdFile",
+        component: () => import("../views/Files/MdFile/index.vue"),
+      },
+    ],
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: () => import("../views/Login/index.vue"),
+  },
+];
 
 const router = createRouter({
     history: createWebHistory(),

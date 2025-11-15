@@ -46,7 +46,7 @@ const handleUploadError = (error) => {
 
 // 删除图片
 const handleDelete = (row) => {
-    ElMessageBox.confirm(`确定要删除图片 "${row.name}" 吗？此操作不可逆！`, '警告', {
+    ElMessageBox.confirm(`确定要删除图片 "${row.name}" 吗？`, '警告', {
         confirmButtonText: '确定删除',
         cancelButtonText: '取消',
         type: 'warning',
@@ -137,17 +137,17 @@ onMounted(() => {
                     />
                 </template>
             </el-table-column>
-            <el-table-column prop="name" label="文件名" sortable>
+            <el-table-column prop="name" label="文件名" sortable :sort-by="row => row.name">
                 <template #default="{ row }">
                     <span>{{ row.name }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="大小" width="120" sortable>
+            <el-table-column label="大小" width="120" sortable :sort-by="row => row.size">
                 <template #default="{ row }">
                     {{ formatSize(row.size) }}
                 </template>
             </el-table-column>
-            <el-table-column label="上传时间" width="180" sortable>
+            <el-table-column label="上传时间" width="180" sortable :sort-by="row => new Date(row.uploadDate).getTime()">
                     <template #default="{ row }">
                     {{ formatDate(row.uploadDate) }}
                 </template>
