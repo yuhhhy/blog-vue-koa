@@ -49,26 +49,28 @@ const handleSubmit = () => {
       ElMessage.error('请上传封面图片')
       return
     }
-    // 验证通过，显示确认对话框
-    ElMessageBox.confirm('确认后写入内容会清空，确定提交文章吗？', '提示', {
+
+    // 提交表单数据
+    emit('articleSubmit', { ...form })
+  })
+}
+
+const clearForm = () => {
+  ElMessageBox.confirm('确认清空表单吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
     }).then(
       async () => {
-        emit('articleSubmit', { ...form })
         form.title = ''
         form.author = ''
         form.tags = []
         form.coverImgUploaded = false
-      }).catch(() => {
+        ElMessage.success('表单已清空！')
       })
-  })
 }
 
 const userStore = useUserStore()
 const router = useRouter()
-
-// 可以添加图片上传api接口改为api上传
 
 // 图片上传前验证是否登录
 const beforeUpload = () => {
@@ -156,6 +158,12 @@ const uploadError = (file) => {
       </el-popover>
     </el-form-item>
 
+    <el-button 
+      type="warning"
+      class="-mt-4 ml-52"
+      @click="clearForm">
+      清空
+    </el-button>
     <el-button 
       type="primary"
       class="-mt-4 ml-52"
