@@ -5,8 +5,6 @@ import bodyParser from 'koa-bodyparser'
 import router from './routes/api.js'
 import serve from 'koa-static'
 import multer from '@koa/multer'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import { storage  } from "./config/upload.js";
 import { authMiddleware } from './middlewares/auth.js'
 import envConfig from './config/env.js'
@@ -15,9 +13,6 @@ import dotenv from 'dotenv'
 
 // 加载环境变量配置（.ENV 文件）
 dotenv.config()
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 // 创建 Koa 实例
 const app = new Koa()
@@ -57,12 +52,7 @@ app.use(async (ctx, next) => {
 app.use(bodyParser())
 
 // 代理静态资源，让前端可以访问到后端指定目录下的文件
-if(envConfig.currentEnv === 'development') {
-    app.use(serve(path.join(__dirname, envConfig.staticResourceFilePath)))
-} else {
-    // 生产环境下，静态资源路径可能需要根据实际部署情况调整
-    app.use(serve(envConfig.staticResourceFilePath))
-}
+app.use(serve(envConfig.staticResourceFilePath))
 
 // 处理文件上传
 const upload = multer({ storage });

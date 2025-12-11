@@ -1,6 +1,8 @@
-// CORS配置
-// 允许跨域的源
+import path from 'path'
+import { fileURLToPath } from 'url'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const envConfig = {
     development: {
@@ -8,10 +10,10 @@ const envConfig = {
         port: 3000,
         allowOrigins: [
             'http://localhost:8080',
-            'http://localhost:8096'
+            'http://localhost:8096',
         ],
         // 前端请求的静态资源文件路径
-        staticResourceFilePath: '../public'
+        staticResourceFilePath: path.join(__dirname, "../../public"),
     },
     production: {
         currentEnv: 'production',
@@ -26,7 +28,7 @@ const envConfig = {
             'http://admin.yuhhhy.cn',
             'http://42.192.41.225',
         ],
-        staticResourceFilePath: '/var/www/public'
+        staticResourceFilePath: '/var/www/public',
     }
 }
 
