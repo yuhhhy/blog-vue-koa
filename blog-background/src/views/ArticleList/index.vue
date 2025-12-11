@@ -141,7 +141,7 @@ async function UpdateBlog(id) {
     <el-table-column
       prop="createTime"
       label="创建日期"
-      width="140">
+      width="120">
     </el-table-column>
     <el-table-column
       prop="title"

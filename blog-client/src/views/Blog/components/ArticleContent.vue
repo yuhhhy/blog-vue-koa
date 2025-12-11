@@ -71,6 +71,13 @@ onUpdated(() => {
             }
         }
 
+        hr {
+            border: none;
+            height: 2px;
+            background-color: var(--hr-color);
+            margin: 2em 0;
+        }
+
         b, strong {
             color: var(--b-color);
         }
