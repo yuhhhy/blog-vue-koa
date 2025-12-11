@@ -1,4 +1,5 @@
 import { BlogContent } from '../models/BlogContentSchema.js'
+import { generateLatestPostsRSS } from "../utils/RSS.js";
 
 /**
  * BlogContent Controller
@@ -13,6 +14,8 @@ export const createBlogContent = async (ctx) => {
         await newBlogContent.save()
         ctx.status = 201
         ctx.body = { message: '博客创建成功', blog: newBlogContent }
+        // 创建博客后，更新 RSS 订阅源
+        generateLatestPostsRSS()
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: '博客创建失败', error: error.message }
@@ -53,6 +56,8 @@ export const deleteBlogContent = async (ctx) => {
             return
         }
         ctx.status = 204 // 204 No Content
+        // 更新 RSS 订阅源
+        generateLatestPostsRSS()
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: '删除失败', error: error.message }
@@ -82,6 +87,8 @@ export const UpdateBlogContent = async (ctx) => {
         await blogContent.save()
         ctx.status = 200
         ctx.body = { message: '博客内容更新成功', blogContent: blogContent }
+        // 更新 RSS 订阅源
+        generateLatestPostsRSS();
     } catch (error) {
         ctx.status = 500
         ctx.body = { message: '博客内容更新失败', error: error.message }

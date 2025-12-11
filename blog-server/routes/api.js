@@ -175,14 +175,17 @@ router.put('/links/:id', updateLink)
 /**
  * Files API
  */
+// 获取图片列表
 router.get('/files/images', getImageFiles);
 
+// 删除图片文件
 router.delete('/files/images/:filename', deleteImageFile);
 
+// 获取 Markdown 文件列表
 router.get("/files/mds", getMdFiles);
 
+// 删除 Markdown 文件
 router.delete("/files/mds/:filename", deleteMdFile);
-
 
 /**
  * Upload API
@@ -199,6 +202,5 @@ router.post("/upload/md", async (ctx) => {
     ctx.status = 200;
     ctx.body = ctx.request.file;
 });
-
 
 export default router

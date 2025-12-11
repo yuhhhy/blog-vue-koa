@@ -14,11 +14,10 @@ export default defineConfig({
     vue(),
     // Gzip 压缩插件
     viteCompression({
-      verbose: true // 是否在控制台输出压缩结果
+      verbose: true, // 是否在控制台输出压缩结果
     }),
     // 图片压缩插件
     viteImagemin({
-
       // 添加过滤器排除banner.jpg
       filter: /^(?!.*banner).*\.(jpe?g|png|gif|webp|svg)$/i,
 
@@ -39,10 +38,10 @@ export default defineConfig({
       svgo: {
         plugins: [
           {
-            name: 'removeViewBox',
+            name: "removeViewBox",
           },
           {
-            name: 'removeEmptyAttrs',
+            name: "removeEmptyAttrs",
             active: false,
           },
         ],
@@ -58,8 +57,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src')
-    }
+      "@": path.resolve(__dirname, "src"),
+    },
   },
   // 只是开发环境 Vite启动的开发服务器的配置
   // 注意：这不是生产环境的服务器配置
@@ -68,10 +67,15 @@ export default defineConfig({
     // 代理请求，前端以/images开头的请求会被代理到后端的3000端口上 (http://localhost:3000/images)
     // 实际生产环境需要在 Nginx上配置代理
     proxy: {
-      '/images': {
-        target: 'http://localhost:3000', // 后端接口地址
-        changeOrigin: true
-      }
-    }
-  }
-})
+      "/images": {
+        target: "http://localhost:3000", // 后端接口地址
+        changeOrigin: true,
+      },
+      "/feed": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/feed/, "/feed.xml"),
+      },
+    },
+  },
+});
