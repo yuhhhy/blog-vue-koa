@@ -1,9 +1,15 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
     tocHtml: { // 文章目录html
         type: String,
-        default: ''
+        default: '',
     },
+})
+
+const displayToc = computed(() => {
+    return props.tocHtml || '<div style="color: gray; margin-left: 2.5em;">暂无目录</div>'
 })
 </script>
 
@@ -11,7 +17,7 @@ defineProps({
     <!-- toc: Table of Content 文章目录 -->
     <div class="toc">
         <div class="toc-header">文章目录</div>
-        <div class="toc-content" v-html="tocHtml"></div>
+        <div class="toc-content" v-html="displayToc"></div>
     </div>
 </template>
 

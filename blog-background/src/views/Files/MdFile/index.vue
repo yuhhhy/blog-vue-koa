@@ -105,7 +105,7 @@ onMounted(fetchMdList);
             class="mb-4"
         />
 
-        <el-table :data="filteredMds" v-loading="loading" stripe>
+        <el-table :data="filteredMds" v-loading="loading">
             <el-table-column prop="name" label="文件名" sortable />
             <el-table-column label="大小" width="120" sortable :sort-by="row => row.size">
                 <template #default="{ row }">{{ formatSize(row.size) }}</template>
