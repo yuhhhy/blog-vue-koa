@@ -14,6 +14,7 @@ const envConfig = {
         ],
         // 前端请求的静态资源文件路径
         staticResourceFilePath: path.join(__dirname, "../../public"),
+        baseUrl: 'http://localhost:3000',
     },
     production: {
         currentEnv: 'production',
@@ -29,6 +30,7 @@ const envConfig = {
             'http://42.192.41.225',
         ],
         staticResourceFilePath: '/var/www/public',
+        baseUrl: 'https://yuhhhy.cn',
     }
 }
 

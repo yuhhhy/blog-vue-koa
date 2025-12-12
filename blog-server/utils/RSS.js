@@ -4,11 +4,13 @@ import { Blog } from "../models/BlogSchema.js";
 import { BlogContent } from "../models/BlogContentSchema.js";
 import { siteMeta } from "../config/siteMeta.js";
 import config from "../config/env.js";
+import MarkdownIt from "markdown-it";
 
 const RSS_LIMIT = 6;
 const SLICE_LENGTH = 200;
 
 const staticResourceFilePath = config.staticResourceFilePath + "/feed.xml";
+const baseUrl = config.baseUrl;
 
 export function generateRSS(posts, siteMeta) {
     const rss = builder.create('rss', { encoding: 'UTF-8' })
@@ -45,6 +47,12 @@ export function generateRSS(posts, siteMeta) {
 }
 
 export async function generateLatestPostsRSS() {
+    const md = new MarkdownIt({
+      html: true,
+      linkify: true,
+      typographer: true,
+    });
+
     const latestBlogs = await Blog.find({})
       .sort({ createTime: -1 })
       .limit(RSS_LIMIT);
@@ -52,15 +60,16 @@ export async function generateLatestPostsRSS() {
     const posts = [];
     for (const blog of latestBlogs) {
       const blogContent = await BlogContent.findOne({ id: blog.id });
+      const htmlContent = md.render(blogContent.content);
 
       posts.push({
         title: blog.title,
         link: `${siteMeta.url}/blog/${blog.id}`,
-        content: blogContent.content,
-        excerpt: blogContent.content.slice(0, SLICE_LENGTH) + "...",
+        content: htmlContent,
+        excerpt: htmlContent.slice(0, SLICE_LENGTH) + "...",
         publishedAt: new Date(blog.createTime),
         author: blogContent.author,
-        coverImage: blogContent.coverImage,
+        coverImage: baseUrl + blogContent.coverImage,
       });
   }
   
