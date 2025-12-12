@@ -63,14 +63,6 @@ const routes = [
                 }
             }
         ]
-    },
-    {
-        path: '/404',
-        name: '404',
-        component: () => import('@/views/404/index.vue'),
-        meta: {
-            title: '404 | 一曝十寒'
-        }
     }
 ]
 
@@ -95,11 +87,6 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from) => {
-    // 添加404路由捕获
-    if (!to.matched.length) {
-        return '/404'
-    }
-
     // 设置页面标题
     if (to.meta?.title && !to.meta.dynamicTitle) {
         document.title = to.meta.title
