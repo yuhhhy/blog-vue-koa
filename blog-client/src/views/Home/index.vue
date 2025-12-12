@@ -30,7 +30,10 @@ const vLazy = {
           observer.unobserve(el);
         }
       });
-    }, { threshold: 0.01 }); // 当元素有1%进入视口时触发
+    }, { 
+      threshold: 0.01,
+      rootMargin: '200px' // 提前200px开始加载图片，提升用户体验
+    });
     
     // 开始观察元素
     observer.observe(el);
