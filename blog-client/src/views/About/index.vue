@@ -12,26 +12,26 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                     <h2>关于我的小站</h2>
                     <ul style="list-style: none;">
                         <li>
-                            <p>这里是<span class="highlight">一曝十寒</span>，一个记录前端踩坑笔记、个人成长反思和偶尔发疯文学的地方。更新频率随缘，但每篇内容都会死磕细节
+                            <p>这里是<span class="highlight">一曝十寒</span>个人博客，一个记录前端踩坑笔记、个人成长反思和偶尔发疯文学的地方，更新随缘。
                             </p>
                         </li>
                         <li>
-                            <p>我的名字是<span class="highlight">yuhhhy</span>，你可以叫我小Y、小寒（或者你觉得顺口的称呼，我不介意被叫成任何有趣的名字~）
+                            <p>或者我的 Github 账号是<span class="highlight">yuhhhy</span>，叫我这个也行（或者你觉得顺口的称呼，我不介意被叫成任何有趣的名字~）
                             </p>
                         </li>
                     </ul>
 
-                    <h2>关于我</h2>
+                    <!-- <h2>关于我</h2>
                     <ul style="list-style: none;">
-                        <li><strong>基本信息</strong>：大二学生，江西人，坐标长沙</li>
+                        <li><strong>基本信息</strong>：05年</li>
                     </ul>
 
                     <ul style="list-style: none;">
                         <li><strong>兴趣爱好</strong>：
                             <ul>
                                 <li>音乐：喜欢<span title="含电子元素的我都喜欢">电子音乐</span>、<span
-                                        title="喜欢的P主有：久眯、合目、ilem、椎名もた、40mP…">VOCALOID</span>、流行</li>
-                                <li>运动：<span title="从小就开始打了">羽毛球</span>、跑步</li>
+                                        title="喜欢的P主有：久眯、合目、ilem、椎名もた、40mP…">VOCALOID</span></li>
+                                <li>运动：会打羽毛球，曾经跑步，现在健身</li>
                                 <li>阅读：<span
                                         title="然而并没有读多少">会买很多书</span>，尤其喜欢：《2001太空漫游》、《卡拉马佐夫兄弟》、契诃夫的小说、刘慈欣的小说，近期在看漫画《火之鸟》
                                 </li>
@@ -61,7 +61,7 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                                     </ruby>吉他，研究一点作曲</li>
                             </ul>
                         </li>
-                    </ul>
+                    </ul> -->
 
                     <h2>为什么要做这个博客？</h2>
                     <ul style="list-style: none; text-indent: -1.4em;">
@@ -86,6 +86,7 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                     <h2>朋友</h2>
                     <ul>
                         <li><a href="https://v.douyin.com/h-Lzt62UbIQ/ 3@9.com :3pm" target="_blank">25020jason1728</a></li>
+                        <li><a href="https://www.idontwannago.cn/" target="_blank">idontwannago</a></li>
                     </ul>
                     <h2>可能对我有启发的博客</h2>
                     <ul>

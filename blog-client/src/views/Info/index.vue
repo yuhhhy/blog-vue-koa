@@ -51,7 +51,9 @@
 
 
                 <h1>RSS</h1>
-                <p>目前还在开发中哦……</p>
+                <p>可以通过订阅这个 <a href="https://yuhhhy.cn/feed" target="_blank">RSS链接 <img src="@/assets/images/rss-icon.svg" 
+                    alt="rss_icon"
+                    style="width: 18px; height: 18px; position: relative; top: 2px;"></a> 获取最新内容。</p>
 
                 <h1>开源协议</h1>
                 <p>网站源码在 <a href="https://github.com/yuhhhy/blog-vue-koa" target="_blank">github <img
@@ -63,6 +65,12 @@
     
                 <h1>网站时间线</h1>
                 <ul>
+                    <li>2025.12.12 网站更新RSS
+                        <img src="@/assets/images/rss-icon.svg" 
+                            alt="rss_icon"
+                            style="width: 18px; height: 18px; position: relative; top: 2px;">
+                        功能
+                    </li>
                     <li>2025.06.24 升级协议为HTTPS</li>
                     <li>2025.06.18 公安备案通过</li>
                     <li>2025.06.16 部署于腾讯云服务器</li>
