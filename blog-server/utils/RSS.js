@@ -6,7 +6,7 @@ import { siteMeta } from "../config/siteMeta.js";
 import config from "../config/env.js";
 import MarkdownIt from "markdown-it";
 
-const RSS_LIMIT = 6;
+const RSS_LIMIT = 8;
 const SLICE_LENGTH = 200;
 
 const staticResourceFilePath = config.staticResourceFilePath + "/feed.xml";
