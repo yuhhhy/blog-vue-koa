@@ -41,7 +41,6 @@ export const getImageFiles = async (ctx) => {
 export const deleteImageFile = async (ctx) => {
     const { filename } = ctx.params;
     const filePath = path.join(imageDir, filename);
-    console.log("Deleting file:", filePath);
     try {
         await fs.unlink(filePath);
         ctx.status = 200;
