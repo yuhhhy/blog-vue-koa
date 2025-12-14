@@ -46,13 +46,9 @@ const handleDelete = (row) => {
         cancelButtonText: '取消',
         type: 'warning',
     }).then(async () => {
-        try {
-            await apiDeleteMd(row.name);
-            fetchMdList();
-            ElMessage.success('删除成功');
-        } catch (error) {
-            ElMessage.error('删除失败');
-        }
+        await apiDeleteMd(row.name);
+        fetchMdList();
+        ElMessage.success('删除成功');
     });
 };
 

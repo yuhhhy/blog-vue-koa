@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { UploadFilled } from '@element-plus/icons-vue';
 import { apiGetImageList, apiDeleteImage } from '@/api/files.js';
 import cfg from '@/config/index.js';
 
@@ -41,7 +40,7 @@ const handleUploadSuccess = (response, file) => {
 
 // 文件上传失败的回调
 const handleUploadError = (error) => {
-    ElMessage.error('图片上传失败，请检查文件大小或网络');
+    ElMessage.error('图片上传失败，请检查文件大小或网络，或提升权限');
 };
 
 // 删除图片
@@ -51,13 +50,9 @@ const handleDelete = (row) => {
         cancelButtonText: '取消',
         type: 'warning',
     }).then(async () => {
-        try {
-            await apiDeleteImage(row.name);
-            fetchImageList();
-            ElMessage.success('图片删除成功');
-        } catch (error) {
-            ElMessage.error('删除失败');
-        }
+        await apiDeleteImage(row.name);
+        fetchImageList();
+        ElMessage.success('图片删除成功');
     }).catch(() => {});
 };
 

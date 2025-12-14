@@ -23,7 +23,8 @@ export function apiGetImageList() {
 export function apiDeleteImage(filename) {
   return request({
     url: `/files/images/${filename}`,
-    method: 'DELETE',
+    method: "DELETE",
+    requireAuth: true,
   });
 };
 
@@ -39,6 +40,7 @@ export function apiGetMdList() {
 export function apiDeleteMd(filename) {
   return request({
     url: `/files/mds/${filename}`,
-    method: 'DELETE',
+    method: "DELETE",
+    requireAuth: true,
   });
 }
