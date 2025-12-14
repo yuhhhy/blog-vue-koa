@@ -3,8 +3,15 @@ import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { apiGetMdList, apiDeleteMd } from '@/api/files.js';
 import cfg from '@/config/index.js';
+import { useUserStore } from '@/stores/userStore';
 
 const baseApi = cfg.baseApi;
+const userStore = useUserStore();
+
+const uploadHeaders = computed(() => ({
+    Authorization: `Bearer ${userStore.userData?.token}`,
+    'require-auth': 'true'
+}));
 
 const mdList = ref([]);
 const loading = ref(false);
@@ -83,6 +90,7 @@ onMounted(fetchMdList);
                 <span>Markdown 文件管理</span>
                 <el-upload
                     :action="`${baseApi}/upload/md`"
+                    :headers="uploadHeaders"
                     :show-file-list="false"
                     :on-success="handleUploadSuccess"
                     :on-error="handleUploadError"

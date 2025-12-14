@@ -4,11 +4,6 @@ import KEY from '../config/key.js'
 export const authMiddleware = async (ctx, next) => {
     let requireAuth = ctx.request.headers['require-auth']
 
-    // 强制对上传接口进行鉴权
-    if (ctx.path.startsWith('/api/upload')) {
-        requireAuth = true;
-    }
-
     // 如果前端请求请求头有 require-auth: true，或者访问的是上传接口，则需要校验 token
     if (requireAuth) {
 

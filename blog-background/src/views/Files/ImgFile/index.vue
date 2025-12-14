@@ -3,8 +3,15 @@ import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { apiGetImageList, apiDeleteImage } from '@/api/files.js';
 import cfg from '@/config/index.js';
+import { useUserStore } from '@/stores/userStore';
 
 const baseApi = cfg.baseApi;
+const userStore = useUserStore();
+
+const uploadHeaders = computed(() => ({
+    Authorization: `Bearer ${userStore.userData?.token}`,
+    'require-auth': 'true'
+}));
 
 const imageList = ref([]);
 const loading = ref(false);
@@ -100,6 +107,7 @@ onMounted(() => {
                 <span>图片管理</span>
                 <el-upload
                     :action="`${baseApi}/upload/image`"
+                    :headers="uploadHeaders"
                     :show-file-list="false"
                     :on-success="handleUploadSuccess"
                     :on-error="handleUploadError"
