@@ -4,7 +4,7 @@ import { ref, onMounted, nextTick } from 'vue'
 
 const posts = ref([])
 const tags = ref([])
-const MAX_COLLAPSED_HEIGHT = 200
+const MAX_COLLAPSED_HEIGHT = 150
 const tagsWrapper = ref(null)
 const isOverflow = ref(false)
 const isCollapsed = ref(false)
@@ -136,7 +136,7 @@ onMounted(() => {
     }
 
     .sidebar-tags-content-collapsed {
-        max-height: 200px;
+        max-height: 150px;
         overflow: hidden;
     }
 
