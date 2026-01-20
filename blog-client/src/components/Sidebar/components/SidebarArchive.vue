@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { apiGetBlogList } from '@/api/blog.js'
 import { getSeasonInYearFullname } from '@/utils/season'
 
-const MAX_COLLAPSED_HEIGHT = 100
+const MAX_COLLAPSED_HEIGHT = 200
 const route = useRoute()
 const postsDividedBySeason = ref(new Map())
 const isOverflow = ref(false)
@@ -122,7 +122,7 @@ onMounted(async () => {
         transition: max-height 0.25s ease;
     }
     .archive-list-collapsed {
-        max-height: 100px;
+        max-height: 200px;
         overflow: hidden;
     }
     .archive-list-collapsed::after {
