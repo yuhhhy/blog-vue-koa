@@ -14,13 +14,13 @@ const filterPostsByTag = () => {
   const tag = route.query.tag
   if (!tag) return
   
-  // 参数为日期，匹配精确到月份
+  // query参数是日期还是文章标签
   if (tag.match(/^\d{4}/)) {
     postsByTag.value = blogList.value.filter(post => {
       const seasonInYear = getSeasonInYearFullname(post.createTime)
       return seasonInYear === tag
     })
-  } else { // 参数为Tag，匹配Tag
+  } else {
     postsByTag.value = blogList.value.filter(post => {
       return post.tags.includes(tag)
     })
