@@ -31,7 +31,6 @@ const vLazy = {
         }
       });
     }, { 
-      threshold: 0.01,
       rootMargin: '200px' // 提前200px开始加载图片，提升用户体验
     });
     
