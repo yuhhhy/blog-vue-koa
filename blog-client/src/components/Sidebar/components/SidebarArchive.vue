@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiGetBlogList } from '@/api/blog.js'
+import { getSeasonInYearFullname } from '@/utils/season'
 
 const route = useRoute()
 const postsDividedBySeason = ref(new Map())
@@ -11,22 +12,11 @@ const activeSeason = computed(() => {
   return route.query.tag
 })
 
-function getSeason(date) {
-    const month = date.getMonth()
-    if (month >= 0 && month <= 2) return 'Quarter 1'
-    if (month >= 3 && month <= 5) return 'Quarter 2'
-    if (month >= 6 && month <= 8) return 'Quarter 3'
-    return 'Quarter 4'
-}
-
-
 onMounted(async () => {
     const posts = await apiGetBlogList()
     const seasonMap = postsDividedBySeason.value
     posts.forEach((post) => {
-        const year = new Date(post.createTime).getFullYear()
-        const season = getSeason(new Date(post.createTime))
-        const seasonInYear = `${year} ${season}`
+        const seasonInYear = getSeasonInYearFullname(post.createTime)
         if (!seasonMap.has(seasonInYear)) {
             seasonMap.set(seasonInYear, [post])
         } else {

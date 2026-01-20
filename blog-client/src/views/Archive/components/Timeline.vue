@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useBlogList } from '@/composables/useBlogList'
 import { computed } from 'vue'
+import { getSeasonInYearFullname } from '@/utils/season'
 
 const route = useRoute()
 const { blogList, fetchBlogList } = useBlogList()
@@ -14,9 +15,10 @@ const filterPostsByTag = () => {
   if (!tag) return
   
   // 参数为日期，匹配精确到月份
-  if (tag.match(/^\d{4}-\d{2}$/)) {
+  if (tag.match(/^\d{4}/)) {
     postsByTag.value = blogList.value.filter(post => {
-      return post.createTime.startsWith(tag)
+      const seasonInYear = getSeasonInYearFullname(post.createTime)
+      return seasonInYear === tag
     })
   } else { // 参数为Tag，匹配Tag
     postsByTag.value = blogList.value.filter(post => {
