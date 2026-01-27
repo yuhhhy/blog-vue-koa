@@ -1,0 +1,189 @@
+import { Comment } from '../models/CommentSchema.js'
+import { WebsiteData } from '../models/WebsiteDataSchema.js'
+import { Blog } from '../models/BlogSchema.js'
+import { sendEmail } from '../utils/sendEmail.js'
+
+/**
+ * Comment Controller
+ * 用于处理评论相关的操作，包括获取评论列表、创建新评论。
+ * 这些操作将直接与数据库交互，返回相应的结果。
+ */
+
+// 获取网站的所有评论
+export const getAllComments = async (ctx) => {
+    const allComments = await Comment.find({})
+
+    ctx.status = 200
+    ctx.body = allComments
+}
+
+// 获取博客的所有评论
+export const getComments = async (ctx) => {
+    const { id } = ctx.request.params
+    // 使用 lean() 获取纯对象
+    // 否则会返回 Mongoose 文档对象，包含额外的方法和属性
+    const comments = await Comment.find({
+        blogId: id,
+        $or: [
+            { reviewed: true, reviewPassed: { $ne: false } },
+            { reviewed: false }
+        ]
+    }).lean()
+
+    // 使用递归构建嵌套结构，返回对象数组给前端
+    const buildTree = (items, parentId = '-1') => {
+        return items
+            .filter(item => item.parentId === parentId)
+            .map(item => ({
+            ...item,
+            replies: buildTree(items, item.id)
+            }))
+    }
+    ctx.status = 200
+    ctx.body = buildTree(comments)
+}
+
+// 创建新评论
+export const createComment = async (ctx) => {
+    const newComment = new Comment(ctx.request.body)
+    try {
+        // 保存评论到数据库
+        await newComment.save()
+        // 如果有父评论，更新父评论的 replies 字段
+        if (newComment.hasParent) {
+            await Comment.findOneAndUpdate( {id: newComment.parentId}, { $push: { replies: newComment.id } })
+        }
+        ctx.status = 201 // 201 Created
+        ctx.body = { message: '评论创建成功', comment: newComment }   
+    } catch (error) {
+        ctx.status = 500 
+        ctx.body = { message: '评论创建失败', error: error.message }
+    }
+}
+
+// 审核评论
+export const reviewComment = async (ctx) => {
+    const { id } = ctx.params
+    const { passed } = ctx.request.body
+    const comment = await Comment.findOne({ id })
+    comment.reviewed = true
+    comment.reviewPassed = passed
+    await comment.save()
+    ctx.status = 200
+    ctx.body = { message: '审核成功' }
+}
+
+// 删除一条评论
+export const deleteComment = async (ctx) => {
+    const { id } = ctx.params
+    try {
+        const comment = await Comment.findOneAndDelete({ id })
+        // 如果评论有父评论，则从父评论的 replies 数组中移除当前评论的 id
+        if (comment.hasParent && comment.parentId) {
+            await Comment.findOneAndUpdate(
+                { id: comment.parentId },
+                { $pull: { replies: comment.id } }
+            )
+        }
+        // 获取今天的日期（零点）
+        const date = new Date(comment.createTime)
+        date.setHours(0, 0, 0, 0)
+
+        // 更新网站的评论总数和当天 dailyData 中的 count
+        await WebsiteData.findOneAndUpdate(
+            {},
+            {
+                $inc: {
+                    "comment.total": -1,
+                    "comment.dailyData.$[elem].count": -1
+                }
+            },
+            {
+                arrayFilters: [{ "elem.date": { $eq: date } }]
+            }
+        )
+        
+        ctx.status = 200
+        ctx.body = { message: '评论删除成功' }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '评论删除失败', error: error.message }
+    }
+}
+
+// 更新评论
+export const updateComment = async (ctx) => {
+    const { id } = ctx.params
+    const updateData = ctx.request.body
+
+    try {
+        const updatedComment = await Comment.findOneAndUpdate({ id }, updateData, { new: true })
+        if (!updatedComment) {
+            ctx.status = 404
+            ctx.body = { message: '评论不存在' }
+            return
+        } else {
+            ctx.status = 200
+            ctx.body = { message: '评论更新成功', comment: updatedComment }
+        }  
+    }  catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '评论更新失败', error: error.message }
+    }
+}
+
+// 获取所有待审评论
+export const getPendingComments = async (ctx) => {
+    try {
+        const pendingComments = await Comment.find({ reviewed: false }).lean()
+        ctx.status = 200
+        ctx.body = pendingComments
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '获取待审评论失败', error: error.message }
+    }
+}
+
+// 给父评论的邮箱发送邮件通知
+export const sendEmailNotification = async (ctx) => {
+    const { parentId, replyUsername, replyContent, blogId, createTime } = ctx.request.body
+    try {
+        const parentComment = await Comment.findOne({ id: parentId })
+
+        let blogLink = ''
+        let blogTitle = ''
+        
+        if (blogId == '-1') {
+            blogLink = 'http://yuhhhy.cn/about'
+            blogTitle = '一曝十寒/关于'
+        } else if (blogId == '0') {
+            blogLink = 'http://yuhhhy.cn/links'
+            blogTitle = '一曝十寒/友链'
+        } else {
+            blogLink = `http://yuhhhy.cn/blog/${blogId}`
+            const blog = await Blog.findOne({ id: blogId })
+            blogTitle = blog.title
+        }
+        
+        const data = {
+            blogTitle: blogTitle,
+            blogLink: blogLink,
+            username: parentComment.username,
+            commentTime: parentComment.createTime,
+            commentContent: parentComment.content,
+            commentEmail: parentComment.email,
+            replyTime: createTime,
+            replyUsername: replyUsername,
+            replyContent: replyContent
+        }
+
+        // 调用邮件发送服务，sendEmail 函数
+        await sendEmail(data)
+
+        ctx.status = 200
+        ctx.body = { message: '邮件通知已发送' }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = { message: '发送邮件通知失败', error: error.message }
+    }
+}

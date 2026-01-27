@@ -39,7 +39,3 @@ compose.yaml
 
 # public文件夹
 /public/
-
-# server文件夹
-/server/
-

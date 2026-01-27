@@ -64,7 +64,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "deploy.tar.gz"  # 本地文件 (在 runner 上)
           target: "/tmp"            # 远程目标目录 (在服务器上)
-      # 第七步：在服务器上执行部署命令
+      # 第八步：在服务器上执行部署命令
       - name: Deploy to Server
         uses: appleboy/ssh-action@master
         with:
@@ -86,7 +86,7 @@ jobs:
             
             echo "🔧 Installing backend dependencies..."
             cd $DEPLOY_PATH/server
-            npm install --production
+            npm install
             
             echo "🔄 Restarting services..."
             pm2 restart blog-server
