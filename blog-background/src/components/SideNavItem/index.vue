@@ -1,6 +1,6 @@
 <script setup>
 import MultilevelMenu from './components/MultilevelMenu.vue'
-import SinglelevelMenu from './components/SinglelevelMenu.vue'
+import SingleLevelMenu from './components/SingleLevelMenu.vue'
 
  defineProps({
     item: {
@@ -18,7 +18,7 @@ import SinglelevelMenu from './components/SinglelevelMenu.vue'
     <!-- v-if多级菜单 -->
     <MultilevelMenu v-if="item.children" :item="item" :index="index" />
     <!-- v-else一级菜单 -->
-    <SinglelevelMenu v-else :item="item" :index="index" />
+    <SingleLevelMenu v-else :item="item" :index="index" />
 </template>
 
 <style scoped>
