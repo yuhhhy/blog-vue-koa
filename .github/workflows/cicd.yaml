@@ -1,0 +1,77 @@
+name: Build and Deploy
+# 触发器：当代码 push 到 main 分支时触发
+on: 
+  push:
+    branches:
+      - main
+jobs:
+  build-and-deploy:
+    # 运行环境：最新的 Ubuntu 系统
+    runs-on: ubuntu-latest
+    steps:
+      # 第一步：拉取代码
+      - name: Checkout Code
+        uses: actions/checkout@v4 # 使用官方的 checkout action
+      # 第二步：设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+      # 第三步：缓存 node_modules 依赖
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      # 第四步：构建前端
+      - name: Build Frontend
+        run: |
+          echo "🚀 Building frontend..."
+          cd blog-client
+          npm install
+          npm run build
+          cd ../blog-background
+          npm install
+          npm run build
+      # 第五步：构建后端
+      - name: Build Backend
+        run: |
+          echo "🚀 Building backend..."
+          cd blog-server
+          npm install
+          cd ../
+          node scripts/blog-server-update.js
+      # 第六步：打包构建产物
+      # 把前后端的构建结果打成一个压缩包，方便传输
+      - name: Package Artifacts
+        run: |
+          echo "📦 Packaging artifacts..."
+          mkdir -p deploy
+          mv blog-client/dist ./deploy/frontend
+          mv blog-background/dist ./deploy/admin
+          mv server ./deploy/server
+          tar -zcvf deploy.tar.gz -C deploy .
+      # 第七步：部署到服务器
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}         # 服务器 IP 地址
+          username: ${{ secrets.REMOTE_USER }}      # 服务器用户名
+          key: ${{ secrets.SSH_PRIVATE_KEY }}     # SSH 私钥
+          script: |
+            scp deploy.tar.gz ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/tmp/deploy.tar.gz
+            
+            cd /var/www
+            
+            tar -zxvf /tmp/deploy.tar.gz
+
+            cd backend
+            npm install
+            
+            pm2 restart blog-server
+            systemctl reload nginx
+            
+            echo "✅ Deployment successful!"
