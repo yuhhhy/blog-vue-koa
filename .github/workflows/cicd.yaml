@@ -44,6 +44,13 @@ jobs:
           npm install
           cd ../
           node scripts/blog-server-update.js
+      # 创建 .env 文件
+      - name: Create .env file for Server
+        run: |
+          echo "📄 Creating .env file..."
+          echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" > server/.env
+          echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> server/.env
+          echo "✅ .env file created."
       # 第六步：打包构建产物
       # 把前后端的构建结果打成一个压缩包，方便传输
       - name: Package Artifacts
