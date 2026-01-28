@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { apiGetImageList, apiDeleteImage } from '@/api/files.js';
 import cfg from '@/config/index.js';
@@ -16,6 +16,8 @@ const uploadHeaders = computed(() => ({
 const imageList = ref([]);
 const loading = ref(false);
 const searchQuery = ref('');
+const currentPage = ref(1);
+const pageSize = ref(8);
 
 const filteredImages = computed(() => {
     if (!searchQuery.value) {
@@ -24,6 +26,11 @@ const filteredImages = computed(() => {
     return imageList.value.filter(img =>
         img.name.toLowerCase().includes(searchQuery.value.toLowerCase())
     );
+});
+
+const pagedImages = computed(() => {
+    const start = (currentPage.value - 1) * pageSize.value;
+    return filteredImages.value.slice(start, start + pageSize.value);
 });
 
 // 从后端获取图片列表
@@ -74,6 +81,15 @@ const handleDownload = (row) => {
     document.body.removeChild(link);
 };
 
+const handleSizeChange = (size) => {
+    pageSize.value = size;
+    currentPage.value = 1;
+};
+
+const handleCurrentChange = (page) => {
+    currentPage.value = page;
+};
+
 const formatSize = (size) => {
     if (!size || size === 0) return '0 B';
     const k = 1024;
@@ -96,6 +112,13 @@ const formatDate = (dateString) => {
 
 onMounted(() => {
     fetchImageList();
+});
+
+watch([searchQuery, filteredImages], () => {
+    const maxPage = Math.max(1, Math.ceil(filteredImages.value.length / pageSize.value));
+    if (currentPage.value > maxPage) {
+        currentPage.value = 1;
+    }
 });
 
 </script>
@@ -126,7 +149,7 @@ onMounted(() => {
             class="mb-4"
         />
 
-        <el-table :data="filteredImages" v-loading="loading" stripe empty-text="暂无图片，或无法连接到服务器">
+        <el-table :data="pagedImages" v-loading="loading" stripe empty-text="暂无图片，或无法连接到服务器">
             <el-table-column label="预览" width="120">
                 <template #default="{ row }">
                     <el-image
@@ -162,6 +185,19 @@ onMounted(() => {
                 </template>
             </el-table-column>
         </el-table>
+
+        <div class="flex justify-end mt-4">
+            <el-pagination
+                background
+                :total="filteredImages.length"
+                :current-page="currentPage"
+                :page-size="pageSize"
+                :page-sizes="[8, 12, 20, 40]"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+            />
+        </div>
     </el-card>
 </template>
 

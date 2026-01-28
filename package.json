@@ -1,15 +1,17 @@
 {
-    "name": "blog-vue-koa",
-    "type": "module",
-    "version": "1.0.0",
-    "scripts": {
-        "start": "concurrently \"npm run server\" \"npm run client\" \"npm run background\"",
-        "server": "cd blog-server && npm run serve",
-        "client": "cd blog-client && npm run dev",
-        "background": "cd blog-background && npm run background",
-        "install-all": "npm install && cd blog-client && npm install && cd ../blog-server && npm install && cd ../blog-background && npm install"
-    },
-    "devDependencies": {
-        "concurrently": "^9.1.2"
-    }
+  "name": "blog-vue-koa",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "server": "cd blog-server && npm run serve",
+    "client": "cd blog-client && npm run dev",
+    "background": "cd blog-background && npm run dev",
+    "start-all": "concurrently \"npm run server\" \"npm run client\" \"npm run background\"",
+    "start-client": "concurrently \"npm run server\" \"npm run client\"",
+    "start-admin": "concurrently \"npm run server\" \"npm run background\"",
+    "install-all": "npm install && cd blog-client && npm install && cd ../blog-server && npm install && cd ../blog-background && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
 }
