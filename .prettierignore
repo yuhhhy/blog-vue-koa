@@ -1,0 +1,8 @@
+.gitignore
+.github/
+.vscode/
+package.json
+package-lock.json
+node_modules/
+exports/
+docs/

@@ -12,6 +12,7 @@
     "install-all": "npm install && cd blog-client && npm install && cd ../blog-server && npm install && cd ../blog-background && npm install"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "rollup-plugin-visualizer": "^6.0.5"
   }
 }

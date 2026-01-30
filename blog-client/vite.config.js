@@ -6,6 +6,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import viteImagemin from 'vite-plugin-imagemin'
+import { visualizer } from "rollup-plugin-visualizer"
 
 
 // https://vite.dev/config/
@@ -54,6 +55,7 @@ export default defineConfig({
     Components({
       resolvers: [ElementPlusResolver()],
     }),
+    visualizer(),
   ],
   resolve: {
     alias: {
@@ -78,4 +80,4 @@ export default defineConfig({
       },
     },
   },
-});
+})
