@@ -55,12 +55,12 @@ onMounted(async () => {
                 </ul>
 
                 <p>友链申请格式与本站信息如下：</p>
-                <pre><code>
-    <span>名称: </span><span>"一曝十寒"</span>
-    <span>简介: </span><span>"纵使不安彷徨，即便茫然无措，也依然迈步前行"</span>
-    <span>网站: </span><span>"https://yuhhhy.cn/"</span>
-    <span>头像: </span><span>"https://yuhhhy.cn/images/avatar.jpg"</span>
-                </code></pre>
+                <ul>
+                    <li>名称：一曝十寒</li>
+                    <li>简介：纵使不安彷徨，即便茫然无措，也依然迈步前行</li>
+                    <li>网站：https://yuhhhy.cn/</li>
+                    <li>头像：https://yuhhhy.cn/images/avatar.jpg</li>
+                </ul>
 
                 <h2>申请方式</h2>
                 <ol>

@@ -80,9 +80,10 @@ const onSubmit = () => {
 const doSubmit = async () => {
   try {
     let avatarURL = '/src/assets/images/user_default.png'
+    const hasCustomAvatar = form.avatar.trim().length > 0
 
-    // 如果用户选择了自定义头像URL，则使用它，否则使用默认头像
-    if (avatarType.value === 'custom' && form.avatar) {
+    // 如果用户填写了自定义头像URL，则使用它，否则使用默认头像
+    if (hasCustomAvatar) {
       // 验证URL格式
       try {
         new URL(form.avatar) // 如果不是有效的URL会抛出错误
@@ -120,6 +121,8 @@ const doSubmit = async () => {
     form.website = ''
     form.content = ''
     form.avatar = ''
+    showAvatarOptions.value = false
+    previewAvatar.value = '/images/user_default.png'
     // ElMessage提示信息
     ElMessage.success('评论成功！')
     
@@ -131,7 +134,7 @@ const doSubmit = async () => {
 
 
     // 如果用户选择了默认头像或没有选择头像，则尝试自动获取头像
-    if (avatarType.value === 'default' || avatarType.value === '') {
+    if (!hasCustomAvatar) {
       // 尝试获取Grvatar头像，更新新评论的头像
       const avatarSrc = await getAvatar(userEmail)
 
@@ -231,14 +234,26 @@ const placeholderText = computed(() => {
 })
 
 
-// 选择头像生成方式：自定义URL或默认
-const avatarType = ref('')
+// 头像预览和自定义头像URL输入框
 const previewAvatar = ref('/images/user_default.png')
+const showAvatarOptions = ref(false)
+const hasEmail = computed(() => form.email.trim().length > 0)
+
+const toggleAvatarOptions = () => {
+  showAvatarOptions.value = !showAvatarOptions.value
+}
+
+watch(hasEmail, (value) => {
+  if (!value) {
+    showAvatarOptions.value = false
+  }
+})
+
 // 监听input框的变化，自动更新头像URL
 const checkCostumAvatar = async () => {
-  if (avatarType.value === 'custom' && form.avatar) {
+  if (form.avatar) {
     previewAvatar.value = form.avatar
-  } else if ((avatarType.value === 'default' || avatarType.value === '') && form.email) {
+  } else if (form.email) {
     previewAvatar.value = await getAvatar(form.email)
   } else {
     previewAvatar.value = '/images/user_default.png'
@@ -252,16 +267,24 @@ const checkCostumAvatar = async () => {
 
     <div class="comment-form-input-row">
       <!-- 昵称 -->
-      <el-form-item prop="username" class="comment-form-username">
+      <el-form-item prop="username" :class="['comment-form-username', { 'has-avatar': hasEmail }]">
         <el-input
           v-model="form.username"
           placeholder="昵称*"
         />
-        <img 
-          :src="previewAvatar" 
-          alt="" 
-          class="input-icon"
-        />
+        <transition name="avatar-slide-fade">
+          <img
+            v-if="hasEmail"
+            :src="previewAvatar"
+            alt=""
+            class="input-icon"
+            role="button"
+            tabindex="0"
+            @click="toggleAvatarOptions"
+            @keydown.enter="toggleAvatarOptions"
+            @keydown.space.prevent="toggleAvatarOptions"
+          />
+        </transition>
       </el-form-item>
       <!-- 邮箱 -->
       <el-form-item prop="email">
@@ -278,25 +301,16 @@ const checkCostumAvatar = async () => {
           placeholder="网站 http(s)://" 
         />
       </el-form-item>
-      <!-- 头像选择器 -->
-      <el-form-item>
-        <div class="avatar-selector">
-          <el-radio-group v-model="avatarType" class="avatar-radio-group" @change="checkCostumAvatar">
-            <el-radio-button value="default">默认获取</el-radio-button>
-            <el-radio-button value="custom">自定义URL</el-radio-button>
-          </el-radio-group>
-        </div>
-      </el-form-item>
-
       <!-- 自定义头像URL输入框 -->
-      <el-form-item v-if="avatarType === 'custom'">
-        <el-input
-          v-model="form.avatar"
-          placeholder="自定义头像URL"
-          :disabled="avatarType !== 'custom'"
-          @blur="checkCostumAvatar"
-        />
-      </el-form-item>
+      <transition name="avatar-options-slide-fade">
+        <el-form-item v-if="hasEmail && showAvatarOptions">
+          <el-input
+            v-model="form.avatar"
+            placeholder="自定义头像URL"
+            @blur="checkCostumAvatar"
+          />
+        </el-form-item>
+      </transition>
 
     </div>
 
@@ -402,6 +416,7 @@ const checkCostumAvatar = async () => {
   .comment-form {
     margin-top: 10px;
     margin-bottom: 10px;
+    font-family: var(--font-serif);
 
     /* 表单输入框样式 */
     .comment-form-input-row {
@@ -427,9 +442,10 @@ const checkCostumAvatar = async () => {
           clip-path: circle(50%);
           overflow: hidden;
           object-fit: contain;
+          cursor: pointer;
         }
 
-        :deep(.el-input__inner) {
+        &.has-avatar :deep(.el-input__inner) {
           padding-left: 26px; /* 留出空间给头像图标 */
         }
       }
@@ -445,6 +461,7 @@ const checkCostumAvatar = async () => {
         :deep(.el-input__inner) {
           color: var(--light-dark);
           background-color: var(--white);
+          font-family: var(--font-serif);
           min-height: 32px;
           width: 100%;
           height: 100%;
@@ -461,52 +478,40 @@ const checkCostumAvatar = async () => {
             }
         }
       }
-      
-      /* 头像选择器样式 */
-      .avatar-selector {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
+    }
 
-        .avatar-radio-group {
-          width: 100%;
-          
-          :deep(.el-radio-button) {
-            flex: 1;
-            
-            &:first-child .el-radio-button__inner {
-              border-radius: 4px 0 0 4px;
-              border-right: none; // 去掉第一个按钮的右边框
-            }
-            
-            &:last-child .el-radio-button__inner {
-              border-radius: 0 4px 4px 0;
-            }
-            
-            .el-radio-button__inner {
-              width: 100%;
-              font-size: 14px;
-              padding: 6px 0;
-              border: 2px solid var(--lightgrey);
-              background-color: var(--white);
-              color: var(--light-dark);
+    .avatar-slide-fade-enter-active,
+    .avatar-slide-fade-leave-active {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
 
+    .avatar-slide-fade-enter-from,
+    .avatar-slide-fade-leave-to {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
 
-              &:hover {
-                background-color: var(--icon-background);
-              }
-            }
-            
-            &.is-active .el-radio-button__inner {
-              background-color: var(--blue);
-              border-color: var(--blue);
-              color: white;
-              box-shadow: none;
-            }
-          }
-        }
-      }
+    .avatar-slide-fade-enter-to,
+    .avatar-slide-fade-leave-from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .avatar-options-slide-fade-enter-active,
+    .avatar-options-slide-fade-leave-active {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .avatar-options-slide-fade-enter-from,
+    .avatar-options-slide-fade-leave-to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .avatar-options-slide-fade-enter-to,
+    .avatar-options-slide-fade-leave-from {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     /* 评论输入框样式 */
@@ -515,6 +520,7 @@ const checkCostumAvatar = async () => {
       :deep(.el-textarea__inner) {
         color: var(--light-dark);
         background-color: var(--white);
+        font-family: var(--font-serif);
         box-shadow:none;  // el-textarea的边框是box-shadow
         border: 2px solid var(--lightgrey);
         font-size: 15px;
