@@ -19,12 +19,12 @@ onMounted(async () => {
             <!-- 内容区域 -->
             <div class="links-article-content">
 
-                <h1>介绍语</h1>
+                <h4>介绍语</h4>
                 <p>很高兴在网络世界的角落里遇见你！这个小小的友链空间，是我用来存放那些在浩瀚信息流中打动过我、带给我灵感或共鸣的地方。</p>
                 <p>我珍视真诚的分享、独特的见解和持续创作的坚持。如果你也建立了一个小小的精神角落，记录生活、表达思考、分享热爱，并且你觉得我们有某种契合，欢迎留言和互加友链。</p>
                 <p>我会认真拜访你的“空间”，如果感觉有缘分，就会将你加入我的友链列表。即使暂时不互相加为友链，也期待与你成为朋友或交流想法！感谢每一位愿意分享小站的朋友！</p>
 
-                <h1>朋友们</h1>
+                <h4>朋友们</h4>
                 <p>以下是目前与我互相陪伴的站点，点击头像即可探索他们的世界～ 如果你也想出现在这里，请继续往下看规则</p>
                 <!-- 友链展示区域 -->
                 <div class="links-display">
@@ -45,7 +45,7 @@ onMounted(async () => {
                     </div>
                 </div>
 
-                <h2>友链申请规则</h2>
+                <h4>友链申请规则</h4>
                 <ul>
                     <li>您的网站在中国大陆区域能够正常访问（如果使用海外服务器，建议启用CDN加速）</li>
                     <li>您的网站需要需与我的博客主题有一定关联性（如前端技术、个人成长、生活记录），或更新稳定</li>
@@ -55,14 +55,16 @@ onMounted(async () => {
                 </ul>
 
                 <p>友链申请格式与本站信息如下：</p>
+                <blockquote>
                 <ul>
                     <li>名称：一曝十寒</li>
                     <li>简介：纵使不安彷徨，即便茫然无措，也依然迈步前行</li>
                     <li>网站：https://yuhhhy.cn/</li>
                     <li>头像：https://yuhhhy.cn/images/avatar.jpg</li>
                 </ul>
+                </blockquote>
 
-                <h2>申请方式</h2>
+                <h4>申请方式</h4>
                 <ol>
                     <li>在当前页面评论区评论</li>
                     <address>
@@ -228,6 +230,20 @@ onMounted(async () => {
 
                 address {
                     font-style: normal;
+                }
+
+                blockquote {
+                    border-left: 4px solid var(--blue);
+                    margin: 1em 0;
+                    padding: 0.6em 1em;
+                    background: var(--links-background);
+                    border-radius: 0 4px 4px 0;
+
+                    ul {
+                        margin: 0;
+                        padding-left: 0;
+                        list-style: none;
+                    }
                 }
             }
         }

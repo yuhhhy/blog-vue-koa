@@ -65,6 +65,7 @@
     
                 <h1>网站时间线</h1>
                 <ul>
+                    <li>2026.05.09 在 Claude，GPT，和 DeepSeek 的帮助下，对网站进行了样式优化</li>
                     <li>2025.12.12 网站更新RSS
                         <img src="@/assets/images/rss-icon.svg" 
                             alt="rss_icon"

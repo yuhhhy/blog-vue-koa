@@ -5,6 +5,7 @@ import ArticleRecommended from './components/ArticleRecommended.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
 
 import MarkdownIt from 'markdown-it'
+import DOMPurify from 'dompurify'
 import { ref, onMounted, watch, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
@@ -27,6 +28,41 @@ const renderBlogContent = () => {
         typographer: true,
     })
 
+    const defaultFenceRender = md.renderer.rules.fence
+
+    const parseFenceMeta = (meta = '') => {
+        return meta.split(/\s+/).filter(Boolean).reduce((result, item) => {
+            const [key, ...valueParts] = item.split('=')
+            if (!key || !valueParts.length) return result
+
+            result[key] = valueParts.join('=').replace(/^["']|["']$/g, '')
+            return result
+        }, {})
+    }
+
+    const renderAnimationPlaceholder = (animationProps = {}) => {
+        return `<div data-animation data-props="${md.utils.escapeHtml(encodeURIComponent(JSON.stringify(animationProps)))}"></div>`
+    }
+
+    md.renderer.rules.fence = function(tokens, idx, options, env, self) {
+        const token = tokens[idx]
+        const info = token.info.trim()
+        const [blockType, ...meta] = info.split(/\s+/)
+
+        if (blockType === 'animation') {
+            return renderAnimationPlaceholder({
+                ...parseFenceMeta(meta.join(' ')),
+                html: token.content
+            })
+        }
+
+        if (defaultFenceRender) {
+            return defaultFenceRender(tokens, idx, options, env, self)
+        }
+
+        return self.renderToken(tokens, idx, options)
+    }
+
     // 添加图片懒加载
     const defaultRender = md.renderer.rules.image || function(tokens, idx, options, env, self) {
         return self.renderToken(tokens, idx, options)
@@ -38,7 +74,9 @@ const renderBlogContent = () => {
         return defaultRender(tokens, idx, options, env, self)
     }
 
-    htmlContent.value = md.render(blogData.value.content)
+    htmlContent.value = DOMPurify.sanitize(md.render(blogData.value.content), {
+        ADD_ATTR: ['data-animation', 'data-props']
+    })
 }
 
 // 获取文章内容

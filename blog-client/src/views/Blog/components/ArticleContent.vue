@@ -1,20 +1,61 @@
 <script setup>
 import Prism from 'prismjs'
 import 'prismjs/themes/prism.css'
-import { onUpdated } from 'vue'
+import { createApp, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import SandboxAnimationWidget from './sandbox/SandboxAnimationWidget.vue'
 
-defineProps(['htmlContent'])
+const props = defineProps(['htmlContent'])
+const contentRef = ref(null)
+const mountedAnimations = []
 
-onUpdated(() => {
-    document.querySelectorAll('pre code').forEach((block) => {
+const highlightCode = () => {
+    contentRef.value?.querySelectorAll('pre code').forEach((block) => {
         Prism.highlightElement(block)
     })
-})
+}
+
+const cleanupAnimations = () => {
+    while (mountedAnimations.length) {
+        mountedAnimations.pop().unmount()
+    }
+}
+
+const parseAnimationProps = (rawProps) => {
+    if (!rawProps) return {}
+
+    try {
+        return JSON.parse(decodeURIComponent(rawProps))
+    }
+    catch (error) {
+        console.warn('动画参数解析失败', error)
+        return {}
+    }
+}
+
+const mountSandboxAnimations = () => {
+    cleanupAnimations()
+
+    contentRef.value?.querySelectorAll('[data-animation]').forEach((target) => {
+        const app = createApp(SandboxAnimationWidget, parseAnimationProps(target.dataset.props))
+        app.mount(target)
+        mountedAnimations.push(app)
+    })
+}
+
+const refreshContentEnhancements = async () => {
+    await nextTick()
+    highlightCode()
+    mountSandboxAnimations()
+}
+
+watch(() => props.htmlContent, refreshContentEnhancements, { immediate: true })
+onMounted(refreshContentEnhancements)
+onBeforeUnmount(cleanupAnimations)
 </script>
 
 <template>
     <article class="article-content">
-        <div v-html="htmlContent" class="markdown-content">
+        <div ref="contentRef" v-html="htmlContent" class="markdown-content">
         </div>
     </article>
 </template>
