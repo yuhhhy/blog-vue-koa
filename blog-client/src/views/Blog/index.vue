@@ -6,12 +6,13 @@ import ArticleFooter from './components/ArticleFooter.vue'
 
 import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
 import { apiGetBlogContent, apiUpdateBlogViewCount } from '@/api/blogContent.js'
 import { apiUpdateWebsiteView } from '@/api/websiteData.js'
 import { getFormatDate } from '@/utils/date.js'
+import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import config from '@/config/index.js'
 
 const route = useRoute()
@@ -97,6 +98,15 @@ async function updateBlogViewCount() {
     blogData.value.viewCount = data.viewCount
 }
 
+function reportBlogView() {
+    runAfterPageIdle(() => {
+        Promise.allSettled([
+            updateBlogViewCount(),
+            apiUpdateWebsiteView()
+        ])
+    })
+}
+
 // 监听路由参数变化
 watch(
   () => route.params.id,
@@ -108,19 +118,11 @@ watch(
       
       // 重新获取数据
       await getBlogContent()
-      await updateBlogViewCount()
-      await apiUpdateWebsiteView()
+      reportBlogView()
     }
   },
   { immediate: true } // 立即执行一次
 )
-
-onMounted(() => {
-    getBlogContent()
-    updateBlogViewCount()
-    apiUpdateWebsiteView()
-})
-
 
 // 设置页面头部信息
 const pageTitle = computed(() => blogData.value?.title ? `${blogData.value.title} | 一曝十寒` : '博客文章 | 一曝十寒')

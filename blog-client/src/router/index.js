@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { apiCreateVisitor } from '@/api/visitor.js'
 import { apiUpdateWebsiteView } from "@/api/websiteData.js"
 import Layout from '@/views/Layout/index.vue'
+import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 
 const routes = [
     {
@@ -92,12 +93,13 @@ router.afterEach((to, from) => {
         return
     }
 
-    // 延迟执行统计请求，确保页面渲染完成
-    setTimeout(async () => {
+    runAfterPageIdle(() => {
         const { role, page } = { role: 'client', page: to.name }
-        await apiCreateVisitor({ role, page })
-        await apiUpdateWebsiteView()
-    }, 3000) // 延迟3秒执行
+        Promise.allSettled([
+            apiCreateVisitor({ role, page }),
+            apiUpdateWebsiteView()
+        ])
+    })
 })
 
 export default router

@@ -10,7 +10,9 @@ const envConfig = {
         port: 3000,
         allowOrigins: [
             'http://localhost:8080',
+            'http://localhost:8081',
             'http://localhost:8096',
+            'http://localhost:8097',
         ],
         // 前端请求的静态资源文件路径
         staticResourceFilePath: path.join(__dirname, "../../public"),

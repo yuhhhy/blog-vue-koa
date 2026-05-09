@@ -4,8 +4,8 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import './assets/styles/index.scss'
-// 按需引入失效，引入Elmessage的css样式文件
-import 'element-plus/theme-chalk/el-message.css';
+import { loadCjkFontWhenIdle } from './utils/loadCjkFont.js'
+import 'element-plus/es/components/message/style/css';
 
 
 const pinia = createPinia()
@@ -17,3 +17,4 @@ app.use(router)
 app.use(head)
 
 app.mount('#app')
+loadCjkFontWhenIdle()

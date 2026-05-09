@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message/index.mjs'
 import { apiGetWebsiteData } from '@/api/websiteData.js'
+import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 
 const runTime = ref(0)
 const totalPosts = ref(0)
@@ -42,7 +43,9 @@ const copyToClipboard = async (text, type) => {
 
 onMounted(() => {
     runTime.value = getRunTime('2025-06-16')
-    getWebsiteData()
+    runAfterPageIdle(() => {
+        getWebsiteData().catch(() => {})
+    }, 2500)
 })
 
 </script>

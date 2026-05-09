@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message/index.mjs'
 import { apiCreateComment, apiUpdateComment, apiSendEmailNotification } from '@/api/comment.js'
 import { apiUpdateWebsiteComment } from '@/api/websiteData.js'
 import { getAvatar } from '@/utils/avatar'

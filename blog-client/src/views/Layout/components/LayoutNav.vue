@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
+import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 
 const themeStore = useThemeStore()
 
@@ -16,10 +17,9 @@ onMounted(() => {
     // document.documentElement 指向根元素 <html>
     document.documentElement.classList.add(themeStore.theme)
 
-    // 延迟访问量统计，等待其他资源加载完成
-    setTimeout(() => {
-        apiUpdateWebsiteVisit()
-    }, 3000) // 延迟3秒执行
+    runAfterPageIdle(() => {
+        apiUpdateWebsiteVisit().catch(() => {})
+    })
 })
 </script>
 
