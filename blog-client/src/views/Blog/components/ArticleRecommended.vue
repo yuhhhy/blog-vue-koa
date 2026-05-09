@@ -2,7 +2,6 @@
 import { ref, watch } from 'vue'
 import { apiGetPrevArticle, apiGetNextArticle } from '@/api/blog.js'
 import { useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const prevBlog = ref({})
@@ -30,14 +29,6 @@ watch(() => route.params.id, async (newId) => {
   }
 }, { immediate: true })  // 这会在组件挂载时自动执行一次
 
-const handlePrevClick = () => {
-  ElMessage.warning('已经是最新一篇博客')
-}
-
-const handleNextClick = () => {
-  ElMessage.warning('已经是最后一篇博客')
-}
-
 </script>
 
 <template>
@@ -61,17 +52,7 @@ const handleNextClick = () => {
       </RouterLink>
     </template>
     <template v-else>
-      <div 
-        class="article-nav"
-        :style="{ backgroundImage: 'none'}"
-        @click="handlePrevClick">
-        <div class="nav-label">上一篇</div>
-        <div class="nav-content">
-          <div class="title">
-            已经是最新一篇博客
-          </div>
-        </div>
-      </div>
+      <div class="article-nav article-nav--placeholder" aria-hidden="true"></div>
     </template>
 
     <!-- 下一篇 -->
@@ -94,17 +75,7 @@ const handleNextClick = () => {
       </RouterLink>
     </template>
     <template v-else>
-      <div 
-        class="article-nav"
-        :style="{ backgroundImage:'none' }"
-        @click="handleNextClick">
-        <div class="nav-label">下一篇</div>
-        <div class="nav-content">
-          <div class="title">
-            已经是最后一篇博客
-          </div>
-        </div>
-      </div>
+      <div class="article-nav article-nav--placeholder" aria-hidden="true"></div>
     </template>
   </div>
 
@@ -173,6 +144,11 @@ const handleNextClick = () => {
     &:hover {
       box-shadow: 2px 2px 2px var(--black);
       transform: translateY(-2px);
+    }
+
+    &--placeholder {
+      visibility: hidden;
+      pointer-events: none;
     }
   }
 }
