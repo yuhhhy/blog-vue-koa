@@ -8,9 +8,9 @@
     pre[class*="language-"] {
         color: var(--code-color);
         background: none;
-        text-shadow: 0 1px #fff;
+        text-shadow: none;
         font-family: var(--font-mono);
-        font-size: 1em;
+        font-size: 0.875rem;
         text-align: left;
         white-space: pre;
         word-spacing: normal;

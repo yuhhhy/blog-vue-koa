@@ -160,10 +160,10 @@ useHead({
             <div class="blog-aritcle">
                 <!-- 文章主体内容区域 -->
                 <ArticleContent :htmlContent="htmlContent" class="blog-aritcle-item"></ArticleContent>
-                <!-- 上一篇、下一篇、推荐文章 -->
-                <ArticleRecommended class="blog-aritcle-item"></ArticleRecommended>
                 <!-- 文章底部相关信息和评论区域 -->
                 <ArticleFooter class="blog-aritcle-item"></ArticleFooter>
+                <!-- 上一篇、下一篇、推荐文章 -->
+                <ArticleRecommended class="blog-aritcle-item"></ArticleRecommended>
             </div>
         </div>
     </div>

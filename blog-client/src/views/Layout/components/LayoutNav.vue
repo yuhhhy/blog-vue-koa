@@ -26,10 +26,9 @@ onMounted(() => {
 <template>
     <div class="nav">
         <div class="nav-links">
-            
-            <RouterLink to="/home"><span class="iconfont icon-home" style="font-size: 15px; margin-right: 7px;"></span>主页</RouterLink>
-            <RouterLink to="/about"><span class="iconfont icon-svgabout" style="font-size: 15px; margin-right: 7px;"></span>关于</RouterLink>
-            <RouterLink to="/links"><span class="iconfont icon-link" style="font-size: 15px; margin-right: 6px;"></span>友链</RouterLink>
+            <RouterLink to="/home">主页</RouterLink>
+            <RouterLink to="/about">关于</RouterLink>
+            <RouterLink to="/links">友链</RouterLink>
         </div>
         <button @click="toggleTheme" aria-label="theme-toggle-button" class="theme-toggle">
             <span class="iconfont icon-sun themeIcon" v-if="themeStore.theme === 'light'"></span>
@@ -70,7 +69,7 @@ onMounted(() => {
             justify-content: center;
             align-items: center;
             height: 100%;
-            gap: 50px;
+            gap: 80px;
         }
     }
 

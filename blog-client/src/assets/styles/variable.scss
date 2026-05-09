@@ -11,8 +11,8 @@
     --quote-color: #666;
     --code-color: #000;
     --code-background: #f5f2f0;
-    --code-inline: #757575;
-    --code-background-inline: #FCFCFD;
+    --code-inline: #c7254e;
+    --code-background-inline: #f9f2f4;
     --reply-border: #ECEEF2;
     --submit-button: #909090;
     --icon-background :#F2F3F5;
@@ -41,7 +41,7 @@
 }
 
 :root.dark {
-    --white: #333;
+    --white: #222;
     --light: #222;
     --lightgrey: #939393;
     --darkgrey : #000;
@@ -51,10 +51,10 @@
     
     --border-color: #333;
     --quote-color: #999;
-    --code-color: #000;
-    --code-background: #f5f2f0;
-    --code-inline: #d8e8ff;
-    --code-background-inline: #54627a;
+    --code-color: #abb2bf;
+    --code-background: #282c34;
+    --code-inline: #f0c674;
+    --code-background-inline: #2d2d2d;
     --reply-border: #666;
     --submit-button: #cccfd4;
     --icon-background: #cccfd4;

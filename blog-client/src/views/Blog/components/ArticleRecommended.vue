@@ -84,7 +84,7 @@ watch(() => route.params.id, async (newId) => {
 <style scoped lang="scss">
 .recommend-container {
   display: flex;
-  height: 100px;
+  height: 80px;
   width: 100%;
   padding: 0 30px;
 
@@ -137,12 +137,10 @@ watch(() => route.params.id, async (newId) => {
     }
 
     &:first-child:hover {
-      box-shadow: -2px 2px 2px var(--black);
       transform: translateY(-2px);
     }
   
     &:hover {
-      box-shadow: 2px 2px 2px var(--black);
       transform: translateY(-2px);
     }
 
