@@ -20,8 +20,6 @@
 ## 项目预览
 在线地址: 
 http://yuhhhy.cn
-在线地址（后台管理）: 
-http://admin.yuhhhy.cn
 
 ### 首页
 ![home](/images/doc_md-1.jpg)
