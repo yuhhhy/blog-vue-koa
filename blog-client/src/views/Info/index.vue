@@ -106,20 +106,15 @@
 <style lang="scss" scoped>
 .info-container {
     background-color: var(--white);
+    min-height: calc(100vh - 75px);
 
     .info {
-        background-color: var(--white);
-        padding: 40px calc(17vw + 10px);
-        display: flex;
+        width: min(960px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 40px 0;
         height: 100%;
 
         .info-article {
-            background-color: var(--white);
-            border-radius: 10px;
-            flex: 1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-
             .info-article-content {
                 padding: 0 30px 30px 30px;
                 line-height: 1.8;
@@ -204,17 +199,14 @@
             }
         }
         @media (max-width: 768px) {
-            padding: 0;
-            flex-direction: column;
+            width: calc(100% - 30px);
+            padding: 20px 0;
 
             .info-article {
-                margin-right: 0;
-                margin-bottom: 20px;
-
                 .info-article-content {
                     padding-bottom: 30px;
-                    padding-left: 30px;
-                    padding-right: 30px;
+                    padding-left: 15px;
+                    padding-right: 15px;
 
                     h1, h2, h3, h4 
                     {

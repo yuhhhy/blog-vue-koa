@@ -80,8 +80,6 @@ const copyToClipboard = async (text, type) => {
             img {
                 width: 15px;
                 height: 15px;
-                position: relative;
-                top: 2px;
             }
         }
     }

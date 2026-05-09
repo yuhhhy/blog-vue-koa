@@ -147,7 +147,6 @@ useHead({
             <div class="blog-title">{{ blogData.title }}</div>
             <div class="blog-info">
                 <span>创建时间 {{ getFormatDate(blogData.createTime) }} </span>
-                <div class="blog-author">作者 {{ blogData.author }}</div>
                 <div class="blog-word-count">字数 {{ blogData.wordCount }}</div>
             </div>
         </div>
