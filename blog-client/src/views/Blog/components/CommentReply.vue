@@ -2,8 +2,10 @@
 /**
  * 这是一个递归组件！
  */
-import CommentForm from './CommentForm.vue'
+import { defineAsyncComponent } from 'vue'
 import { getFormatDate } from '@/utils/date'
+
+const CommentForm = defineAsyncComponent(() => import('./CommentForm.vue'))
 
 // 添加parseEmoji参数接收表情解析函数
 const props = defineProps({

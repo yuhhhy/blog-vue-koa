@@ -1,46 +1,86 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { apiGetBlogList } from '@/api/blog.js'
+import { onBeforeUnmount, onMounted } from 'vue'
+import { useBlogList } from '@/composables/useBlogList.js'
 
-const blogList = ref([])
+const { blogList, fetchBlogList } = useBlogList()
+let lazyImageObserver
 
-async function getBlogList() {
-    const response = await apiGetBlogList()
-    blogList.value = response
+const getLazyValue = (binding) => {
+  if (typeof binding.value === 'string') {
+    return {
+      src: binding.value,
+      immediate: binding.modifiers.immediate,
+    }
+  }
+
+  return {
+    src: binding.value?.src,
+    immediate: binding.value?.immediate || binding.modifiers.immediate,
+  }
+}
+
+const loadBackgroundImage = (el, src) => {
+  if (src) {
+    el.style.backgroundImage = `url(${src})`
+  }
+}
+
+const getLazyImageObserver = () => {
+  lazyImageObserver ||= new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return
+
+      loadBackgroundImage(entry.target, entry.target.dataset.src)
+      lazyImageObserver.unobserve(entry.target)
+    })
+  }, {
+    rootMargin: '200px'
+  })
+
+  return lazyImageObserver
 }
 
 // 创建图片懒加载指令，支持非懒加载选项
 const vLazy = {
   mounted(el, binding) {
-    const shouldLoadImmediately = binding.modifiers.immediate;
-    
-    // 如果需要立即加载，直接设置背景图片并返回
-    if (shouldLoadImmediately) {
-      el.style.backgroundImage = `url(${binding.value})`;
+    const { src, immediate } = getLazyValue(binding)
+
+    if (immediate) {
+      loadBackgroundImage(el, src)
       return;
     }
-    
-    // 否则使用懒加载
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) { // 当元素进入视口
-          el.style.backgroundImage = `url(${binding.value})`;
-          // 解除观察
-          observer.unobserve(el);
-        }
-      });
-    }, { 
-      rootMargin: '200px' // 提前200px开始加载图片，提升用户体验
-    });
-    
-    // 开始观察元素
-    observer.observe(el);
+
+    el.dataset.src = src
+    getLazyImageObserver().observe(el)
+  },
+  updated(el, binding) {
+    const { src, immediate } = getLazyValue(binding)
+    if (el.dataset.src === src) return
+
+    lazyImageObserver?.unobserve(el)
+    el.style.backgroundImage = ''
+
+    if (immediate) {
+      loadBackgroundImage(el, src)
+      return
+    }
+
+    el.dataset.src = src
+    getLazyImageObserver().observe(el)
+  },
+  unmounted(el) {
+    lazyImageObserver?.unobserve(el)
   }
 }
 
 onMounted(() => {
     // 获取后台数据
-    getBlogList();
+    fetchBlogList();
+})
+
+onBeforeUnmount(() => {
+    lazyImageObserver?.disconnect()
+    lazyImageObserver = undefined
 })
 </script>
 
@@ -54,7 +94,7 @@ onMounted(() => {
                     <!-- 图片使用懒加载 -->
                     <div 
                       class="blog-img" 
-                      v-lazy="blog.coverImage"
+                      v-lazy="{ src: blog.coverImage, immediate: index === 0 }"
                     ></div>
                     <div class="blog-intro">
                         <div class="blog-title">{{ blog.title }}</div>

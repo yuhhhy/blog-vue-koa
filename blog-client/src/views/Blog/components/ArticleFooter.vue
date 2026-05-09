@@ -1,11 +1,12 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getFormatDate } from '@/utils/date'
 import { apiGetComments } from '@/api/comment'
-import CommentForm from './CommentForm.vue'
 import CommentReply from './CommentReply.vue'
 import DOMPurify from 'dompurify' // 用于安全处理HTML内容
+
+const CommentForm = defineAsyncComponent(() => import('./CommentForm.vue'))
 
 // 导入表情包图片
 const biliEmojisFiles = import.meta.glob('/src/assets/images/bili-emojis/*.png', { eager: true })
@@ -76,15 +77,11 @@ const replyUpdate = () => {
 }
 
 // 组件加载时获取评论 - 不需要延迟
-watch(() => route.params.id, (newId) => {
-  if (newId) {
+watch(() => route.params.id || props.pageId, (pageId) => {
+  if (pageId) {
     getComments(0)
   }
 }, { immediate: true })
-
-onMounted(() => {
-  getComments(0) // 初次加载不需要延迟
-})
 </script>
 
 <template>
@@ -138,7 +135,7 @@ onMounted(() => {
   <span class="top-form" v-else @click="toggleCommentForm">发表评论</span>
   <!-- parentId = '-1' 表示没有 parent 评论 -->
   <CommentForm
-    v-show="formState"
+    v-if="formState"
     :comments="comments"
     :hasParent="false"
     :parentId="'-1'"

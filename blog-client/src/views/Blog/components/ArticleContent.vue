@@ -1,15 +1,27 @@
 <script setup>
-import Prism from 'prismjs'
-import 'prismjs/themes/prism.css'
-import { createApp, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { createApp, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import SandboxAnimationWidget from './sandbox/SandboxAnimationWidget.vue'
 
 const props = defineProps(['htmlContent'])
 const contentRef = ref(null)
 const mountedAnimations = []
+let prismLoadPromise
 
-const highlightCode = () => {
-    contentRef.value?.querySelectorAll('pre code').forEach((block) => {
+const loadPrism = () => {
+    prismLoadPromise ||= Promise.all([
+        import('prismjs'),
+        import('prismjs/themes/prism.css')
+    ])
+
+    return prismLoadPromise
+}
+
+const highlightCode = async () => {
+    const codeBlocks = contentRef.value?.querySelectorAll('pre code')
+    if (!codeBlocks?.length) return
+
+    const [{ default: Prism }] = await loadPrism()
+    codeBlocks.forEach((block) => {
         Prism.highlightElement(block)
     })
 }
@@ -44,12 +56,11 @@ const mountSandboxAnimations = () => {
 
 const refreshContentEnhancements = async () => {
     await nextTick()
-    highlightCode()
+    await highlightCode()
     mountSandboxAnimations()
 }
 
-watch(() => props.htmlContent, refreshContentEnhancements, { immediate: true })
-onMounted(refreshContentEnhancements)
+watch(() => props.htmlContent, refreshContentEnhancements, { immediate: true, flush: 'post' })
 onBeforeUnmount(cleanupAnimations)
 </script>
 

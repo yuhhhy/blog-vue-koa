@@ -10,7 +10,6 @@ import { ref, watch, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
 import { apiGetBlogContent, apiUpdateBlogViewCount } from '@/api/blogContent.js'
-import { apiUpdateWebsiteView } from '@/api/websiteData.js'
 import { getFormatDate } from '@/utils/date.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import config from '@/config/index.js'
@@ -20,62 +19,59 @@ const router = useRouter()
 let htmlContent = ref('') // html格式文章内容
 let blogData = ref({}) // data/posts.json
 
+const md = new MarkdownIt({
+    html: true,
+    linkify: true,
+    typographer: true,
+})
+
+const defaultFenceRender = md.renderer.rules.fence
+const defaultImageRender = md.renderer.rules.image || function(tokens, idx, options, env, self) {
+    return self.renderToken(tokens, idx, options)
+}
+
+const parseFenceMeta = (meta = '') => {
+    return meta.split(/\s+/).filter(Boolean).reduce((result, item) => {
+        const [key, ...valueParts] = item.split('=')
+        if (!key || !valueParts.length) return result
+
+        result[key] = valueParts.join('=').replace(/^["']|["']$/g, '')
+        return result
+    }, {})
+}
+
+const renderAnimationPlaceholder = (animationProps = {}) => {
+    return `<div data-animation data-props="${md.utils.escapeHtml(encodeURIComponent(JSON.stringify(animationProps)))}"></div>`
+}
+
+md.renderer.rules.fence = function(tokens, idx, options, env, self) {
+    const token = tokens[idx]
+    const info = token.info.trim()
+    const [blockType, ...meta] = info.split(/\s+/)
+
+    if (blockType === 'animation') {
+        return renderAnimationPlaceholder({
+            ...parseFenceMeta(meta.join(' ')),
+            html: token.content
+        })
+    }
+
+    if (defaultFenceRender) {
+        return defaultFenceRender(tokens, idx, options, env, self)
+    }
+
+    return self.renderToken(tokens, idx, options)
+}
+
+md.renderer.rules.image = function(tokens, idx, options, env, self) {
+    const token = tokens[idx]
+    token.attrPush(['loading', 'lazy'])
+    return defaultImageRender(tokens, idx, options, env, self)
+}
+
 // 渲染文章内容 Markdown -> HTML
 const renderBlogContent = () => {
-    // 生成文章HTML
-    const md = new MarkdownIt({
-        html: true,
-        linkify: true,
-        typographer: true,
-    })
-
-    const defaultFenceRender = md.renderer.rules.fence
-
-    const parseFenceMeta = (meta = '') => {
-        return meta.split(/\s+/).filter(Boolean).reduce((result, item) => {
-            const [key, ...valueParts] = item.split('=')
-            if (!key || !valueParts.length) return result
-
-            result[key] = valueParts.join('=').replace(/^["']|["']$/g, '')
-            return result
-        }, {})
-    }
-
-    const renderAnimationPlaceholder = (animationProps = {}) => {
-        return `<div data-animation data-props="${md.utils.escapeHtml(encodeURIComponent(JSON.stringify(animationProps)))}"></div>`
-    }
-
-    md.renderer.rules.fence = function(tokens, idx, options, env, self) {
-        const token = tokens[idx]
-        const info = token.info.trim()
-        const [blockType, ...meta] = info.split(/\s+/)
-
-        if (blockType === 'animation') {
-            return renderAnimationPlaceholder({
-                ...parseFenceMeta(meta.join(' ')),
-                html: token.content
-            })
-        }
-
-        if (defaultFenceRender) {
-            return defaultFenceRender(tokens, idx, options, env, self)
-        }
-
-        return self.renderToken(tokens, idx, options)
-    }
-
-    // 添加图片懒加载
-    const defaultRender = md.renderer.rules.image || function(tokens, idx, options, env, self) {
-        return self.renderToken(tokens, idx, options)
-    }
-    
-    md.renderer.rules.image = function(tokens, idx, options, env, self) {
-        const token = tokens[idx]
-        token.attrPush(['loading', 'lazy'])
-        return defaultRender(tokens, idx, options, env, self)
-    }
-
-    htmlContent.value = DOMPurify.sanitize(md.render(blogData.value.content), {
+    htmlContent.value = DOMPurify.sanitize(md.render(blogData.value.content || ''), {
         ADD_ATTR: ['data-animation', 'data-props']
     })
 }
@@ -100,10 +96,7 @@ async function updateBlogViewCount() {
 
 function reportBlogView() {
     runAfterPageIdle(() => {
-        Promise.allSettled([
-            updateBlogViewCount(),
-            apiUpdateWebsiteView()
-        ])
+        updateBlogViewCount()
     })
 }
 
@@ -234,6 +227,10 @@ img {
             height: 500px;
             background-attachment: fixed;
             background-size: contain;
+
+            @media (max-width: 768px) {
+                background-attachment: scroll;
+            }
         }
 
         .mask {

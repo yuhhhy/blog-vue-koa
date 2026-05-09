@@ -1,10 +1,20 @@
-import sha256 from 'crypto-js/sha256'
-
 // 获取QQ号
 function getQQNumber(email) {
     if (!email || !email.endsWith('@qq.com')) return null
     const qqNumber = email.split('@')[0]
     return /^\d+$/.test(qqNumber) ? qqNumber : null
+}
+
+async function sha256Hex(text) {
+    if (!globalThis.crypto?.subtle || typeof TextEncoder === 'undefined') {
+        return ''
+    }
+
+    const data = new TextEncoder().encode(text)
+    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', data)
+    return Array.from(new Uint8Array(hashBuffer))
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('')
 }
 
 // 生成头像url
@@ -26,7 +36,11 @@ export async function getAvatar(email) {
 
     // 2. 尝试获取Gravatar头像
     try {
-        const hash = sha256(email.trim().toLowerCase()).toString()
+        const hash = await sha256Hex(email.trim().toLowerCase())
+        if (!hash) {
+            return '/src/assets/images/user_default.png'
+        }
+
         const gravatarUrls = [
             'https://cdn.sep.cc/avatar/',
             'https://gravatar.zeruns.tech/avatar/',
