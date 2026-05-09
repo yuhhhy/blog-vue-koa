@@ -335,8 +335,8 @@ const checkCostumAvatar = async () => {
           popper-class="emoji-popover"
         >
           <template #reference>
-            <el-button class="emoji-button" type="info" text>
-              <span class="emoji-icon">😊</span>
+            <el-button class="emoji-button" type="info" text title="添加表情" aria-label="添加表情">
+              <span class="iconfont icon-picture emoji-icon"></span>
             </el-button>
           </template>
           
@@ -546,19 +546,24 @@ const checkCostumAvatar = async () => {
 
       /* emoji表情选择按钮 */
       .emoji-button {
+        width: 32px;
         height: 28px;
         border-radius: 4px;
-        background-color: var(--icon-background);
+        background-color: #f4f1ec;
+        color: var(--light-dark);
+        border: 1px solid #ded8cf;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
         .emoji-icon {
-          padding-bottom: 2px;
-          font-size: 18px;
+          font-size: 16px;
           cursor: pointer;
           line-height: 1;
         }
         
         &:hover {
-          background-color: var(--lightgrey);
+          background-color: #ebe5dc;
+          border-color: #cfc6ba;
+          transform: translateY(-1px);
         }
       }
 
