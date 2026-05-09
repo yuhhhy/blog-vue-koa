@@ -1,16 +1,9 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
-import { useRoute } from 'vue-router'
 
 const themeStore = useThemeStore()
-const route = useRoute()
-
-// 计算属性，检查当前是否在博客页面
-const isInBlogPage = computed(() => {
-  return route.path.startsWith('/blog')
-})
 
 // 设置主题
 const toggleTheme = () => {
@@ -61,13 +54,6 @@ onMounted(() => {
             </el-dropdown>
         </div>
     </div>
-    <!-- 只在博客页面显示回到顶部按钮 -->
-    <el-backtop 
-        v-if="isInBlogPage" 
-        :right="16" 
-        :bottom="100" 
-        style="color: var(--white); background-color: rgba(88, 183, 255, 0.8)" 
-    />
 </template>
 
 <style lang="scss" scoped>
@@ -75,7 +61,6 @@ onMounted(() => {
     background-color: var(--white);
     width: 100%;
     height: 64px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
     .nav-links {
         display: none;

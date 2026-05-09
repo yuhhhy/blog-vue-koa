@@ -151,12 +151,13 @@ useHead({
             </div>
         </div>
 
+        <!-- 文章上部分交互区域 -->
+        <ArticleHeader :blogData="blogData" class="blog-action-bar"></ArticleHeader>
+
         <!-- 除了头部banner的主体区域 -->
         <div class="blog-main">
             <!-- 博客页面文章主体 -->
             <div class="blog-aritcle">
-                <!-- 文章上部分交互区域 -->
-                <ArticleHeader :blogData="blogData" class="blog-aritcle-item"></ArticleHeader>
                 <!-- 文章主体内容区域 -->
                 <ArticleContent :htmlContent="htmlContent" class="blog-aritcle-item"></ArticleContent>
                 <!-- 上一篇、下一篇、推荐文章 -->
@@ -222,11 +223,15 @@ img {
         .blog-info {
             display: flex;
             align-items: center;
-            justify-content: space-evenly;
-            width: 100%;
+            justify-content: space-between;
+            width: 80%;
             position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
             bottom: 25px;
+            font-size: 0.875rem;
 
+            >span,
             >div {
                 height: 30px;
                 line-height: 30px;
@@ -234,10 +239,15 @@ img {
         }
     }
 
+    .blog-action-bar {
+        margin: 25px auto 30px;
+        width: 80%;
+    }
+
     .blog-main {
         width: min(960px, calc(100% - 48px));
         margin: 0 auto;
-        padding: 40px 0;
+        padding: 0 0 40px;
         height: 100%;
         max-width: 100vw;      // 限制最大宽度
 
@@ -272,7 +282,10 @@ img {
 
             .blog-info {
                 bottom: 10px;
+                width: calc(100% - 30px);
+                font-size: 0.75rem;
 
+                >span,
                 >div {
                     height: 20px;
                     line-height: 20px;
@@ -281,9 +294,14 @@ img {
             }
         }
 
+        .blog-action-bar {
+            width: calc(100% - 30px);
+            margin: 15px auto 20px;
+        }
+
         .blog-main {
             width: calc(100% - 30px);
-            padding: 20px 0;
+            padding: 0 0 20px;
 
             .blog-aritcle {
                 margin-bottom: 20px;

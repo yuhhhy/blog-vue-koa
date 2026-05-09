@@ -57,6 +57,7 @@ const copyToClipboard = async (text, type) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-top: 120px;
     padding: 0 30px;
     z-index: 999;
     font-size: 0.875rem;
@@ -98,6 +99,7 @@ const copyToClipboard = async (text, type) => {
     }
 
     @media (max-width: 768px) {
+        margin-top: 72px;
         padding: 0 20px;
         
         .right-footer {

@@ -77,25 +77,29 @@ onMounted(() => {
 
     .home-content {
         background-color: var(--white);
-        padding: 40px 60px;
+        width: min(960px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 40px 0;
 
         @media (max-width: 768px) {
-            padding: 20px 20px;
+            width: calc(100% - 30px);
+            padding: 20px 0;
         }
 
         .home-main {
             flex: 1;
             height: 100%;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 20px;
 
             .blog {
-                flex: 1;
+                display: flex;
                 border-radius: 10px;
                 overflow: hidden;
                 background-color: var(--white);
-                min-width: 400px;
+                width: 100%;
+                min-height: 150px;
 
                 // 添加初始状态，确保有平滑过渡
                 transform: translateY(0);
@@ -108,12 +112,12 @@ onMounted(() => {
                 }
 
                 @media (max-width: 768px) {
-                    min-width: 100%;
+                    min-height: 120px;
                 }
 
                 .blog-img {
-                    width: 100%;
-                    height: 200px;
+                    flex: 0 0 240px;
+                    min-height: 150px;
                     background-size: cover;
                     background-position: center;
                     position: relative;
@@ -124,16 +128,26 @@ onMounted(() => {
                       background-color: #f0f0f0;
                       animation: pulse 2.5s infinite;
                     }
+
+                    @media (max-width: 768px) {
+                        flex-basis: 38%;
+                        min-height: 120px;
+                    }
                 }
 
                 .blog-intro {
-                    padding: 0 20px;
+                    flex: 1;
+                    min-width: 0;
+                    padding: 18px 22px;
                     color: var(--black);
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
 
                     .blog-time-tags {
                         color: var(--quote-color);
                         font-size: 0.875rem;
-                        margin-bottom: 12px;
+                        line-height: 1.8;
 
                         .blog-time {
                             margin-right: 10px;
@@ -151,12 +165,17 @@ onMounted(() => {
                     .blog-title {
                         font-size: 1.125rem;
                         font-weight: bold;
-                        margin-bottom: 10px;
-                        margin-top: 15px;
+                        line-height: 1.5;
+                        margin-bottom: 16px;
 
                         @media (max-width: 768px) {
                             font-size: 1rem;
+                            margin-bottom: 10px;
                         }
+                    }
+
+                    @media (max-width: 768px) {
+                        padding: 12px;
                     }
                 }
             }

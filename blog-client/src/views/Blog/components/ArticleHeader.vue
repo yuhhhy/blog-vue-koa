@@ -73,10 +73,10 @@ getCommentNumber()
 
 <style lang="scss" scoped>
 .article-header {
-    padding: 10px 20px 5px 20px;
-    border-bottom: 1px solid var(--border-color);
+    padding: 0;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     background: transparent;
 
     .header-left {
@@ -91,7 +91,6 @@ getCommentNumber()
 
     .header-right {
         display: flex;
-        margin-left: auto;
         gap: 20px;
 
         .action-btn {
