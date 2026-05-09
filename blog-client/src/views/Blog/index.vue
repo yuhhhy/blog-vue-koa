@@ -195,7 +195,6 @@ img {
 <style lang="scss" scoped>
 .blog-container {
     background-color: var(--light);
-    padding-top: 64px;
     min-height: calc(100vh - 75px);
     width: 100%;
 

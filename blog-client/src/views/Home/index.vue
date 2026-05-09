@@ -76,7 +76,6 @@ onMounted(() => {
 .home-container {
     display: flex;
     flex-direction: column;
-    padding-top: 64px;
     min-height: calc(100vh - 75px);
 
     .home-content {

@@ -105,7 +105,6 @@
 
 <style lang="scss" scoped>
 .info-container {
-    padding-top: 64px;
     background-color: var(--white);
 
     .info {

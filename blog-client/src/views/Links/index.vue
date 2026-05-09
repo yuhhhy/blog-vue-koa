@@ -79,7 +79,6 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .link-container {
-    padding-top: 64px;
     background-color: var(--white);
     
     .links {

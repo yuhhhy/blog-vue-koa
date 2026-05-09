@@ -104,7 +104,6 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
 
 <style lang="scss" scoped>
 .about-cotainer {
-    padding-top: 64px;
     .about {
         background-color: var(--light);
         padding: 40px calc(7vw + 10px);

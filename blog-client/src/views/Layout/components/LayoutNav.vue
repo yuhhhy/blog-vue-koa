@@ -1,38 +1,16 @@
 <script setup>
-import { onMounted, ref, computed, onUnmounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 import { useRoute } from 'vue-router'
 
-// 替换 useWindowScroll
-const y = ref(0)
 const themeStore = useThemeStore()
-const lastScrollTop = ref(0)
-const shouldHideNav = ref(false)
 const route = useRoute()
 
 // 计算属性，检查当前是否在博客页面
 const isInBlogPage = computed(() => {
   return route.path.startsWith('/blog')
 })
-
-// 原生的滚动事件处理函数
-const handleScroll = () => {
-  // 获取当前滚动位置
-  const newY = window.scrollY || window.pageYOffset
-  y.value = newY
-
-  // 判断滚动方向
-  if (newY > lastScrollTop.value) {
-    // 向下滚动，隐藏导航栏
-    shouldHideNav.value = true
-  } else {
-    // 向上滚动，显示导航栏
-    shouldHideNav.value = false
-  }
-  // 更新上一次的滚动位置
-  lastScrollTop.value = newY > 0 ? newY : 0
-}
 
 // 设置主题
 const toggleTheme = () => {
@@ -42,26 +20,18 @@ const toggleTheme = () => {
 }
 
 onMounted(() => {
-    // 添加滚动事件监听器
-    window.addEventListener('scroll', handleScroll)
-    
     // document.documentElement 指向根元素 <html>
     document.documentElement.classList.add(themeStore.theme)
-    
+
     // 延迟访问量统计，等待其他资源加载完成
     setTimeout(() => {
         apiUpdateWebsiteVisit()
     }, 3000) // 延迟3秒执行
 })
-
-// 组件卸载时移除事件监听器
-onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll)
-})
 </script>
 
 <template>
-    <div class="nav" :class="{ unshow: shouldHideNav && y > 64 }">
+    <div class="nav">
         <div class="nav-links">
             
             <RouterLink to="/home"><span class="iconfont icon-home" style="font-size: 15px; margin-right: 7px;"></span>主页</RouterLink>
@@ -109,12 +79,7 @@ onUnmounted(() => {
     background-color: var(--white);
     width: 100%;
     height: 64px;
-    position: fixed;
-    top: 0;
-    left: 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    transition: all 0.5s;
 
     .nav-links {
         display: none;
@@ -162,12 +127,6 @@ onUnmounted(() => {
         top: 22px;
         right: 30px;
     }
-}
-
-.unshow {
-    transform: translateY(-100%);
-    opacity: 0;
-    transition: transform 0.3s ease-in-out;
 }
 
 .theme-toggle {
