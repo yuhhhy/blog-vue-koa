@@ -22,14 +22,6 @@ const routes = [
                 }
             },
             {
-                path: 'archive/:tagName?',
-                name: 'Archive',
-                component: () => import('@/views/Archive/index.vue'),
-                meta: {
-                    title: '归档 | 一曝十寒'
-                }
-            },
-            {
                 path: 'about',
                 name: 'About',
                 component: () => import('@/views/About/index.vue'),

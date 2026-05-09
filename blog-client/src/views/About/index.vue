@@ -182,6 +182,10 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                     color: var(--quote-color);
                 }
 
+                b, strong {
+                    color: var(--b-color);
+                }
+
                 ul, ol {
                     padding-left: 2em;
                     margin: 1em 0;

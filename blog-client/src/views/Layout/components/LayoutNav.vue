@@ -35,7 +35,6 @@ onMounted(() => {
         <div class="nav-links">
             
             <RouterLink to="/home"><span class="iconfont icon-home" style="font-size: 15px; margin-right: 7px;"></span>主页</RouterLink>
-            <RouterLink to="/archive"><span class="iconfont icon-archive" style="font-size: 15px; margin-right: 8px;"></span>归档</RouterLink>
             <RouterLink to="/about"><span class="iconfont icon-svgabout" style="font-size: 15px; margin-right: 7px;"></span>关于</RouterLink>
             <RouterLink to="/links"><span class="iconfont icon-link" style="font-size: 15px; margin-right: 6px;"></span>友链</RouterLink>
         </div>
@@ -50,9 +49,6 @@ onMounted(() => {
                     <el-dropdown-menu>
                         <el-dropdown-item>
                             <RouterLink to="/home">主页</RouterLink>
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <RouterLink to="/archive">归档</RouterLink>
                         </el-dropdown-item>
                         <el-dropdown-item>
                             <RouterLink to="/about">关于</RouterLink>
