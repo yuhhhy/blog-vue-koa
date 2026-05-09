@@ -1,12 +1,49 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { apiGetWebsiteData } from '@/api/websiteData.js'
+
+const runTime = ref(0)
+const totalPosts = ref(0)
+const websiteVisits = ref(0)
+const websiteViews = ref(0)
+const updateTime = ref('')
+const totalWordCount = ref(0)
+
+function getRunTime(startTime) {
+    const startDate = new Date(startTime)
+    const currentDate = new Date()
+    const diff = currentDate.getTime() - startDate.getTime()
+    return Math.round(diff / (24 * 60 * 60 * 1000))
+}
+
+const formatCount = (count) => {
+    if (!count) return '0 k'
+    return count >= 1000
+        ? (count / 1000).toFixed(1) + ' k'
+        : count + ''
+}
+
+async function getWebsiteData() {
+    const websiteData = await apiGetWebsiteData()
+    websiteVisits.value = websiteData.visit.total
+    websiteViews.value = websiteData.view.total
+    totalPosts.value = websiteData.article.total
+    updateTime.value = websiteData.updateTime
+    totalWordCount.value = websiteData.totalWordCount
+}
 
 // 复制内容到剪贴板
 const copyToClipboard = async (text, type) => {
     await navigator.clipboard.writeText(text)
     ElMessage.info(`${type}已复制`)
 }
+
+onMounted(() => {
+    runTime.value = getRunTime('2025-06-16')
+    getWebsiteData()
+})
 
 </script>
 
@@ -80,6 +117,15 @@ const copyToClipboard = async (text, type) => {
             </div>
         </div>
 
+        <!-- <div class="footer-stats">
+            <span>文章总数：{{ totalPosts }}</span>
+            <span>全站字数：{{ formatCount(totalWordCount) }}</span>
+            <span>访问量：{{ formatCount(websiteVisits) }}</span>
+            <span>浏览量：{{ formatCount(websiteViews) }}</span>
+            <span>运行天数：{{ runTime }}</span>
+            <span>最后更新：{{ updateTime.slice(0, 10) }}</span>
+        </div> -->
+
         <div class="footer-record">
             <span>© 2025 一曝十寒.</span>
             <span>赣ICP备2025063071号</span>
@@ -123,6 +169,21 @@ const copyToClipboard = async (text, type) => {
             color: var(--light-dark);
             line-height: 1.8;
         }
+    }
+
+    .footer-stats {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        width: min(1080px, 100%);
+        margin: 32px auto 0;
+        color: var(--quote-color);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 0.75rem;
+        font-weight: 400;
+        line-height: 1.6;
     }
 
     .footer-column {
@@ -212,6 +273,11 @@ const copyToClipboard = async (text, type) => {
 
         .footer-brand {
             grid-column: 1 / -1;
+        }
+
+        .footer-stats {
+            justify-content: flex-start;
+            margin-top: 28px;
         }
 
         .footer-record {

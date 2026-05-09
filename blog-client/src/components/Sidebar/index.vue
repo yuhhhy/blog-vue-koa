@@ -1,10 +1,8 @@
 <script setup>
 import SidebarAuthor from './components/SidebarAuthor.vue';
-import SidebarArchive from './components/SidebarArchive.vue';
 import SidebarTags from './components/SidebarTags.vue';
 import SidebarToc from './components/SidebarToc.vue';
 import SidebarBlogTags from './components/SidebarBlogTags.vue';
-import SidebarWebsiteInfo from './components/SidebarWebsiteInfo.vue';
 
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
@@ -17,16 +15,13 @@ const props = defineProps(['tags','tocHtml'])
 const currentComponent = computed(() => {
     if (route.path.startsWith('/blog/')) {
         return [
-            { component: SidebarArchive },
             { component: SidebarBlogTags, props: { tags: props.tags } },
             { component: SidebarToc, props: { tocHtml: props.tocHtml } }
         ];
     } else {
         return [
             { component: SidebarAuthor },
-            { component: SidebarArchive },
-            { component: SidebarTags },
-            { component: SidebarWebsiteInfo }
+            { component: SidebarTags }
         ];
     }
 })

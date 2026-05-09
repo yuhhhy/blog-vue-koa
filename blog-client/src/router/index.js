@@ -91,11 +91,7 @@ router.afterEach((to, from) => {
     if (to.hash) {
         return
     }
-    // 如果是路由参数的tag参数变换，不做处理
-    if (to.name === from.name && to.query.tag !== from.query.tag) {
-        return
-    }
-    
+
     // 延迟执行统计请求，确保页面渲染完成
     setTimeout(async () => {
         const { role, page } = { role: 'client', page: to.name }

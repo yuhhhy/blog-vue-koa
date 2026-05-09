@@ -60,15 +60,13 @@ onMounted(() => {
             }"
             :style="{ maxHeight: currentMaxHeight + 'px' }"
         >
-            <RouterLink
+            <span
                 v-for="tag in tags"
                 :key="tag"
-                :to="`/archive?tag=${tag}`"
+                class="tag"
             >
-                <span class="tag">
-                    {{ tag }}
-                </span>
-            </RouterLink>
+                {{ tag }}
+            </span>
         </div>
         <button
             v-if="isOverflow"

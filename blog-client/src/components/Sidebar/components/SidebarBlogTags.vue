@@ -5,11 +5,9 @@
 <template>
     <div class="blog-tags">
         <div class="blog-tags-header">文章标签</div>
-        <RouterLink v-for="tag in tags" :key="tag" :to="`/archive?tag=${tag}`">
-            <div class="tag">
-                {{ tag }}
-            </div>
-        </RouterLink>
+        <span v-for="tag in tags" :key="tag" class="tag">
+            {{ tag }}
+        </span>
     </div>
 </template>
 
