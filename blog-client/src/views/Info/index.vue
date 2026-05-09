@@ -123,7 +123,7 @@
             .info-article-content {
                 padding: 0 30px 30px 30px;
                 line-height: 1.8;
-                font-family: 'Helvetica Neue', Arial, sans-serif;
+                font-family: var(--font-serif);
                 color: var(--light-dark);
 
                 img {
@@ -199,7 +199,7 @@
                 }
 
                 code {
-                    font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+                    font-family: var(--font-mono);
                     color: var(--code-color);
                     background: var(--code-background);
                     padding: 0.2em 0.4em;
@@ -213,7 +213,7 @@
                     overflow-x: auto;
 
                     code {
-                        font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+                        font-family: var(--font-mono);
                         color: var(--code-color);
                         background: none;
                         padding: 0;

@@ -24,7 +24,7 @@ onUpdated(() => {
 .article-content {
     padding: 0 30px;
     line-height: 1.8;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-serif);
     color: var(--light-dark);
 
     .markdown-content {
@@ -113,7 +113,7 @@ onUpdated(() => {
         }
 
         code {
-            font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+            font-family: var(--font-mono);
             background: var(--code-background-inline);
             color: var(--code-inline);
             padding: 0.2em 0.4em;

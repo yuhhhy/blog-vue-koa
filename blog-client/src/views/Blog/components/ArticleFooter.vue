@@ -149,7 +149,7 @@ onMounted(() => {
 
 <style lang="scss">
 .article-footer {
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-serif);
   color: var(--light-dark);
   line-height: 1.6;
   padding: 0 30px 10px 30px;
@@ -166,7 +166,7 @@ onMounted(() => {
       border-top: 1px solid rgba(0, 0, 0, 0.05);
 
       code {
-        font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+        font-family: var(--font-mono);
         color: var(--code-color);
         background: var(--code-background);
         padding: 0.2em 0.4em;
