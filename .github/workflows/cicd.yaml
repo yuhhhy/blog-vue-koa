@@ -70,12 +70,14 @@ jobs:
           mkdir -p deploy/admin
           mv blog-background/dist deploy/admin/
           mv server ./deploy/server
+          find deploy -name "*.map" -delete
+          du -sh deploy/*
           tar -zcvf deploy.tar.gz -C deploy .
           ls -lh deploy.tar.gz
           tar -tzf deploy.tar.gz | sed -n '1,80p'
       # 第七步：传输到服务器
       - name: Copy package to server
-        uses: appleboy/scp-action@v1.0.0
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
@@ -84,8 +86,7 @@ jobs:
           source: "deploy.tar.gz"  # 本地文件 (在 runner 上)
           target: "/tmp"            # 远程目标目录 (在服务器上)
           timeout: 60s
-          command_timeout: 10m
-          debug: true
+          command_timeout: 30m
       # 第八步：在服务器上执行部署命令
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.2.5

@@ -5,7 +5,8 @@
     font-style: normal;
     font-display: swap;
     font-weight: 400;
-    src: url("../fonts/jetbrains-mono-nerd-font/JetBrainsMonoNerdFontMono-Regular.ttf") format("truetype");
+    src: url("../fonts/jetbrains-mono-nerd-font/JetBrainsMonoNerdFontMono-Regular-subset.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+2000-206F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+E0A0-E0D7;
 }
 
 @font-face {
@@ -13,7 +14,8 @@
     font-style: italic;
     font-display: swap;
     font-weight: 400;
-    src: url("../fonts/jetbrains-mono-nerd-font/JetBrainsMonoNerdFontMono-Italic.ttf") format("truetype");
+    src: url("../fonts/jetbrains-mono-nerd-font/JetBrainsMonoNerdFontMono-Italic-subset.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+2000-206F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+E0A0-E0D7;
 }
 
 @font-face {
@@ -21,7 +23,8 @@
     font-style: normal;
     font-display: swap;
     font-weight: 700;
-    src: url("../fonts/jetbrains-mono-nerd-font/JetBrainsMonoNerdFontMono-Bold.ttf") format("truetype");
+    src: url("../fonts/jetbrains-mono-nerd-font/JetBrainsMonoNerdFontMono-Bold-subset.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+2000-206F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+E0A0-E0D7;
 }
 
 @font-face {
@@ -29,7 +32,8 @@
     font-style: italic;
     font-display: swap;
     font-weight: 700;
-    src: url("../fonts/jetbrains-mono-nerd-font/JetBrainsMonoNerdFontMono-BoldItalic.ttf") format("truetype");
+    src: url("../fonts/jetbrains-mono-nerd-font/JetBrainsMonoNerdFontMono-BoldItalic-subset.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+2000-206F, U+2190-21FF, U+2200-22FF, U+2500-257F, U+E0A0-E0D7;
 }
 
 @font-face {
