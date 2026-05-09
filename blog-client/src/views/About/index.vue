@@ -8,19 +8,15 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
             <div class="about-article">
                 <!-- 内容区域 -->
                 <div class="about-article-content">
-                    <h2>关于我的小站</h2>
+                    <h4>我是谁？</h4>
                     <ul style="list-style: none;">
                         <li>
                             <p>这里是<span class="highlight">一曝十寒</span>个人博客，一个记录前端踩坑笔记、个人成长反思和偶尔发疯文学的地方，更新随缘。
                             </p>
                         </li>
-                        <li>
-                            <p>或者我的 Github 账号是<span class="highlight">yuhhhy</span>，叫我这个也行（或者你觉得顺口的称呼，我不介意被叫成任何有趣的名字~）
-                            </p>
-                        </li>
                     </ul>
 
-                    <!-- <h2>关于我</h2>
+                    <!-- <h4>关于我</h4>
                     <ul style="list-style: none;">
                         <li><strong>基本信息</strong>：05年</li>
                     </ul>
@@ -62,7 +58,7 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                         </li>
                     </ul> -->
 
-                    <h2>为什么要做这个博客？</h2>
+                    <h4>为什么要做这个博客？</h4>
                     <ul style="list-style: none; text-indent: -1.4em;">
                         <li>
                             <p>大概是在 2024 年中，我开始接触前端开发，学习了 HTML、CSS、JavaScript 等基础知识。随着学习的深入，我发现自己在前端领域的兴趣越来越浓厚，想要有一个属于自己的空间来记录学习过程中的点滴。除了学习以外，我还有更多的想法和感悟，希望能够通过这个博客来表达，或者说是发泄一下自己的情绪。
@@ -82,12 +78,12 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                         </li>
                     </ul>
 
-                    <h2>朋友</h2>
+                    <h4>朋友</h4>
                     <ul>
                         <li><a href="https://v.douyin.com/h-Lzt62UbIQ/ 3@9.com :3pm" target="_blank">25020jason1728</a></li>
                         <li><a href="https://www.idontwannago.cn/" target="_blank">idontwannago</a></li>
                     </ul>
-                    <h2>可能对我有启发的博客</h2>
+                    <h4>可能对我有启发的博客</h4>
                     <ul>
                         <li><a href="https://idealclover.top/" target="_blank">idealclover</a></li>
                         <li><a href="https://blog.fiveth.cc/" target="_blank">fiveth</a></li>

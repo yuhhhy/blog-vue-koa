@@ -12,38 +12,52 @@ const copyToClipboard = async (text, type) => {
 
 <template>
     <div class="footer-info">
-        <div class="left-footer">
-            <div>
-                <p>© 2025 一曝十寒.</p>
-            </div>
-            <div>
-                <p>赣ICP备2025063071号</p>
-            </div>
-            <div class="police">
-                <img src="@/assets/images/police.ico" alt="公安备案">
-                <p>赣公网安备36110202000678号</p>
+        <div class="footer-main">
+            <div class="footer-brand">
+                <div class="footer-title">一曝十寒</div>
+                <p>纵使不安彷徨，即便茫然无措，也依然迈步前行。</p>
             </div>
 
+            <div class="footer-column">
+                <div class="column-title">站点</div>
+                <RouterLink to="/home">主页</RouterLink>
+                <RouterLink to="/about">关于</RouterLink>
+                <RouterLink to="/links">友链</RouterLink>
+                <RouterLink to="/info">信息</RouterLink>
+            </div>
+
+            <div class="footer-column">
+                <div class="column-title">联系</div>
+                <button type="button" @click="copyToClipboard('281423846', 'QQ号')">
+                    <span class="iconfont icon-qq"></span>
+                    QQ
+                </button>
+                <button type="button" @click="copyToClipboard('yzczhdyy109', '微信号')">
+                    <span class="iconfont icon-weixin"></span>
+                    微信
+                </button>
+                <button type="button" @click="copyToClipboard('yuhhhy109@163.com', '邮箱')">
+                    <span class="iconfont icon-youxiang-"></span>
+                    邮箱
+                </button>
+            </div>
+
+            <div class="footer-column">
+                <div class="column-title">关注</div>
+                <a href="https://github.com/yuhhhy" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://space.bilibili.com/76781252" target="_blank" rel="noopener noreferrer">Bilibili</a>
+                <a href="https://juejin.cn/user/3798140261765715/posts" target="_blank" rel="noopener noreferrer">稀土掘金</a>
+                <a href="/feed" target="_blank" rel="noopener noreferrer">RSS</a>
+            </div>
         </div>
-        <div class="right-footer">
-            <RouterLink to="/info" class="info-title">信息</RouterLink>
-            <el-popover class="footer-popover" popper-class="popover" placement="top">
-                <span class="iconfont icon-qq" style="color:#ccc; font-size: 22px; cursor: pointer;" title="点击复制QQ号"
-                    @click="copyToClipboard('281423846', 'QQ号')">
-                </span>
-                <span class="iconfont icon-weixin" style="color:#ccc; font-size: 24px; cursor: pointer;" title="点击复制微信号"
-                    @click="copyToClipboard('yzczhdyy109', '微信号')">
-                </span>
-                <span class="iconfont icon-youxiang-"
-                    style="color:#ccc; font-size: 18px; margin-top: 3px; cursor: pointer;" title="点击复制邮箱"
-                    @click="copyToClipboard('yuhhhy109@163.com', '邮箱')">
-                </span>
-                <template #reference>
-                    <div class="info-title contact">
-                        联系
-                    </div>
-                </template>
-            </el-popover>
+
+        <div class="footer-record">
+            <span>© 2025 一曝十寒.</span>
+            <span>赣ICP备2025063071号</span>
+            <span class="police">
+                <img src="@/assets/images/police.ico" alt="公安备案">
+                赣公网安备36110202000678号
+            </span>
         </div>
     </div>
 </template>
@@ -53,63 +67,117 @@ const copyToClipboard = async (text, type) => {
     background-color: var(--white);
     color: var(--black);
     width: 100%;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     margin-top: 120px;
-    padding: 0 30px;
+    padding: 46px 30px 22px;
     z-index: 999;
     font-size: 0.875rem;
 
-    .left-footer {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 20px;
-        
+    .footer-main {
+        display: grid;
+        grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(120px, 1fr));
+        gap: 48px;
+        width: min(1080px, 100%);
+        margin: 0 auto;
+    }
+
+    .footer-brand {
+        .footer-title {
+            color: var(--blue);
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
         p {
             margin: 0;
             color: var(--light-dark);
-        }
-
-        .police {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            
-            img {
-                width: 15px;
-                height: 15px;
-            }
+            line-height: 1.8;
         }
     }
 
-    .right-footer {
+    .footer-column {
         display: flex;
-        gap: 25px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
 
-        .info-title {
+        .column-title {
+            color: var(--black);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        a,
+        button {
+            color: var(--light-dark);
+            font: inherit;
+            line-height: 1.4;
             transition: color 0.3s ease;
+        }
+
+        button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            border: 0;
+            background: transparent;
             cursor: pointer;
-            &:hover {
-                color: var(--skyblue);
-            }
+        }
+
+        .iconfont {
+            font-size: 1rem;
+        }
+
+        a:hover,
+        button:hover {
+            color: var(--skyblue);
+        }
+    }
+
+    .footer-record {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        width: min(1080px, 100%);
+        margin: 38px auto 0;
+        padding-top: 18px;
+        border-top: 1px solid rgba(127, 127, 127, 0.14);
+        color: var(--light-dark);
+        font-size: 0.75rem;
+
+        .police {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        img {
+            width: 14px;
+            height: 14px;
         }
     }
 
     @media (max-width: 768px) {
         margin-top: 72px;
-        padding: 0 20px;
-        
-        .right-footer {
-            gap: 20px;
+        padding: 34px 20px 20px;
 
-            .contact {
-                display: none;
-            }
+        .footer-main {
+            grid-template-columns: 1fr 1fr;
+            gap: 32px 28px;
         }
 
+        .footer-brand {
+            grid-column: 1 / -1;
+        }
+
+        .footer-record {
+            justify-content: flex-start;
+            margin-top: 30px;
+        }
     }
     
 }
