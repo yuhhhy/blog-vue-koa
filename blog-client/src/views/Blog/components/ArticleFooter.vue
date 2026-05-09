@@ -42,7 +42,7 @@ function parseComment(content) {
 
 const route = useRoute()
 const comments = ref([])
-const formState = ref(true) // 用于控制顶部表单的显示与隐藏
+const formState = ref(false) // 用于控制评论表单的显示与隐藏
 const props = defineProps({
   pageId: { type: String }
 })
@@ -90,18 +90,6 @@ onMounted(() => {
 
 <template>
 <div class="article-footer">
-  <!-- 顶部评论表单 -->
-  <span class="top-form" v-if="formState" @click="toggleCommentForm">收起</span>
-  <span class="top-form" v-else @click="toggleCommentForm">展开</span>
-  <!-- parentId = '-1' 表示没有 parent 评论 -->
-  <CommentForm 
-    v-show="formState" 
-    :comments="comments" 
-    :hasParent="false" 
-    :parentId="'-1'"
-    :blogId="route.params.id || props.pageId"
-    @updateComments="updateComments">
-  </CommentForm>
   <!-- 一级评论列表 -->
   <div class="comment-list">
     <div v-for="comment in comments" :key="comment.id" class="comment-item">
@@ -144,6 +132,18 @@ onMounted(() => {
       </CommentReply>
     </div>
   </div>
+  <!-- 底部评论表单 -->
+  <span class="top-form" v-if="formState" @click="toggleCommentForm">收起</span>
+  <span class="top-form" v-else @click="toggleCommentForm">发表评论</span>
+  <!-- parentId = '-1' 表示没有 parent 评论 -->
+  <CommentForm
+    v-show="formState"
+    :comments="comments"
+    :hasParent="false"
+    :parentId="'-1'"
+    :blogId="route.params.id || props.pageId"
+    @updateComments="updateComments">
+  </CommentForm>
 </div>
 </template>
 
@@ -164,14 +164,6 @@ onMounted(() => {
     .comment-item {
       padding: 15px 20px;
       border-top: 1px solid rgba(0, 0, 0, 0.05);
-
-      code {
-        font-family: var(--font-mono);
-        color: var(--code-color);
-        background: var(--code-background);
-        padding: 0.2em 0.4em;
-        border-radius: 5px;
-      }
 
       a {
         color: var(--skyblue);
@@ -208,9 +200,13 @@ onMounted(() => {
               cursor: default;
             }
             .reply-btn {
-              color: var(--skyblue);
-              font-size: 13px;
+              color: var(--blue);
+              font-family: var(--font-serif);
               padding: 0;
+
+              :deep(span) {
+                font-family: inherit;
+              }
             }
           }
         }

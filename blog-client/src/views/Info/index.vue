@@ -198,29 +198,6 @@
                     word-break: break-word; // 文字折行
                 }
 
-                code {
-                    font-family: var(--font-mono);
-                    color: var(--code-color);
-                    background: var(--code-background);
-                    padding: 0.2em 0.4em;
-                    border-radius: 5px;
-                }
-
-                pre {
-                    background: var(--code-background);
-                    padding: 0;
-                    border-radius: 5px;
-                    overflow-x: auto;
-
-                    code {
-                        font-family: var(--font-mono);
-                        color: var(--code-color);
-                        background: none;
-                        padding: 0;
-                        border-radius: 0;
-                    }
-                }
-
                 address {
                     font-style: normal;
                 }

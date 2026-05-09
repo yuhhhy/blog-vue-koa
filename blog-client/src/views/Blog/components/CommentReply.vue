@@ -101,5 +101,15 @@ const handleUpdate = () => {
         line-height: 1.6;
         word-break: break-word;
     }
+
+    .reply-btn {
+        color: var(--blue);
+        font-family: var(--font-serif);
+        padding: 0;
+
+        :deep(span) {
+            font-family: inherit;
+        }
+    }
 }
 </style>

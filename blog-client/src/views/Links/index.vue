@@ -47,11 +47,11 @@ onMounted(async () => {
 
                 <h2>友链申请规则</h2>
                 <ul>
-                    <li>✅您的网站在中国大陆区域能够正常访问（如果使用海外服务器，建议启用CDN加速）</li>
-                    <li>✅您的网站需要需与我的博客主题有一定关联性（如前端技术、个人成长、生活记录），或更新稳定</li>
-                    <li>✅麻烦先为您的网站添加本站友链</li>
-                    <li>✅我会根据内容质量添加友链~谢谢</li>
-                    <li>❌不接受纯商业推广、采集站、或包含敏感内容的站点</li>
+                    <li>您的网站在中国大陆区域能够正常访问（如果使用海外服务器，建议启用CDN加速）</li>
+                    <li>您的网站需要需与我的博客主题有一定关联性（如前端技术、个人成长、生活记录），或更新稳定</li>
+                    <li>麻烦先为您的网站添加本站友链</li>
+                    <li>我会根据内容质量添加友链~谢谢</li>
+                    <li>不接受纯商业推广、采集站、或包含敏感内容的站点</li>
                 </ul>
 
                 <p>友链申请格式与本站信息如下：</p>
@@ -224,21 +224,6 @@ onMounted(async () => {
                     color: var(--skyblue);
                     text-decoration: none;
                     word-break: break-word; // 文字折行
-                }
-
-                pre {
-                    background: var(--code-background);
-                    padding: 0;
-                    border-radius: 5px;
-                    overflow-x: auto;
-
-                    code {
-                        font-family: var(--font-mono);
-                        color: var(--light-dark);
-                        background: none;
-                        padding: 0;
-                        border-radius: 0;
-                    }
                 }
 
                 address {

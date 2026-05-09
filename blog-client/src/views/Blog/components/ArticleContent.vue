@@ -112,64 +112,6 @@ onUpdated(() => {
             }
         }
 
-        code {
-            font-family: var(--font-mono);
-            background: var(--code-background-inline);
-            color: var(--code-inline);
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
-            text-shadow: none;
-
-            span {
-                background: none;
-                padding: 0;
-                border-radius: 0;
-
-                &.token.number {
-                    color: #357cef;
-                }
-                &.token.keyword {
-                    color: #0072EB;
-                }
-                &.token.function {
-                    color: #C678DD;
-                }
-                &.token.punctuation {
-                    color: #aaa;
-                }
-                &.token.constant {
-                    color: #b10a74;
-                }
-                &.token.literal-property.property {
-                    color: #b10a74;
-                }
-                &.token.property {
-                    color: #b10a74;
-                }
-                &.token.operator {
-                    color: #98885E;
-                }
-
-            }
-        }
-
-        pre {
-            background: var(--code-background);
-            padding: 1em;
-            border-radius: 5px;
-            overflow-x: auto;
-            max-width: 100%;
-
-            code {
-                color: var(--code-color);
-                background: none;
-                padding: 0;
-                border-radius: 0;
-                overflow-x: auto;
-                
-            }
-        }
-
         blockquote {
             border-left: 3px solid var(--quote-color);
             padding-left: 1em;
