@@ -465,14 +465,14 @@ const checkCostumAvatar = async () => {
           min-height: 32px;
           width: 100%;
           height: 100%;
-          border: 2px solid var(--lightgrey); 
+          border: 1px solid #b0b5bd; 
           border-radius: 4px;
           text-indent: 0.7em;
-          transition: all 0.3s ease;
+          transition: background 0.3s ease;
           font-size: 15px;
 
           &:focus {
-            border: 2px solid transparent;
+            border: 1.5px solid transparent;
             background: linear-gradient(var(--white), var(--white)) padding-box, 
                         linear-gradient(135deg, #ff33b4, #c8ff00, #00ffff, #4400ff) border-box;
             }
@@ -522,12 +522,12 @@ const checkCostumAvatar = async () => {
         background-color: var(--white);
         font-family: var(--font-serif);
         box-shadow:none;  // el-textarea的边框是box-shadow
-        border: 2px solid var(--lightgrey);
+        border: 1px solid #b0b5bd;
         font-size: 15px;
         resize: none;  // 禁用手动调整大小
 
         &:focus {
-          border: 2px solid transparent;
+          border: 1.5px solid transparent;
           background: linear-gradient(var(--white), var(--white)) padding-box, 
           linear-gradient(135deg, #5bc9f8, #c7e9fb, #00c9a7, #a6defa, #35bef7);
         }

@@ -97,7 +97,7 @@ onMounted(() => {
       <div class="comment-header">
         <el-avatar :src="comment.avatar" :size="48" />
         <div class="comment-info">
-          <span  v-if="comment.website" >
+          <span v-if="comment.website">
             <a :href="comment.website" target="_blank" class="comment-name">
               {{ comment.username }}
             </a>
@@ -105,16 +105,18 @@ onMounted(() => {
           <span v-else class="comment-name">
             {{ comment.username }}
           </span>
-          <div class="comment-meta">
-            <span class="comment-time">{{ getFormatDate(comment.createTime) }}</span>
-            <el-button link type="primary" class="reply-btn" @click="toggleReplyForm(comment)">
-              回复
-            </el-button>
-          </div>
+          <span class="comment-sep">·</span>
+          <span class="comment-time">{{ getFormatDate(comment.createTime) }}</span>
         </div>
       </div>
       <!-- 一级评论内容 -->
       <div class="comment-content" v-html="parseComment(comment.content)"></div>
+      <!-- 回复按钮 -->
+      <div class="comment-footer">
+        <el-button link type="primary" class="reply-btn" @click="toggleReplyForm(comment)">
+          回复
+        </el-button>
+      </div>
       <!-- 一级评论回复表单 -->
       <CommentForm 
         v-if="comment.showForm" 
@@ -182,7 +184,9 @@ onMounted(() => {
         .comment-info {
           flex: 1;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
+          align-items: center;
+          gap: 8px;
           padding-top: 5px;
 
           a.comment-name{
@@ -191,23 +195,29 @@ onMounted(() => {
             }
           }
 
-          .comment-meta {
-            display: flex;
-            align-items: center;
+          .comment-sep {
             font-size: 0.8rem;
-            gap: 10px;
-            .comment-time {
-              cursor: default;
-            }
-            .reply-btn {
-              color: var(--blue);
-              font-family: var(--font-serif);
-              padding: 0;
+            color: #999;
+          }
 
-              :deep(span) {
-                font-family: inherit;
-              }
-            }
+          .comment-time {
+            font-size: 0.8rem;
+            color: #999;
+            cursor: default;
+          }
+        }
+      }
+
+      .comment-footer {
+        margin: 5px 0 0 63px;
+        .reply-btn {
+          color: var(--blue);
+          font-family: var(--font-serif);
+          font-size: 0.8rem;
+          padding: 0;
+
+          :deep(span) {
+            font-family: inherit;
           }
         }
       }

@@ -38,17 +38,20 @@ const handleUpdate = () => {
                 <span v-else class="comment-name">
                 {{ reply.username }}
                 </span>
-                <div class="comment-meta">
-                    <span class="comment-time">{{ getFormatDate(reply.createTime) }}</span>
-                    <el-button link type="primary" class="reply-btn" @click="toggleReplyForm(reply)">
-                        回复
-                    </el-button>
-                </div>
+                <span class="comment-sep">·</span>
+                <span class="comment-time">{{ getFormatDate(reply.createTime) }}</span>
             </div>
         </div>
         
         <!-- 评论内容 - 使用v-html和表情解析函数 -->
         <div class="comment-content" v-html="parseEmoji ? parseEmoji(reply.content) : reply.content"></div>
+        
+        <!-- 回复按钮 -->
+        <div class="comment-footer">
+            <el-button link type="primary" class="reply-btn" @click="toggleReplyForm(reply)">
+                回复
+            </el-button>
+        </div>
         
         <!-- 二级评论回复表单 - 修改事件处理器 -->
         <CommentForm 
@@ -85,6 +88,36 @@ const handleUpdate = () => {
     .comment-reply {
         margin-bottom: 15px;
         
+        .comment-header {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          
+          .comment-info {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            padding-top: 5px;
+            
+            .comment-sep {
+              font-size: 0.8rem;
+              color: #999;
+            }
+            
+            .comment-time {
+              font-size: 0.8rem;
+              color: #999;
+              cursor: default;
+            }
+          }
+        }
+        
+        .comment-footer {
+          margin: 5px 0 0 58px;
+        }
+        
         /* 添加表情图片样式 */
         :deep(.comment-emoji) {
           display: inline-block;
@@ -97,7 +130,7 @@ const handleUpdate = () => {
     
     /* 评论内容样式 */
     .comment-content {
-        margin: 10px 0 10px 58px;  /* 缩进与头像对齐 */
+        margin: 10px 0 5px 58px;  /* 缩进与头像对齐 */
         line-height: 1.6;
         word-break: break-word;
     }
@@ -105,6 +138,7 @@ const handleUpdate = () => {
     .reply-btn {
         color: var(--blue);
         font-family: var(--font-serif);
+        font-size: 0.8rem;
         padding: 0;
 
         :deep(span) {
