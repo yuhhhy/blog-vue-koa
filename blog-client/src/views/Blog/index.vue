@@ -1,12 +1,10 @@
 <script setup>
-import Sidebar from '@/components/Sidebar/index.vue'
 import ArticleHeader from './components/ArticleHeader.vue'
 import ArticleContent from './components/ArticleContent.vue'
 import ArticleRecommended from './components/ArticleRecommended.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
 
 import MarkdownIt from 'markdown-it'
-import markdownItTocAndAnchor from 'markdown-it-toc-and-anchor'
 import { ref, onMounted, watch, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
@@ -19,11 +17,10 @@ const route = useRoute()
 const router = useRouter()
 let htmlContent = ref('') // html格式文章内容
 let blogData = ref({}) // data/posts.json
-let tocHtml = ref('') // toc生成的html
 
 // 渲染文章内容 Markdown -> HTML
 const renderBlogContent = () => {
-    // 生成文章HTML、Toc
+    // 生成文章HTML
     const md = new MarkdownIt({
         html: true,
         linkify: true,
@@ -40,12 +37,6 @@ const renderBlogContent = () => {
         token.attrPush(['loading', 'lazy'])
         return defaultRender(tokens, idx, options, env, self)
     }
-
-    md.use(markdownItTocAndAnchor, {
-        tocCallback: function (tocMarkdown, tocArray, tocHtmlResult) {
-            tocHtml.value = tocHtmlResult
-        }
-    })
 
     htmlContent.value = md.render(blogData.value.content)
 }
@@ -76,7 +67,6 @@ watch(
       // 重置数据
       htmlContent.value = ''
       blogData.value = {}
-      tocHtml.value = ''
       
       // 重新获取数据
       await getBlogContent()
@@ -162,7 +152,7 @@ useHead({
             </div>
         </div>
 
-        <!-- 除了头部banner的主体和侧边栏区域 -->
+        <!-- 除了头部banner的主体区域 -->
         <div class="blog-main">
             <!-- 博客页面文章主体 -->
             <div class="blog-aritcle">
@@ -174,10 +164,6 @@ useHead({
                 <ArticleRecommended class="blog-aritcle-item"></ArticleRecommended>
                 <!-- 文章底部相关信息和评论区域 -->
                 <ArticleFooter class="blog-aritcle-item"></ArticleFooter>
-            </div>
-            <!-- 博客页面右侧边栏 -->
-            <div class="blog-sidebar">
-                <Sidebar :tags="blogData.tags" :tocHtml="tocHtml"></Sidebar>
             </div>
         </div>
     </div>
@@ -194,7 +180,7 @@ img {
 
 <style lang="scss" scoped>
 .blog-container {
-    background-color: var(--light);
+    background-color: var(--white);
     min-height: calc(100vh - 75px);
     width: 100%;
 
@@ -250,17 +236,13 @@ img {
     }
 
     .blog-main {
-        padding: 40px calc(7vw + 10px);
-        display: flex;
+        width: min(960px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 40px 0;
         height: 100%;
         max-width: 100vw;      // 限制最大宽度
-        // 不能设置 overflow-x: hidden，因为需要 blog-sidebar 的 sticky 需要父元素的 overflow: visible
 
         .blog-aritcle {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            flex: 1;
-            background-color: var(--white);
-            border-radius: 15px;
             min-width: 0;          // 允许 flex 项目收缩
             overflow-x: hidden;
 
@@ -269,22 +251,11 @@ img {
                 max-width: 100%;
             }
         }
-
-        .blog-sidebar {
-            width: 300px;
-            min-width: 260px;
-            height: auto;
-            min-height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
     }
 }
 
 @media screen and (max-width: 768px) {
     .blog-container {
-        background-color: var(--white);
-
         .blog-header {
             .banner {
                 height: 200px;
@@ -312,17 +283,11 @@ img {
         }
 
         .blog-main {
-            padding: 0;
-            flex-direction: column;
+            width: calc(100% - 30px);
+            padding: 20px 0;
 
             .blog-aritcle {
-                border-radius: 0;
-                margin-right: 0;
                 margin-bottom: 20px;
-            }
-
-            .blog-sidebar {
-                display: none;
             }
         }
     }

@@ -1,5 +1,4 @@
 <script setup>
-import Sidebar from '@/components/Sidebar/index.vue'
 import TagList from './components/TagList.vue'
 import Timeline from './components/Timeline.vue'
 </script>
@@ -14,26 +13,23 @@ import Timeline from './components/Timeline.vue'
             <!-- 归档页面时间线 -->
             <Timeline></Timeline>
         </div>
-        <!-- 归档页面侧边栏 -->
-        <Sidebar></Sidebar>
     </div>
 </div>
 </template>
 
 <style lang="scss" scoped>
 .archive-container {
-    background-color: var(--light);
+    background-color: var(--white);
     color: var(--black);
     min-height: calc(100vh - 75px);
     
     .archive-main {
-        padding: 40px calc(7vw + 10px);
-        display: flex;
+        width: min(960px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 40px 0;
         height: 100%;
+
         .archive-list {
-            flex: 1;
-            background-color: var(--white);
-            border-radius: 15px;
             padding: 20px 0;
         }
     }
@@ -41,17 +37,12 @@ import Timeline from './components/Timeline.vue'
 
 @media (max-width: 768px) {
     .archive-container{
-        background-color: var(--white);
         .archive-main {
-            padding: 20px 10px;
+            width: calc(100% - 30px);
+            padding: 20px 0;
+
             .archive-list{
                 padding: 0;
-                flex-direction: column;
-                .archive-list {
-                    margin-right: 0;
-                    margin-bottom: 20px;
-                    border-radius: 0;
-                }
             }
         }
     }

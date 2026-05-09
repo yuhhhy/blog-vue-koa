@@ -1,5 +1,4 @@
 <script setup>
-import Sidebar from '@/components/Sidebar/index.vue'
 import { ref, onMounted } from 'vue'
 import { apiGetBlogList } from '@/api/blog.js'
 
@@ -66,8 +65,6 @@ onMounted(() => {
                     </div>
                 </RouterLink>
             </div>
-            <!-- 个人展示 -->
-            <Sidebar></Sidebar>
         </div>
     </div>
 </template>
@@ -79,9 +76,8 @@ onMounted(() => {
     min-height: calc(100vh - 75px);
 
     .home-content {
-        background-color: var(--light);
+        background-color: var(--white);
         padding: 40px 60px;
-        display: flex;
 
         @media (max-width: 768px) {
             padding: 20px 20px;

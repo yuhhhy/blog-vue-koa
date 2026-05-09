@@ -1,5 +1,4 @@
 <script setup>
-import Sidebar from "@/components/Sidebar/index.vue"
 import ArticleFooter from "../Blog/components/ArticleFooter.vue"
 </script>
 
@@ -96,26 +95,23 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                 </div>
                 <!-- 评论区域 -->
                 <ArticleFooter :pageId="'-1'"></ArticleFooter>
-                </div>
-            <Sidebar class="about-sidebar"></Sidebar>
+            </div>
         </div>
     </div>
 </template>
 
 <style lang="scss" scoped>
 .about-cotainer {
+    background-color: var(--white);
+    min-height: calc(100vh - 75px);
+
     .about {
-        background-color: var(--light);
-        padding: 40px calc(7vw + 10px);
-        display: flex;
+        width: min(960px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 40px 0;
         height: 100%;
 
         .about-article {
-            background-color: var(--white);
-            border-radius: 10px;
-            flex: 1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
             .about-article-content {
                 padding: 0 30px;
                 line-height: 1.8;
@@ -210,14 +206,10 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
         }
 
         @media (max-width: 768px) {
-            padding: 0;
-            flex-direction: column;
+            width: calc(100% - 30px);
+            padding: 20px 0;
 
             .about-article {
-                margin-right: 0;
-                box-shadow: none;
-                border-radius: 0;
-
                 .about-article-content {
                     padding-bottom: 30px;
                     padding-left: 15px;

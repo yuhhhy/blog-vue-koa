@@ -108,7 +108,7 @@
     background-color: var(--white);
 
     .info {
-        background-color: var(--light);
+        background-color: var(--white);
         padding: 40px calc(17vw + 10px);
         display: flex;
         height: 100%;

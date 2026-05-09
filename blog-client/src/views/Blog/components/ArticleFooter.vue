@@ -152,8 +152,6 @@ onMounted(() => {
   font-family: 'Helvetica Neue', Arial, sans-serif;
   color: var(--light-dark);
   line-height: 1.6;
-  border-radius: 8px;
-  overflow: hidden;
   padding: 0 30px 10px 30px;
   
   .top-form {
@@ -165,7 +163,6 @@ onMounted(() => {
   .comment-list {
     .comment-item {
       padding: 15px 20px;
-      background: var(--white);
       border-top: 1px solid rgba(0, 0, 0, 0.05);
 
       code {
@@ -246,8 +243,6 @@ onMounted(() => {
 }
 @media screen and (max-width: 768px) {
   .article-footer {
-    box-shadow: none;
-    border-radius: 0;
     padding: 0 15px 10px 15px;
   }
 }

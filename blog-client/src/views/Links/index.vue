@@ -80,19 +80,15 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .link-container {
     background-color: var(--white);
+    min-height: calc(100vh - 75px);
     
     .links {
-        background-color: var(--light);
-        padding: 40px calc(17vw + 10px);
-        display: flex;
+        width: min(960px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 40px 0;
         height: 100%;
 
         .links-article {
-            background-color: var(--white);
-            border-radius: 10px;
-            flex: 1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
             .links-article-content {
                 padding: 0 30px 30px 30px;
                 line-height: 1.8;
@@ -247,18 +243,14 @@ onMounted(async () => {
             }
         }
         @media (max-width: 768px) {
-            padding: 0;
-            flex-direction: column;
+            width: calc(100% - 30px);
+            padding: 20px 0;
 
             .links-article {
-                margin-right: 0;
-                box-shadow: none;
-                border-radius: 0;
-
                 .links-article-content {
                     padding-bottom: 30px;
-                    padding-left: 30px;
-                    padding-right: 30px;
+                    padding-left: 15px;
+                    padding-right: 15px;
 
                     .links-display {
                         grid-template-columns: repeat(1, 1fr);

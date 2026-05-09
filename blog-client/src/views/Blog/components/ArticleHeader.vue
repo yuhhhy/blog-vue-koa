@@ -77,8 +77,7 @@ getCommentNumber()
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    background: var(--white);
-    border-radius: 8px 8px 0 0;
+    background: transparent;
 
     .header-left {
         display: flex;
