@@ -41,59 +41,80 @@ jobs:
         run: |
           echo "🚀 Building backend..."
           cd blog-server
-          npm install
+          npm ci
           cd ../
           node scripts/blog-server-update.js
       # 创建 .env 文件
       - name: Create .env file for Server
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
         run: |
           echo "📄 Creating .env file..."
-          echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" > server/.env
-          echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> server/.env
+          if [ -z "$EMAIL_USER" ] || [ -z "$EMAIL_PASS" ]; then
+            echo "::error::Missing EMAIL_USER or EMAIL_PASS in GitHub Actions secrets."
+            exit 1
+          fi
+          printf 'EMAIL_USER=%s\n' "$EMAIL_USER" > server/.env
+          printf 'EMAIL_PASS=%s\n' "$EMAIL_PASS" >> server/.env
+          test -s server/.env
           echo "✅ .env file created."
       # 第六步：打包构建产物
       # 把前后端的构建结果打成一个压缩包，方便传输
       - name: Package Artifacts
         run: |
           echo "📦 Packaging artifacts..."
+          rm -rf deploy
           mkdir -p deploy/frontend
           mv blog-client/dist deploy/frontend/
           mkdir -p deploy/admin
           mv blog-background/dist deploy/admin/
           mv server ./deploy/server
           tar -zcvf deploy.tar.gz -C deploy .
+          ls -lh deploy.tar.gz
+          tar -tzf deploy.tar.gz | sed -n '1,80p'
       # 第七步：传输到服务器
       - name: Copy package to server
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
+          port: ${{ secrets.REMOTE_PORT || 22 }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "deploy.tar.gz"  # 本地文件 (在 runner 上)
           target: "/tmp"            # 远程目标目录 (在服务器上)
+          timeout: 60s
+          command_timeout: 10m
+          debug: true
       # 第八步：在服务器上执行部署命令
       - name: Deploy to Server
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.REMOTE_HOST }}         # 服务器 IP 地址
           username: ${{ secrets.REMOTE_USER }}      # 服务器用户名
+          port: ${{ secrets.REMOTE_PORT || 22 }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}     # SSH 私钥
+          timeout: 60s
+          command_timeout: 10m
           script: |
             set -e
             
             DEPLOY_PATH="/var/www"
             
             echo "🚀 Unpacking and deploying on server..."
+            test -s /tmp/deploy.tar.gz
+            ls -lh /tmp/deploy.tar.gz
             
             echo "🧹 Cleaning up old deployment..."
             rm -rf $DEPLOY_PATH/frontend $DEPLOY_PATH/admin $DEPLOY_PATH/server
             
             echo "📦 Extracting new files..."
             tar -zxvf /tmp/deploy.tar.gz -C $DEPLOY_PATH
+            test -f $DEPLOY_PATH/server/package.json
             
             echo "🔧 Installing backend dependencies..."
             cd $DEPLOY_PATH/server
-            npm install
+            npm ci --omit=dev
             
             echo "🔄 Restarting services..."
             pm2 restart blog-server

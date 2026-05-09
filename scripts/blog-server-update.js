@@ -19,13 +19,14 @@ const dirsToCopy = [
   "routes",
   "utils",
 ];
-const filesToCopy = [".env", "app.js", "package-lock.json", "package.json"];
+const filesToCopy = ["app.js", "package-lock.json", "package.json"];
 
 async function copyAndConfigureServer() {
   try {
     console.log(`开始将文件从 ${sourceDir} 复制到 ${destDir}...`);
 
-    // 1. 创建目标文件夹
+    // 1. 清理并创建目标文件夹，避免复用上一次生成的残留文件
+    await fs.rm(destDir, { recursive: true, force: true });
     await fs.mkdir(destDir, { recursive: true });
     console.log(`- 目标文件夹 ${destDir} 已创建或已存在。`);
 
@@ -43,6 +44,18 @@ async function copyAndConfigureServer() {
       const destPath = path.join(destDir, file);
       await fs.copyFile(sourcePath, destPath);
       console.log(`  - 文件 '${file}' 已成功复制。`);
+    }
+
+    const packageFilePath = path.join(destDir, "package.json");
+    const packageJson = JSON.parse(await fs.readFile(packageFilePath, "utf-8"));
+    if (packageJson.scripts?.seed) {
+      delete packageJson.scripts.seed;
+      await fs.writeFile(
+        packageFilePath,
+        `${JSON.stringify(packageJson, null, 2)}\n`,
+        "utf-8"
+      );
+      console.log("- 已从部署产物 package.json 中移除 seed 脚本。");
     }
 
     console.log("\n文件和文件夹复制完成。现在开始修改环境配置...");
@@ -68,6 +81,7 @@ async function copyAndConfigureServer() {
     console.log("\n所有操作已成功完成！");
   } catch (error) {
     console.error("\n脚本执行过程中发生错误:", error);
+    process.exitCode = 1;
   }
 }
 
