@@ -7,8 +7,28 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import viteImagemin from 'vite-plugin-imagemin'
 
+const backendTarget = "http://localhost:3000"
+const backendProxy = {
+  "/api": {
+    target: backendTarget,
+    changeOrigin: true,
+  },
+  "/images": {
+    target: backendTarget,
+    changeOrigin: true,
+  },
+  "/feed": {
+    target: backendTarget,
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/feed/, "/feed.xml"),
+  },
+}
+
 // https://vite.dev/config/
 export default defineConfig({
+  // build: {
+  //   sourcemap: true
+  // },
   plugins: [
     vue(),
     // Gzip 压缩插件
@@ -65,16 +85,10 @@ export default defineConfig({
     port: 8080,
     // 代理请求，前端以/images开头的请求会被代理到后端的3000端口上 (http://localhost:3000/images)
     // 实际生产环境需要在 Nginx上配置代理
-    proxy: {
-      "/images": {
-        target: "http://localhost:3000", // 后端接口地址
-        changeOrigin: true,
-      },
-      "/feed": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/feed/, "/feed.xml"),
-      },
-    },
+    proxy: backendProxy,
+  },
+  // 本地预览生产构建时，模拟线上 Nginx/Vercel 对后端资源的反向代理。
+  preview: {
+    proxy: backendProxy,
   },
 })
