@@ -1,86 +1,12 @@
 <script setup>
-import { onBeforeUnmount, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useBlogList } from '@/composables/useBlogList.js'
 
 const { blogList, fetchBlogList } = useBlogList()
-let lazyImageObserver
-
-const getLazyValue = (binding) => {
-  if (typeof binding.value === 'string') {
-    return {
-      src: binding.value,
-      immediate: binding.modifiers.immediate,
-    }
-  }
-
-  return {
-    src: binding.value?.src,
-    immediate: binding.value?.immediate || binding.modifiers.immediate,
-  }
-}
-
-const loadBackgroundImage = (el, src) => {
-  if (src) {
-    el.style.backgroundImage = `url(${src})`
-  }
-}
-
-const getLazyImageObserver = () => {
-  lazyImageObserver ||= new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return
-
-      loadBackgroundImage(entry.target, entry.target.dataset.src)
-      lazyImageObserver.unobserve(entry.target)
-    })
-  }, {
-    rootMargin: '200px'
-  })
-
-  return lazyImageObserver
-}
-
-// 创建图片懒加载指令，支持非懒加载选项
-const vLazy = {
-  mounted(el, binding) {
-    const { src, immediate } = getLazyValue(binding)
-
-    if (immediate) {
-      loadBackgroundImage(el, src)
-      return;
-    }
-
-    el.dataset.src = src
-    getLazyImageObserver().observe(el)
-  },
-  updated(el, binding) {
-    const { src, immediate } = getLazyValue(binding)
-    if (el.dataset.src === src) return
-
-    lazyImageObserver?.unobserve(el)
-    el.style.backgroundImage = ''
-
-    if (immediate) {
-      loadBackgroundImage(el, src)
-      return
-    }
-
-    el.dataset.src = src
-    getLazyImageObserver().observe(el)
-  },
-  unmounted(el) {
-    lazyImageObserver?.unobserve(el)
-  }
-}
 
 onMounted(() => {
     // 获取后台数据
     fetchBlogList();
-})
-
-onBeforeUnmount(() => {
-    lazyImageObserver?.disconnect()
-    lazyImageObserver = undefined
 })
 </script>
 
@@ -92,10 +18,14 @@ onBeforeUnmount(() => {
             <div class="home-main">
                 <RouterLink v-for="(blog, index) in blogList" :key="blog.id" :to="`/blog/${blog.id}`" class="blog">
                     <!-- 图片使用懒加载 -->
-                    <div 
-                      class="blog-img" 
-                      v-lazy="{ src: blog.coverImage, immediate: index < 5 }"
-                    ></div>
+                    <img
+                      class="blog-img"
+                      :src="blog.coverImage"
+                      :alt="blog.title"
+                      :loading="index < 5 ? 'eager' : 'lazy'"
+                      :fetchpriority="index < 5 ? 'high' : 'auto'"
+                      decoding="async"
+                    >
                     <div class="blog-intro">
                         <div class="blog-title">{{ blog.title }}</div>
                         <div class="blog-time-tags">
@@ -157,20 +87,18 @@ onBeforeUnmount(() => {
 
                 .blog-img {
                     flex: 0 0 240px;
+                    width: 240px;
+                    height: 150px;
                     min-height: 150px;
-                    background-size: cover;
-                    background-position: center;
-                    position: relative;
+                    display: block;
+                    object-fit: cover;
+                    background-color: #f0f0f0;
                     transition: filter 0.3s ease;
-                    
-                    // 加载占位效果
-                    &:not([style*="url("]) {
-                      background-color: #f0f0f0;
-                      animation: pulse 2.5s infinite;
-                    }
 
                     @media (max-width: 768px) {
                         flex-basis: 38%;
+                        width: 38%;
+                        height: 120px;
                         min-height: 120px;
                     }
                 }
@@ -223,15 +151,4 @@ onBeforeUnmount(() => {
     }
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.6;
-  }
-}
 </style>

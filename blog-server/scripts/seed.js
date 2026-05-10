@@ -7,14 +7,14 @@ import { User } from '../models/UserSchema.js'
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/blog'
 const AUTHOR = 'Yuhhhy'
-const COVER = 'https://picsum.photos/seed/blog-default/1200/600'
+const COVER = '/images/dev-covers/blog-default.jpg'
 
 const samplePosts = [
     {
         id: 'post-001',
         title: 'Vue 3 + Koa 全栈博客踩坑记录',
         tags: ['Vue', 'Koa', '全栈'],
-        coverImage: 'https://picsum.photos/seed/vue-koa/1200/600',
+        coverImage: '/images/dev-covers/vue-koa.jpg',
         content: `# Vue 3 + Koa 全栈博客踩坑记录
 
 本文记录了搭建 Vue 3 + Koa 博客的几个关键节点。
@@ -43,7 +43,7 @@ Markdown 编辑器选用 v-md-editor，配合 markdown-it 渲染。
         id: 'post-002',
         title: '聊聊前端工程化里的 Vite',
         tags: ['Vite', '前端工程化'],
-        coverImage: 'https://picsum.photos/seed/vite/1200/600',
+        coverImage: '/images/dev-covers/vite.jpg',
         content: `# 聊聊前端工程化里的 Vite
 
 Vite 借助原生 ES Module 实现了 dev server 的秒启，本文从原理和实战两个角度展开。
@@ -69,7 +69,7 @@ Vite 插件兼容 Rollup 插件，并扩展了 \`configureServer\`、\`transform
         id: 'post-003',
         title: 'MongoDB 索引：从原理到实践',
         tags: ['MongoDB', '数据库'],
-        coverImage: 'https://picsum.photos/seed/mongo/1200/600',
+        coverImage: '/images/dev-covers/mongo.jpg',
         content: `# MongoDB 索引：从原理到实践
 
 索引是数据库性能的命脉，本文从 B 树结构开始，讲到复合索引、覆盖查询。
@@ -91,7 +91,7 @@ MongoDB 使用 B 树而非 B+ 树，叶子节点也存数据。
         id: 'post-004',
         title: 'CSS Grid 布局速查',
         tags: ['CSS', '前端'],
-        coverImage: 'https://picsum.photos/seed/css-grid/1200/600',
+        coverImage: '/images/dev-covers/css-grid.jpg',
         content: `# CSS Grid 布局速查
 
 二维布局神器，常用属性速查。
@@ -117,7 +117,7 @@ MongoDB 使用 B 树而非 B+ 树，叶子节点也存数据。
         id: 'post-005',
         title: '换电脑后的开发环境恢复清单',
         tags: ['工作流', '杂谈'],
-        coverImage: 'https://picsum.photos/seed/setup/1200/600',
+        coverImage: '/images/dev-covers/setup.jpg',
         content: `# 换电脑后的开发环境恢复清单
 
 换电脑是一次断舍离，记录一下我的最小配置。
@@ -160,7 +160,7 @@ const sampleLinks = [
         name: '阮一峰的网络日志',
         description: '前端老牌博客',
         site: 'https://www.ruanyifeng.com/blog/',
-        avatar: 'https://picsum.photos/seed/ruanyifeng/200',
+        avatar: '/images/dev-covers/ruanyifeng.jpg',
     },
 ]
 
