@@ -94,7 +94,7 @@ onBeforeUnmount(() => {
                     <!-- 图片使用懒加载 -->
                     <div 
                       class="blog-img" 
-                      v-lazy="{ src: blog.coverImage, immediate: index === 0 }"
+                      v-lazy="{ src: blog.coverImage, immediate: index < 5 }"
                     ></div>
                     <div class="blog-intro">
                         <div class="blog-title">{{ blog.title }}</div>
