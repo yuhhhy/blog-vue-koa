@@ -13,6 +13,7 @@ export function apiGetImageList() {
     return request({
         url: '/files/images',
         method: 'GET',
+        requireAuth: true
     });
 };
 
@@ -33,6 +34,7 @@ export function apiGetMdList() {
   return request({
     url: '/files/mds',
     method: 'GET',
+    requireAuth: true
   });
 }
 

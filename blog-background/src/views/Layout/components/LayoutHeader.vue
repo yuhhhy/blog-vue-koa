@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, watch, onMounted, onBeforeUnmount } from "vue"
+import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { useUserStore } from "@/stores/userStore.js"
 import { useNotificationStore } from "@/stores/notificationStore.js"
@@ -9,6 +9,8 @@ const notificationStore = useNotificationStore()
 const route = useRoute()
 const router = useRouter()
 const routeList = ref([])
+const isAdmin = computed(() => userStore.userData.role === 'admin')
+let notificationTimer = null
 
 // 监听路由变化
 watch(() => route.path, () => {
@@ -28,28 +30,32 @@ watch(() => route.path, () => {
 
 // 组件挂载时获取通知数据
 onMounted(() => {
-    if (userStore.isAuthenticated) {
+    if (isAdmin.value) {
         fetchNotifications()
         
         // 设置定时刷新通知 (每分钟刷新一次)
-        const timer = setInterval(fetchNotifications, 60000)
-        
-        // 组件卸载时清除定时器
-        onBeforeUnmount(() => {
-            clearInterval(timer)
-        })
+        notificationTimer = setInterval(fetchNotifications, 60000)
+    }
+})
+
+// 组件卸载时清除定时器
+onBeforeUnmount(() => {
+    if (notificationTimer) {
+        clearInterval(notificationTimer)
     }
 })
 
 // 用户登录状态变化时，重新获取通知
 watch(() => userStore.isAuthenticated, (newVal) => {
-    if (newVal) {
+    if (newVal && isAdmin.value) {
         fetchNotifications()
     }
 })
 
 // 获取所有通知
 async function fetchNotifications() {
+    if (!isAdmin.value) return
+
     await notificationStore.refreshAllNotifications()
 }
 
@@ -107,13 +113,13 @@ function handleLogin() {
                         </el-tag>
                         <div>{{ userStore.userData.email }}</div>
                     </div>
-                    <RouterLink to="/comment/pending" class="cursor-pointer hover:bg-gray-200 p-2">
+                    <RouterLink v-if="isAdmin" to="/comment/pending" class="cursor-pointer hover:bg-gray-200 p-2">
                         <span class=" text-blue-500">待审评论</span>
                         <span class="text-red-500 text-xs ml-1" v-if="notificationStore.pendingCommentsCount">
                             ({{ notificationStore.pendingCommentsCount }})
                         </span>
                     </RouterLink>
-                    <RouterLink to="/links" class="cursor-pointer hover:bg-gray-200 p-2">
+                    <RouterLink v-if="isAdmin" to="/links" class="cursor-pointer hover:bg-gray-200 p-2">
                         <span class="text-blue-500">友链申请</span>
                         <span class="text-red-500 text-xs ml-1" v-if="notificationStore.pendingLinksCount">
                             ({{ notificationStore.pendingLinksCount }})

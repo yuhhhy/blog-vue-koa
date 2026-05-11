@@ -1,48 +1,72 @@
 import jwt from 'jsonwebtoken'
 import KEY from '../config/key.js'
 
+const getTokenFromHeader = (authorization) => {
+    if (!authorization) return null
+
+    const [scheme, token] = authorization.split(' ')
+    if (scheme !== 'Bearer' || !token) return null
+
+    return token
+}
+
+const unauthorized = (ctx) => {
+    ctx.status = 401
+    ctx.body = {
+        code: 401,
+        message: '请先登录'
+    }
+}
+
+const tokenInvalid = (ctx) => {
+    ctx.status = 400
+    ctx.body = {
+        code: 400,
+        message: 'token过期，请重新登录'
+    }
+}
+
+const forbidden = (ctx) => {
+    ctx.status = 403
+    ctx.body = {
+        code: 403,
+        message: '权限不足，需要管理员权限'
+    }
+}
+
 export const authMiddleware = async (ctx, next) => {
-    let requireAuth = ctx.request.headers['require-auth']
+    const token = getTokenFromHeader(ctx.request.headers.authorization)
 
-    // 如果前端请求请求头有 require-auth: true，或者访问的是上传接口，则需要校验 token
-    if (requireAuth) {
+    if (token) {
+        try {
+            ctx.state.user = jwt.verify(token, KEY)
+        } catch (error) {
+            ctx.state.user = null
+        }
+    }
 
-        // 检查是否登录
-        const authorization = ctx.request.headers.authorization
-        if (!authorization) {
-            ctx.status = 401
-            ctx.body = {
-                code: 401,
-                message: '请先登录'
-            }
+    await next()
+}
+
+export const requireAdmin = async (ctx, next) => {
+    const token = getTokenFromHeader(ctx.request.headers.authorization)
+
+    if (!token) {
+        unauthorized(ctx)
+        return
+    }
+
+    try {
+        const decoded = jwt.verify(token, KEY)
+
+        if (decoded.role !== 'admin') {
+            forbidden(ctx)
             return
         }
 
-        // 检查token和权限
-        try {
-            const token = authorization.split(' ')[1]
-            const decoded = jwt.verify(token, KEY)
-
-            // 检查JWT payload中的用户角色字段
-            if (decoded.role !== 'admin') {
-                ctx.status = 403
-                ctx.body = {
-                    code: 403,
-                    message: '权限不足，需要管理员权限'
-                }
-                return
-            }
-            
-            await next()
-        } catch (error) {
-            ctx.status = 400
-            ctx.body = {
-                code: 400,
-                message: 'token过期，请重新登录'
-            }
-        }
-    } else {
+        ctx.state.user = decoded
         await next()
-        return
+    } catch (error) {
+        tokenInvalid(ctx)
     }
 }

@@ -13,7 +13,8 @@ export function apiGetVisitorList(params) {
         params: {
             page: params?.page || 1,
             limit: params?.limit || 10
-        }
+        },
+        requireAuth: true
     })
 }
 

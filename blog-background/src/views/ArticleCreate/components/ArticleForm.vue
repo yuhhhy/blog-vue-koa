@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
 import { useRouter } from 'vue-router'
@@ -71,21 +71,25 @@ const clearForm = () => {
 
 const userStore = useUserStore()
 const router = useRouter()
+const uploadHeaders = computed(() => ({
+  Authorization: `Bearer ${userStore.userData?.token}`,
+  'require-auth': 'true'
+}))
 
 // 图片上传前验证是否登录
 const beforeUpload = () => {
   if (!userStore.isAuthenticated) {
     ElMessage.warning("请先登录")
     router.push('/login')
-    // 取消上传请求
-    abort()
+    return false
   }
 
   if (userStore.userData.role !== 'admin') {
     ElMessage.warning("请先获得管理员权限")
-    // 取消上传请求
-    abort()
+    return false
   }
+
+  return true
 }
 
 // 图片文件上传成功，返回文件数据
@@ -146,6 +150,7 @@ const uploadError = (file) => {
         <template #reference><el-button>上传文章封面</el-button></template>
         <el-upload
           :action="`${baseApi}/upload/image`"
+          :headers="uploadHeaders"
           list-type="picture-card"
           :limit="1"
           :before-upload="beforeUpload"

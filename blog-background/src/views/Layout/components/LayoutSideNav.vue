@@ -1,6 +1,9 @@
 <script setup>
+import { computed } from 'vue'
 import SideNavItem from '@/components/SideNavItem/index.vue'
+import { useUserStore } from '@/stores/userStore'
 
+const userStore = useUserStore()
 
 const siderNavItems = [
     {
@@ -12,11 +15,13 @@ const siderNavItems = [
         children: [
             {
                 title: '文章列表',
-                link: '/article/list'
+                link: '/article/list',
+                requiresAdmin: true
             },
             {
                 title: '新建文章',
-                link: '/article/create'
+                link: '/article/create',
+                requiresAdmin: true
             }
         ]
     },
@@ -25,11 +30,13 @@ const siderNavItems = [
         children: [
             {
                 title: '用户管理',
-                link: '/user/manage'
+                link: '/user/manage',
+                requiresAdmin: true
             },
             {
                 title: '访客记录',
-                link: '/user/record'
+                link: '/user/record',
+                requiresAdmin: true
             }
         ]
     },
@@ -38,32 +45,56 @@ const siderNavItems = [
         children: [
             {
                 title: '全部评论',
-                link: '/comment/manage'
+                link: '/comment/manage',
+                requiresAdmin: true
             },
             {
                 title: '待审评论',
-                link: '/comment/pending'
+                link: '/comment/pending',
+                requiresAdmin: true
             }
         ]
     },
     {
         title: '友链',
         link: '/links',
+        requiresAdmin: true
     },
     {
         title: '文件',
         children: [
             {
                 title: '图片',
-                link: '/files/imgfile'
+                link: '/files/imgfile',
+                requiresAdmin: true
             },
             {
                 title: 'Markdown',
-                link: '/files/mdfile'
+                link: '/files/mdfile',
+                requiresAdmin: true
             }
         ]
     }
 ]
+
+const isAdmin = computed(() => userStore.userData.role === 'admin')
+
+const filterNavItems = (items) => {
+    return items
+        .map((item) => {
+            if (item.children) {
+                const children = filterNavItems(item.children)
+                return children.length ? { ...item, children } : null
+            }
+
+            if (item.requiresAdmin && !isAdmin.value) return null
+
+            return item
+        })
+        .filter(Boolean)
+}
+
+const visibleSiderNavItems = computed(() => filterNavItems(siderNavItems))
  
 </script>
 
@@ -71,7 +102,7 @@ const siderNavItems = [
     <div class="w-52 h-screen overflow-y-auto fixed border-r border-slate-300 ">
         <el-menu>
             <SideNavItem
-                v-for="(item, index) in siderNavItems"
+                v-for="(item, index) in visibleSiderNavItems"
                 :item="item"
                 :index="String(index)"
             />

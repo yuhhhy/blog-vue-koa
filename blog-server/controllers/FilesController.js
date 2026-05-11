@@ -8,12 +8,16 @@ const __dirname = path.dirname(__filename)
 const imageDir = path.join(__dirname, "..", "..", "public", "images");
 const mdDir = path.join(__dirname, "..", "..", "public", "mds");
 
+const ensureDir = async (dir) => {
+    await fs.mkdir(dir, { recursive: true });
+}
+
 // 获取图片列表
 export const getImageFiles = async (ctx) => {
     try {
         const imageList = [];
 
-        await fs.access(imageDir);
+        await ensureDir(imageDir);
         const files = await fs.readdir(imageDir);
 
         for (const file of files) {
@@ -54,8 +58,7 @@ export const deleteImageFile = async (ctx) => {
 // 获取 Markdown 文件列表
 export const getMdFiles = async (ctx) => {
   try {
-    // 确保目录存在，如果不存在则创建
-
+    await ensureDir(mdDir);
     const files = await fs.readdir(mdDir);
     const mdList = [];
     for (const file of files) {

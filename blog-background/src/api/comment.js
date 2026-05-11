@@ -10,6 +10,7 @@ export function apiGetAllComments() {
     return request({
         url: '/comment',
         method: 'GET',
+        requireAuth: true
     })
 }
 
@@ -45,5 +46,6 @@ export function apiGetPendingComments() {
     return request({
         url: '/comment/pending',
         method: 'GET',
+        requireAuth: true
     })
 }

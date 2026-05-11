@@ -43,6 +43,10 @@ const handleImageUpload = async (imageFile) => {
 
     const res = await fetch(`${baseApi}/upload/image`, {
         method: 'POST',
+        headers: {
+            Authorization: `Bearer ${userStore.userData?.token}`,
+            'require-auth': 'true'
+        },
         body: formData,
     })
 
@@ -175,6 +179,10 @@ onMounted(() => {
             // 必须设置上传的文件字段名为 file，符合后端配置
             fieldName: 'file',
             url: `${baseApi}/upload/image`, // 设置上传接口URL
+            headers: {
+                Authorization: `Bearer ${userStore.userData?.token}`,
+                'require-auth': 'true'
+            },
             accept: 'image/jpeg', // 明确指定接受JPEG格式
             success: (editor, msg) => {
                 const response = JSON.parse(msg)

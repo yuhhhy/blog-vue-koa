@@ -18,11 +18,17 @@ const routes = [
         path: "article/list",
         name: "ArticleList",
         component: () => import("../views/ArticleList/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
       },
       {
         path: "article/create",
         name: "ArticleCreate",
         component: () => import("../views/ArticleCreate/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
       },
       {
         path: "user/manage",
@@ -44,26 +50,41 @@ const routes = [
         path: "comment/manage",
         name: "CommentManage",
         component: () => import("../views/CommentManage/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
       },
       {
         path: "comment/pending",
         name: "CommentPending",
         component: () => import("../views/CommentPending/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
       },
       {
         path: "links",
         name: "Links",
         component: () => import("../views/Links/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
       },
       {
         path: "files/imgfile",
         name: "ImgFile",
         component: () => import("../views/Files/ImgFile/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
       },
       {
         path: "files/mdfile",
         name: "MdFile",
         component: () => import("../views/Files/MdFile/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
       },
     ],
   },

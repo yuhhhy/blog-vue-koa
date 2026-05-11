@@ -4,8 +4,6 @@ import { connectDB } from './config/db.js'
 import bodyParser from 'koa-bodyparser'
 import router from './routes/api.js'
 import serve from 'koa-static'
-import multer from '@koa/multer'
-import { storage  } from "./config/upload.js";
 import { authMiddleware } from './middlewares/auth.js'
 import envConfig from './config/env.js'
 import logger from './config/logger.js'
@@ -56,11 +54,6 @@ app.use(serve(envConfig.staticResourceFilePath))
 
 // 注册鉴权中间件
 app.use(authMiddleware)
-
-// 处理文件上传
-const upload = multer({ storage });
-
-app.use(upload.single('file')) // 处理单个文件上传，注意这里的 'file' 要和前端上传时的 name 对应
 
 // 注册路由
 app.use(router.routes())

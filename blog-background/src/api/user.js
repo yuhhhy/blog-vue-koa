@@ -18,7 +18,8 @@ export function apiUserLogin(data) {
 export function apiGetUserList() {
     return request({
         url: '/user/list',
-        method: 'GET'
+        method: 'GET',
+        requireAuth: true
     })
 }
 
@@ -26,7 +27,8 @@ export function apiGetUserList() {
 export function apiGetUser(userId) {
     return request({
         url: `/user/${userId}`,
-        method: 'GET'
+        method: 'GET',
+        requireAuth: true
     })
 }
 
