@@ -348,8 +348,10 @@ export const downloadLargeFile = async (ctx) => {
     }
 
     try {
-        await fsp.access(filePath)
+        const stats = await fsp.stat(filePath)
         ctx.attachment(safeName)
+        ctx.length = stats.size
+        ctx.type = path.extname(safeName)
         ctx.body = fs.createReadStream(filePath)
     } catch (error) {
         ctx.status = error.code === 'ENOENT' ? 404 : 500

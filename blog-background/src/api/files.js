@@ -63,13 +63,14 @@ export function apiDeleteLargeFile(type, filename) {
   });
 }
 
-export function apiDownloadLargeFile(type, filename) {
+export function apiDownloadLargeFile(type, filename, onDownloadProgress) {
   return request({
     url: `/files/large/${type}/${encodeURIComponent(filename)}/download`,
     method: 'GET',
     requireAuth: true,
     responseType: 'blob',
     timeout: 0,
+    onDownloadProgress,
   });
 }
 
