@@ -8,11 +8,18 @@ import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } f
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
 import { getImageFiles, deleteImageFile, getMdFiles, deleteMdFile } from "../controllers/FilesController.js"
+import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus, mergeLargeFile, uploadLargeChunk } from '../controllers/LargeFilesController.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { storage } from '../config/upload.js'
 
 const router = new Router({ prefix: '/api' })
 const upload = multer({ storage })
+const largeChunkUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 10 * 1024 * 1024,
+    },
+})
 
 /**
  * Blog API
@@ -191,6 +198,15 @@ router.get("/files/mds", requireAdmin, getMdFiles);
 // 删除 Markdown 文件
 router.delete("/files/mds/:filename", requireAdmin, deleteMdFile);
 
+// 获取大文件列表
+router.get('/files/large', requireAdmin, getLargeFiles);
+
+// 删除大文件
+router.delete('/files/large/:type/:filename', requireAdmin, deleteLargeFile);
+
+// 下载大文件
+router.get('/files/large/:type/:filename/download', requireAdmin, downloadLargeFile);
+
 /**
  * Upload API
  */
@@ -206,5 +222,14 @@ router.post("/upload/md", requireAdmin, upload.single('file'), async (ctx) => {
     ctx.status = 200;
     ctx.body = ctx.request.file;
 });
+
+// 查询大文件分片上传状态
+router.get('/upload/large/status', requireAdmin, getLargeUploadStatus);
+
+// 上传大文件分片
+router.post('/upload/large/chunk', requireAdmin, largeChunkUpload.single('file'), uploadLargeChunk);
+
+// 合并大文件分片
+router.post('/upload/large/merge', requireAdmin, mergeLargeFile);
 
 export default router

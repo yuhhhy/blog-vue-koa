@@ -15,8 +15,46 @@ dotenv.config()
 // 创建 Koa 实例
 const app = new Koa()
 
+const isClientAbortError = (error) => {
+    return ['EPIPE', 'ECONNRESET', 'ERR_STREAM_PREMATURE_CLOSE'].includes(error?.code)
+}
+
+app.on('error', (error, ctx) => {
+    if (isClientAbortError(error)) {
+        logger.warn(`[CLIENT_ABORT] ${ctx?.method || ''} ${ctx?.url || ''} ${error.code}`)
+        return
+    }
+
+    logger.error(error?.stack || error?.message || error)
+})
+
 // 连接数据库
 connectDB()
+
+// 全局错误处理中间件
+app.use(async (ctx, next) => {
+    ctx.res.on('error', (error) => {
+        if (!isClientAbortError(error)) {
+            ctx.app.emit('error', error, ctx)
+        }
+    })
+
+    try {
+        await next()
+    } catch (error) {
+        if (isClientAbortError(error)) {
+            ctx.app.emit('error', error, ctx)
+            return
+        }
+
+        ctx.app.emit('error', error, ctx)
+        ctx.status = error.status || 500
+        ctx.body = {
+            success: false,
+            message: error.expose ? error.message : '服务器错误',
+        }
+    }
+})
 
 // 解决跨域问题
 app.use(cors({

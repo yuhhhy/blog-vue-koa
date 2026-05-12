@@ -69,6 +69,11 @@ const siderNavItems = [
                 requiresAdmin: true
             },
             {
+                title: '大文件',
+                link: '/files/large',
+                requiresAdmin: true
+            },
+            {
                 title: 'Markdown',
                 link: '/files/mdfile',
                 requiresAdmin: true

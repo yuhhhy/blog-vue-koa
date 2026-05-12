@@ -86,6 +86,14 @@ const routes = [
           requiresAdmin: true,
         },
       },
+      {
+        path: "files/large",
+        name: "LargeFile",
+        component: () => import("../views/Files/LargeFile/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
+      },
     ],
   },
   {
