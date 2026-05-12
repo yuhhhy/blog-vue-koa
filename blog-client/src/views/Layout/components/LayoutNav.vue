@@ -1,10 +1,34 @@
 <script setup>
 import { onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 
 const themeStore = useThemeStore()
+const route = useRoute()
+
+const navItems = [
+    {
+        label: '主页',
+        to: '/home',
+        activePaths: ['/home', '/blog']
+    },
+    {
+        label: '关于',
+        to: '/about',
+        activePaths: ['/about']
+    },
+    {
+        label: '友链',
+        to: '/links',
+        activePaths: ['/links']
+    }
+]
+
+const isNavActive = (item) => {
+    return item.activePaths.some(path => route.path === path || route.path.startsWith(`${path}/`))
+}
 
 // 设置主题
 const toggleTheme = () => {
@@ -26,9 +50,14 @@ onMounted(() => {
 <template>
     <div class="nav">
         <div class="nav-links">
-            <RouterLink to="/home">主页</RouterLink>
-            <RouterLink to="/about">关于</RouterLink>
-            <RouterLink to="/links">友链</RouterLink>
+            <RouterLink
+                v-for="item in navItems"
+                :key="item.to"
+                :to="item.to"
+                :class="{ 'nav-link--active': isNavActive(item) }"
+            >
+                {{ item.label }}
+            </RouterLink>
         </div>
         <button @click="toggleTheme" aria-label="theme-toggle-button" class="theme-toggle">
             <span class="iconfont icon-sun themeIcon" v-if="themeStore.theme === 'light'"></span>
@@ -39,14 +68,16 @@ onMounted(() => {
                 <span class="iconfont drop-down-icon">&#xe61b;</span>
                 <template #dropdown>
                     <el-dropdown-menu>
-                        <el-dropdown-item>
-                            <RouterLink to="/home">主页</RouterLink>
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <RouterLink to="/about">关于</RouterLink>
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <RouterLink to="/links">友链</RouterLink>
+                        <el-dropdown-item
+                            v-for="item in navItems"
+                            :key="item.to"
+                        >
+                            <RouterLink
+                                :to="item.to"
+                                :class="{ 'nav-link--active': isNavActive(item) }"
+                            >
+                                {{ item.label }}
+                            </RouterLink>
                         </el-dropdown-item>
                     </el-dropdown-menu>
                 </template>
@@ -74,14 +105,36 @@ onMounted(() => {
     }
 
     a {
+        position: relative;
         color: var(--dark);
+        font-weight: 500;
+        transition: color 0.2s ease, font-weight 0.2s ease;
 
         &:hover {
-            color: var(--blue);
+            color: var(--skyblue);
         }
 
-        &.active {
-            color: var(--blue);
+        &::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -8px;
+            width: 18px;
+            height: 2px;
+            border-radius: 999px;
+            background-color: var(--skyblue);
+            transform: translateX(-50%) scaleX(0);
+            transform-origin: center;
+            transition: transform 0.2s ease;
+        }
+
+        &.nav-link--active {
+            color: var(--skyblue);
+            font-weight: 700;
+        }
+
+        &.nav-link--active::after {
+            transform: translateX(-50%) scaleX(1);
         }
     }
 
@@ -98,6 +151,10 @@ onMounted(() => {
         .iconfont {
             color: var(--black);
             font-size: 15px;
+        }
+
+        a::after {
+            bottom: -4px;
         }
     }
 

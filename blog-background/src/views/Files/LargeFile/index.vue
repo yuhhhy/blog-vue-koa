@@ -15,7 +15,6 @@ import {
 } from '@element-plus/icons-vue'
 import {
     apiDeleteLargeFile,
-    apiDownloadLargeFile,
     apiGetLargeFileList,
     apiGetLargeUploadStatus,
     apiMergeLargeFile,
@@ -46,7 +45,6 @@ const isPaused = ref(false)
 const uploadedBytes = ref(0)
 const startTime = ref(0)
 const abortController = ref(null)
-const downloadStates = ref({})
 
 const filteredFiles = computed(() => {
     if (selectedType.value === 'all') return fileList.value
@@ -70,30 +68,23 @@ const uploadStatusText = computed(() => {
 const canUpload = computed(() => selectedFile.value && ['idle', 'paused', 'error', 'success'].includes(uploadStatus.value))
 const canPause = computed(() => uploadStatus.value === 'uploading')
 
+const encodeUrlPath = (url) => {
+    return url
+        .split('/')
+        .map((segment) => encodeURIComponent(decodeURIComponent(segment)))
+        .join('/')
+}
+
 const resolveFileUrl = (url) => {
     if (/^https?:\/\//.test(url)) return url
 
     const base = staticBase || window.location.origin
-    return `${base}${url}`
+    return `${base}${encodeUrlPath(url)}`
 }
 
-const getDownloadKey = (row) => `${row.type}/${row.name}`
-
-const getDownloadState = (row) => {
-    return downloadStates.value[getDownloadKey(row)] || {
-        loading: false,
-        progress: 0,
-    }
-}
-
-const setDownloadState = (row, state) => {
-    downloadStates.value = {
-        ...downloadStates.value,
-        [getDownloadKey(row)]: {
-            ...getDownloadState(row),
-            ...state,
-        },
-    }
+const resolveDownloadUrl = (row) => {
+    const base = staticBase || window.location.origin
+    return `${base}/download${encodeUrlPath(row.url)}`
 }
 
 const fetchLargeFiles = async () => {
@@ -284,34 +275,15 @@ const handleDelete = (row) => {
     }).catch(() => {})
 }
 
-const handleDownload = async (row) => {
-    try {
-        setDownloadState(row, { loading: true, progress: 0 })
-        ElMessage.info(`开始下载 "${row.name}"`)
+const handleDownload = (row) => {
+    const link = document.createElement('a')
 
-        const blob = await apiDownloadLargeFile(row.type, row.name, (event) => {
-            if (!event.total) return
-
-            setDownloadState(row, {
-                progress: Math.min(99, Math.round((event.loaded / event.total) * 100)),
-            })
-        })
-        const blobUrl = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-
-        link.href = blobUrl
-        link.download = row.name
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(blobUrl)
-
-        setDownloadState(row, { loading: false, progress: 100 })
-        ElMessage.success(`"${row.name}" 已开始保存`)
-    } catch (error) {
-        setDownloadState(row, { loading: false, progress: 0 })
-        ElMessage.error('文件下载失败')
-    }
+    link.href = resolveDownloadUrl(row)
+    link.download = row.name
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    ElMessage.success(`已交给浏览器下载 "${row.name}"`)
 }
 
 const handleCopyUrl = async (row) => {
@@ -433,27 +405,11 @@ onBeforeUnmount(() => {
                 <el-table-column label="上传时间" width="180" sortable :sort-by="row => new Date(row.uploadDate).getTime()">
                     <template #default="{ row }">{{ formatDate(row.uploadDate) }}</template>
                 </el-table-column>
-                <el-table-column label="操作" width="300" fixed="right">
+                <el-table-column label="操作" width="260" fixed="right">
                     <template #default="{ row }">
-                        <div class="file-actions">
-                            <div>
-                                <el-button size="small" :icon="CopyDocument" @click="handleCopyUrl(row)">复制</el-button>
-                                <el-button
-                                    size="small"
-                                    :icon="Download"
-                                    :loading="getDownloadState(row).loading"
-                                    @click="handleDownload(row)"
-                                >
-                                    下载
-                                </el-button>
-                                <el-button size="small" type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
-                            </div>
-                            <el-progress
-                                v-if="getDownloadState(row).loading || getDownloadState(row).progress > 0"
-                                class="download-progress"
-                                :percentage="getDownloadState(row).progress"
-                            />
-                        </div>
+                        <el-button size="small" :icon="CopyDocument" @click="handleCopyUrl(row)">复制</el-button>
+                        <el-button size="small" :icon="Download" @click="handleDownload(row)">下载</el-button>
+                        <el-button size="small" type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -501,16 +457,6 @@ onBeforeUnmount(() => {
 .type-icon {
     margin-right: 4px;
     vertical-align: -2px;
-}
-
-.file-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.download-progress {
-    width: 260px;
 }
 
 @media (max-width: 768px) {
