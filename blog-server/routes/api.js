@@ -11,7 +11,7 @@ import { getImageFiles, deleteImageFile, getMdFiles, deleteMdFile } from "../con
 import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus, initLargeUpload, mergeLargeFile, uploadLargeChunk, verifyLargeFile } from '../controllers/LargeFilesController.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { storage } from '../config/upload.js'
-import { generateImageVariants } from '../utils/imageVariants.js'
+import { convertImageToAvif, generateImageVariants } from '../utils/imageVariants.js'
 
 const router = new Router({ prefix: '/api' })
 const upload = multer({ storage })
@@ -217,6 +217,16 @@ router.post('/upload/image', requireAdmin, upload.single('file'), async (ctx) =>
     const file = ctx.request.file
 
     if (file?.mimetype?.startsWith('image/')) {
+        const shouldConvertToAvif = ctx.request.body?.convertToAvif === 'true'
+
+        if (shouldConvertToAvif) {
+            const convertedFile = await convertImageToAvif(file.path, file.filename)
+            file.path = convertedFile.path
+            file.filename = convertedFile.filename
+            file.originalname = convertedFile.filename
+            file.mimetype = 'image/avif'
+        }
+
         await generateImageVariants(file.path, file.filename, file.destination)
     }
 

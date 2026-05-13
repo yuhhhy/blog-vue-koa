@@ -14,6 +14,31 @@ export const isImageVariantFile = (filename) => {
     return imageVariantWidths.some((width) => parsed.name.endsWith(`_${width}`))
 }
 
+export const convertImageToAvif = async (sourcePath, filename) => {
+    const parsed = path.parse(filename)
+    const targetFilename = `${parsed.name}.avif`
+    const targetPath = path.join(path.dirname(sourcePath), targetFilename)
+
+    if (path.extname(filename).toLowerCase() === '.avif') {
+        return {
+            path: sourcePath,
+            filename,
+        }
+    }
+
+    await sharp(sourcePath)
+        .rotate()
+        .avif({ quality: 65, effort: 4 })
+        .toFile(targetPath)
+
+    await fsp.unlink(sourcePath)
+
+    return {
+        path: targetPath,
+        filename: targetFilename,
+    }
+}
+
 export const generateImageVariants = async (sourcePath, filename, imageDir) => {
     await Promise.all(imageVariantWidths.map(async (width) => {
         const targetPath = getImageVariantPath(imageDir, width, filename)

@@ -14,6 +14,10 @@ const form = reactive({
     tags: [],
     coverImgUploaded: false
 })
+const coverUploadMode = ref('keep')
+const coverUploadData = computed(() => ({
+  convertToAvif: coverUploadMode.value === 'avif' ? 'true' : 'false'
+}))
 const rules = {
   title: [
     { required: true, message: '请添加文章标题', trigger: 'submit' },
@@ -148,9 +152,14 @@ const uploadError = (file) => {
     >
       <el-popover placement="top" width="173">
         <template #reference><el-button>上传文章封面</el-button></template>
+        <el-radio-group v-model="coverUploadMode" size="small" class="mb-3">
+          <el-radio-button label="keep">保留原格式</el-radio-button>
+          <el-radio-button label="avif">转为 AVIF</el-radio-button>
+        </el-radio-group>
         <el-upload
           :action="`${baseApi}/upload/image`"
           :headers="uploadHeaders"
+          :data="coverUploadData"
           list-type="picture-card"
           :limit="1"
           :before-upload="beforeUpload"

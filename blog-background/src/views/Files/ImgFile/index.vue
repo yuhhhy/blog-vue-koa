@@ -18,6 +18,11 @@ const loading = ref(false);
 const searchQuery = ref('');
 const currentPage = ref(1);
 const pageSize = ref(8);
+const uploadMode = ref('keep');
+
+const uploadData = computed(() => ({
+    convertToAvif: uploadMode.value === 'avif' ? 'true' : 'false'
+}));
 
 const filteredImages = computed(() => {
     if (!searchQuery.value) {
@@ -128,17 +133,24 @@ watch([searchQuery, filteredImages], () => {
         <template #header>
             <div class="flex justify-between items-center">
                 <span>图片管理</span>
-                <el-upload
-                    :action="`${baseApi}/upload/image`"
-                    :headers="uploadHeaders"
-                    :show-file-list="false"
-                    :on-success="handleUploadSuccess"
-                    :on-error="handleUploadError"
-                    name="file"
-                    accept="image/*"
-                >
-                    <el-button type="primary">上传图片</el-button>
-                </el-upload>
+                <div class="flex items-center gap-3">
+                    <el-radio-group v-model="uploadMode" size="small">
+                        <el-radio-button label="keep">保留原格式</el-radio-button>
+                        <el-radio-button label="avif">转为 AVIF</el-radio-button>
+                    </el-radio-group>
+                    <el-upload
+                        :action="`${baseApi}/upload/image`"
+                        :headers="uploadHeaders"
+                        :data="uploadData"
+                        :show-file-list="false"
+                        :on-success="handleUploadSuccess"
+                        :on-error="handleUploadError"
+                        name="file"
+                        accept="image/*"
+                    >
+                        <el-button type="primary">上传图片</el-button>
+                    </el-upload>
+                </div>
             </div>
         </template>
 
@@ -203,4 +215,3 @@ watch([searchQuery, filteredImages], () => {
 
 <style scoped>
 </style>
-
