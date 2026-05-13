@@ -16,6 +16,10 @@ const uploadHeaders = computed(() => ({
 const mdList = ref([]);
 const loading = ref(false);
 const searchQuery = ref('');
+const sortState = ref({
+    prop: 'uploadTime',
+    order: 'descending',
+});
 
 const filteredMds = computed(() => {
     if (!searchQuery.value) {
@@ -25,6 +29,39 @@ const filteredMds = computed(() => {
         md.name.toLowerCase().includes(searchQuery.value.toLowerCase())
     );
 });
+
+const getMdTime = (md) => {
+    const time = Number(md.uploadTime ?? new Date(md.uploadDate).getTime());
+    return Number.isFinite(time) ? time : 0;
+};
+
+const sortedMds = computed(() => {
+    const mds = [...filteredMds.value];
+    const { prop, order } = sortState.value;
+
+    if (!prop || !order) return mds;
+
+    const direction = order === 'ascending' ? 1 : -1;
+
+    return mds.sort((a, b) => {
+        if (prop === 'name') {
+            return a.name.localeCompare(b.name) * direction;
+        }
+
+        if (prop === 'size') {
+            return ((a.size ?? 0) - (b.size ?? 0)) * direction;
+        }
+
+        return (getMdTime(a) - getMdTime(b)) * direction;
+    });
+});
+
+const handleSortChange = ({ prop, order }) => {
+    sortState.value = {
+        prop,
+        order,
+    };
+};
 
 const fetchMdList = async () => {
     loading.value = true;
@@ -109,12 +146,17 @@ onMounted(fetchMdList);
             class="mb-4"
         />
 
-        <el-table :data="filteredMds" v-loading="loading">
-            <el-table-column prop="name" label="文件名" sortable />
-            <el-table-column label="大小" width="120" sortable :sort-by="row => row.size">
+        <el-table
+            :data="sortedMds"
+            v-loading="loading"
+            :default-sort="{ prop: 'uploadTime', order: 'descending' }"
+            @sort-change="handleSortChange"
+        >
+            <el-table-column prop="name" label="文件名" sortable="custom" />
+            <el-table-column prop="size" label="大小" width="120" sortable="custom">
                 <template #default="{ row }">{{ formatSize(row.size) }}</template>
             </el-table-column>
-            <el-table-column label="上传时间" width="180" sortable :sort-by="row => new Date(row.uploadDate).getTime()">
+            <el-table-column prop="uploadTime" label="上传时间" width="180" sortable="custom">
                 <template #default="{ row }">{{ formatDate(row.uploadDate) }}</template>
             </el-table-column>
             <el-table-column label="操作" width="180" fixed="right">

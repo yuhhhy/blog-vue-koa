@@ -32,9 +32,13 @@ export const getImageFiles = async (ctx) => {
                     url: `/images/${file}`, // 可访问的 URL
                     size: stats.size, // 文件大小
                     uploadDate: stats.birthtime, // 上传日期
+                    uploadTime: stats.birthtimeMs || stats.mtimeMs,
                 });
             }
         }
+
+        imageList.sort((a, b) => b.uploadTime - a.uploadTime);
+
         ctx.status = 200;
         ctx.body = { success: true, data: imageList };
     } catch (error) {
@@ -74,9 +78,13 @@ export const getMdFiles = async (ctx) => {
           url: `/mds/${file}`,
           size: stats.size,
           uploadDate: stats.birthtime,
+          uploadTime: stats.birthtimeMs || stats.mtimeMs,
         });
       }
     }
+
+    mdList.sort((a, b) => b.uploadTime - a.uploadTime);
+
     ctx.body = { success: true, data: mdList };
   } catch (error) {
     ctx.status = 500;

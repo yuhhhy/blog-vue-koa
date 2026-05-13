@@ -19,6 +19,10 @@ const searchQuery = ref('');
 const currentPage = ref(1);
 const pageSize = ref(8);
 const uploadMode = ref('keep');
+const sortState = ref({
+    prop: 'uploadTime',
+    order: 'descending',
+});
 
 const uploadData = computed(() => ({
     convertToAvif: uploadMode.value === 'avif' ? 'true' : 'false'
@@ -33,9 +37,35 @@ const filteredImages = computed(() => {
     );
 });
 
+const getImageTime = (image) => {
+    const time = Number(image.uploadTime ?? new Date(image.uploadDate).getTime());
+    return Number.isFinite(time) ? time : 0;
+};
+
+const sortedImages = computed(() => {
+    const images = [...filteredImages.value];
+    const { prop, order } = sortState.value;
+
+    if (!prop || !order) return images;
+
+    const direction = order === 'ascending' ? 1 : -1;
+
+    return images.sort((a, b) => {
+        if (prop === 'name') {
+            return a.name.localeCompare(b.name) * direction;
+        }
+
+        if (prop === 'size') {
+            return ((a.size ?? 0) - (b.size ?? 0)) * direction;
+        }
+
+        return (getImageTime(a) - getImageTime(b)) * direction;
+    });
+});
+
 const pagedImages = computed(() => {
     const start = (currentPage.value - 1) * pageSize.value;
-    return filteredImages.value.slice(start, start + pageSize.value);
+    return sortedImages.value.slice(start, start + pageSize.value);
 });
 
 // 从后端获取图片列表
@@ -93,6 +123,14 @@ const handleSizeChange = (size) => {
 
 const handleCurrentChange = (page) => {
     currentPage.value = page;
+};
+
+const handleSortChange = ({ prop, order }) => {
+    sortState.value = {
+        prop,
+        order,
+    };
+    currentPage.value = 1;
 };
 
 const formatSize = (size) => {
@@ -161,7 +199,14 @@ watch([searchQuery, filteredImages], () => {
             class="mb-4"
         />
 
-        <el-table :data="pagedImages" v-loading="loading" stripe empty-text="暂无图片，或无法连接到服务器">
+        <el-table
+            :data="pagedImages"
+            v-loading="loading"
+            stripe
+            empty-text="暂无图片，或无法连接到服务器"
+            :default-sort="{ prop: 'uploadTime', order: 'descending' }"
+            @sort-change="handleSortChange"
+        >
             <el-table-column label="预览" width="120">
                 <template #default="{ row }">
                     <el-image
@@ -175,18 +220,18 @@ watch([searchQuery, filteredImages], () => {
                     />
                 </template>
             </el-table-column>
-            <el-table-column prop="name" label="文件名" sortable :sort-by="row => row.name">
+            <el-table-column prop="name" label="文件名" sortable="custom">
                 <template #default="{ row }">
                     <span>{{ row.name }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="大小" width="120" sortable :sort-by="row => row.size">
+            <el-table-column prop="size" label="大小" width="120" sortable="custom">
                 <template #default="{ row }">
                     {{ formatSize(row.size) }}
                 </template>
             </el-table-column>
-            <el-table-column label="上传时间" width="180" sortable :sort-by="row => new Date(row.uploadDate).getTime()">
-                    <template #default="{ row }">
+            <el-table-column prop="uploadTime" label="上传时间" width="180" sortable="custom">
+                <template #default="{ row }">
                     {{ formatDate(row.uploadDate) }}
                 </template>
             </el-table-column>

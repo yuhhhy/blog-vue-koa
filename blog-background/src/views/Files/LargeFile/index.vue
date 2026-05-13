@@ -63,6 +63,10 @@ const loading = ref(false)
 const fileList = ref([])
 const selectedFile = ref(null)
 const selectedType = ref('all')
+const sortState = ref({
+    prop: 'uploadTime',
+    order: 'descending',
+})
 const uploadStatus = ref('idle')
 const progress = ref(0)
 const speedText = ref('0 B/s')
@@ -77,6 +81,32 @@ const hashWorker = ref(null)
 const filteredFiles = computed(() => {
     if (selectedType.value === 'all') return fileList.value
     return fileList.value.filter((file) => file.type === selectedType.value)
+})
+
+const getFileTime = (file) => {
+    const time = Number(file.uploadTime ?? new Date(file.uploadDate).getTime())
+    return Number.isFinite(time) ? time : 0
+}
+
+const sortedFiles = computed(() => {
+    const files = [...filteredFiles.value]
+    const { prop, order } = sortState.value
+
+    if (!prop || !order) return files
+
+    const direction = order === 'ascending' ? 1 : -1
+
+    return files.sort((a, b) => {
+        if (prop === 'name') {
+            return a.name.localeCompare(b.name) * direction
+        }
+
+        if (prop === 'size') {
+            return ((a.size ?? 0) - (b.size ?? 0)) * direction
+        }
+
+        return (getFileTime(a) - getFileTime(b)) * direction
+    })
 })
 
 const uploadStatusText = computed(() => {
@@ -453,6 +483,13 @@ const handleCopyUrl = async (row) => {
     ElMessage.success('访问地址已复制')
 }
 
+const handleSortChange = ({ prop, order }) => {
+    sortState.value = {
+        prop,
+        order,
+    }
+}
+
 const formatSize = (size) => {
     if (!size || size <= 0) return '0 B'
     const units = ['B', 'KB', 'MB', 'GB']
@@ -558,7 +595,14 @@ onBeforeUnmount(() => {
                 </div>
             </template>
 
-            <el-table :data="filteredFiles" v-loading="loading" stripe empty-text="暂无大文件">
+            <el-table
+                :data="sortedFiles"
+                v-loading="loading"
+                stripe
+                empty-text="暂无大文件"
+                :default-sort="{ prop: 'uploadTime', order: 'descending' }"
+                @sort-change="handleSortChange"
+            >
                 <el-table-column label="类型" width="110">
                     <template #default="{ row }">
                         <el-tag>
@@ -569,11 +613,11 @@ onBeforeUnmount(() => {
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="name" label="文件名" min-width="220" sortable />
-                <el-table-column label="大小" width="120" sortable :sort-by="row => row.size">
+                <el-table-column prop="name" label="文件名" min-width="220" sortable="custom" />
+                <el-table-column prop="size" label="大小" width="120" sortable="custom">
                     <template #default="{ row }">{{ formatSize(row.size) }}</template>
                 </el-table-column>
-                <el-table-column label="上传时间" width="180" sortable :sort-by="row => new Date(row.uploadDate).getTime()">
+                <el-table-column prop="uploadTime" label="上传时间" width="180" sortable="custom">
                     <template #default="{ row }">{{ formatDate(row.uploadDate) }}</template>
                 </el-table-column>
                 <el-table-column label="操作" width="260" fixed="right">

@@ -441,12 +441,13 @@ export const getLargeFiles = async (ctx) => {
                     url: `${config.urlPrefix}/${file}`,
                     size: stats.size,
                     uploadDate: stats.birthtime,
+                    uploadTime: stats.birthtimeMs || stats.mtimeMs,
                 })
             }
         }
     }
 
-    fileList.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
+    fileList.sort((a, b) => b.uploadTime - a.uploadTime)
     ctx.body = { success: true, data: fileList }
 }
 
