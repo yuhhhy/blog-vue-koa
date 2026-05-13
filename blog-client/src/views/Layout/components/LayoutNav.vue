@@ -111,7 +111,7 @@ onMounted(() => {
         transition: color 0.2s ease, font-weight 0.2s ease;
 
         &:hover {
-            color: var(--skyblue);
+            color: var(--nav-active-color);
         }
 
         &::after {
@@ -122,14 +122,14 @@ onMounted(() => {
             width: 18px;
             height: 2px;
             border-radius: 999px;
-            background-color: var(--skyblue);
+            background-color: var(--nav-active-color);
             transform: translateX(-50%) scaleX(0);
             transform-origin: center;
             transition: transform 0.2s ease;
         }
 
         &.nav-link--active {
-            color: var(--skyblue);
+            color: var(--nav-active-color);
             font-weight: 700;
         }
 

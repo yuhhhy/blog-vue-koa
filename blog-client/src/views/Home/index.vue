@@ -22,9 +22,11 @@ onMounted(() => {
                       class="blog-img"
                       :src="blog.coverImage"
                       :alt="blog.title"
-                      :loading="index < 5 ? 'eager' : 'lazy'"
-                      :fetchpriority="index < 5 ? 'high' : 'auto'"
+                      :loading="index === 0 ? 'eager' : 'lazy'"
+                      :fetchpriority="index === 0 ? 'high' : 'auto'"
                       decoding="async"
+                      width="240"
+                      height="150"
                     >
                     <div class="blog-intro">
                         <div class="blog-title">{{ blog.title }}</div>
