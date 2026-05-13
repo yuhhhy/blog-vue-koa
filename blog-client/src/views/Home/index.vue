@@ -1,8 +1,20 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useBlogList } from '@/composables/useBlogList.js'
+import { getImageVariantSrcset } from '@/utils/imageVariants.js'
 
 const { blogList, fetchBlogList } = useBlogList()
+
+const handleImageError = (event) => {
+    const image = event.currentTarget
+    const originalSrc = image.dataset.originalSrc
+
+    if (!originalSrc || image.dataset.fallbackApplied === 'true') return
+
+    image.dataset.fallbackApplied = 'true'
+    image.srcset = ''
+    image.src = originalSrc
+}
 
 onMounted(() => {
     // 获取后台数据
@@ -21,12 +33,16 @@ onMounted(() => {
                     <img
                       class="blog-img"
                       :src="blog.coverImage"
+                      :srcset="getImageVariantSrcset(blog.coverImage)"
+                      sizes="(max-width: 768px) 38vw, 240px"
+                      :data-original-src="blog.coverImage"
                       :alt="blog.title"
                       :loading="index === 0 ? 'eager' : 'lazy'"
                       :fetchpriority="index === 0 ? 'high' : 'auto'"
                       decoding="async"
                       width="240"
                       height="150"
+                      @error="handleImageError"
                     >
                     <div class="blog-intro">
                         <div class="blog-title">{{ blog.title }}</div>

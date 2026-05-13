@@ -3,7 +3,8 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "serve": "nodemon app.js"
+    "serve": "nodemon app.js",
+    "generate:image-variants": "node scripts/generate-image-variants.js"
   },
   "dependencies": {
     "@koa/multer": "^3.1.0",
@@ -19,6 +20,7 @@
     "mongoose": "^8.14.2",
     "multer": "^2.0.0",
     "nodemailer": "^7.0.3",
+    "sharp": "^0.34.5",
     "ua-parser-js": "^2.0.3",
     "winston": "^3.17.0",
     "xmlbuilder": "^15.1.1"

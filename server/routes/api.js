@@ -7,6 +7,7 @@ import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } f
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
 import { getImageFiles, deleteImageFile, getMdFiles, deleteMdFile } from "../controllers/FilesController.js"
+import { generateImageVariants } from '../utils/imageVariants.js'
 
 const router = new Router({ prefix: '/api' })
 
@@ -193,8 +194,14 @@ router.delete("/files/mds/:filename", deleteMdFile);
 
 // 上传单张图片
 router.post('/upload/image', async (ctx) => {
+    const file = ctx.request.file
+
+    if (file?.mimetype?.startsWith('image/')) {
+        await generateImageVariants(file.path, file.filename, file.destination)
+    }
+
     ctx.status = 200
-    ctx.body = ctx.request.file
+    ctx.body = file
 })
 
 // 上传单个Markdown文件

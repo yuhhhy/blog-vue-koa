@@ -2,6 +2,7 @@
 import { fileURLToPath } from "url";
 import path from "path";
 import fs from "fs/promises";
+import { deleteImageVariants, isImageVariantFile } from "../utils/imageVariants.js";
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -17,6 +18,8 @@ export const getImageFiles = async (ctx) => {
         const files = await fs.readdir(imageDir);
 
         for (const file of files) {
+            if (isImageVariantFile(file)) continue;
+
             const filePath = path.join(imageDir, file);
             const stats = await fs.stat(filePath);
             if (stats.isFile()) {
@@ -43,6 +46,7 @@ export const deleteImageFile = async (ctx) => {
     const filePath = path.join(imageDir, filename);
     try {
         await fs.unlink(filePath);
+        await deleteImageVariants(imageDir, filename);
         ctx.status = 200;
         ctx.body = { success: true, message: '图片删除成功' };
     }   catch (error) {
