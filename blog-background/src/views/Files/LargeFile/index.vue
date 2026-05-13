@@ -41,11 +41,13 @@ const selectedType = ref('all')
 const uploadStatus = ref('idle')
 const progress = ref(0)
 const speedText = ref('0 B/s')
+const hashProgress = ref(0)
 const currentFileHash = ref('')
 const isPaused = ref(false)
 const uploadedBytes = ref(0)
 const startTime = ref(0)
 const abortController = ref(null)
+const hashWorker = ref(null)
 
 const filteredFiles = computed(() => {
     if (selectedType.value === 'all') return fileList.value
@@ -130,18 +132,55 @@ const handleFileSelected = (uploadFile) => {
     currentFileHash.value = ''
     progress.value = 0
     speedText.value = '0 B/s'
+    hashProgress.value = 0
     uploadedBytes.value = 0
     uploadStatus.value = 'idle'
     isPaused.value = false
 }
 
 const calculateHash = async (file) => {
-    const buffer = await file.arrayBuffer()
-    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer)
+    hashWorker.value?.terminate()
+    hashProgress.value = 0
 
-    return Array.from(new Uint8Array(hashBuffer))
-        .map((byte) => byte.toString(16).padStart(2, '0'))
-        .join('')
+    return new Promise((resolve, reject) => {
+        const worker = new Worker(new URL('./hashWorker.js', import.meta.url), {
+            type: 'module',
+        })
+
+        hashWorker.value = worker
+
+        worker.onmessage = (event) => {
+            const { type, progress: nextProgress, hash, message } = event.data
+
+            if (type === 'progress') {
+                hashProgress.value = nextProgress
+                progress.value = Math.min(99, nextProgress)
+                return
+            }
+
+            worker.terminate()
+            hashWorker.value = null
+
+            if (type === 'success') {
+                hashProgress.value = 100
+                resolve(hash)
+                return
+            }
+
+            reject(new Error(message || '文件 hash 计算失败'))
+        }
+
+        worker.onerror = (error) => {
+            worker.terminate()
+            hashWorker.value = null
+            reject(error)
+        }
+
+        worker.postMessage({
+            file,
+            chunkSize,
+        })
+    })
 }
 
 const getChunkRange = (index, totalSize) => {
@@ -211,6 +250,7 @@ const startUpload = async () => {
 
         const fileHash = currentFileHash.value || await calculateHash(file)
         currentFileHash.value = fileHash
+        progress.value = 0
 
         const verifyRes = await apiVerifyLargeFile({
             fileHash,
@@ -336,6 +376,7 @@ const getTypeIcon = (type) => {
 onMounted(fetchLargeFiles)
 
 onBeforeUnmount(() => {
+    hashWorker.value?.terminate()
     abortController.value?.abort()
 })
 </script>
@@ -365,7 +406,11 @@ onBeforeUnmount(() => {
                 <div class="file-summary">
                     <div>
                         <div class="file-name">{{ selectedFile.name }}</div>
-                        <div class="file-meta">{{ formatSize(selectedFile.size) }} · {{ uploadStatusText }} · {{ speedText }}</div>
+                        <div class="file-meta">
+                            {{ formatSize(selectedFile.size) }} · {{ uploadStatusText }}
+                            <span v-if="uploadStatus === 'hashing'"> · {{ hashProgress }}%</span>
+                            <span v-else> · {{ speedText }}</span>
+                        </div>
                     </div>
                     <div class="upload-actions">
                         <el-button
