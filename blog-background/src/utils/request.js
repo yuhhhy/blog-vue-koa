@@ -51,6 +51,10 @@ request.interceptors.response.use(
 
     // 超出 2xx 范围的状态码都会触发该函数
     error => {
+        if (axios.isCancel(error) || error.code === 'ERR_CANCELED') {
+            return Promise.reject(error)
+        }
+
         // 超出 2xx 范围的状态码都会触发该函数
         const { response } = error
         if (response) {

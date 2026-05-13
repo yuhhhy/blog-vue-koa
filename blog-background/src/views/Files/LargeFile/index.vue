@@ -7,6 +7,7 @@ import {
     Document,
     Download,
     Files,
+    Headset,
     Refresh,
     UploadFilled,
     VideoCamera,
@@ -24,13 +25,37 @@ import cfg from '@/config/index.js'
 
 const chunkSize = 5 * 1024 * 1024
 const uploadConcurrency = 6
+const chunkUploadTimeout = 30 * 1000
 const maxFileSize = 1024 * 1024 * 1024
-const allowedExtensions = ['.mp4', '.webm', '.pdf', '.zip']
+const allowedExtensions = [
+    '.mp4',
+    '.webm',
+    '.mov',
+    '.mp3',
+    '.wav',
+    '.pdf',
+    '.doc',
+    '.docx',
+    '.ppt',
+    '.pptx',
+    '.xls',
+    '.xlsx',
+    '.zip',
+    '.rar',
+    '.7z',
+    '.json',
+    '.csv',
+    '.txt',
+]
 const typeLabels = {
     video: '视频',
-    doc: 'PDF',
+    audio: '音频',
+    doc: '文档',
     package: '压缩包',
+    data: '数据',
 }
+
+const uploadAccept = allowedExtensions.join(',')
 
 const staticBase = cfg.baseApi.endsWith('/api') ? cfg.baseApi.slice(0, -4) : ''
 
@@ -116,7 +141,7 @@ const validateFile = (file) => {
     }
 
     if (!allowedExtensions.includes(getExtension(file.name))) {
-        ElMessage.error('仅支持 mp4、webm、pdf、zip 文件')
+        ElMessage.error('不支持该文件类型')
         return false
     }
 
@@ -200,6 +225,10 @@ const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
 const getUploadErrorStatus = (error) => error?.response?.status || error?.status
 
 const isRetryableUploadError = (error) => {
+    if (error?.name === 'AbortError' || error?.code === 'ERR_CANCELED') {
+        return !isPaused.value
+    }
+
     const status = getUploadErrorStatus(error)
 
     if (!status) return true
@@ -231,6 +260,9 @@ const uploadChunk = async (file, fileHash, chunkIndex, chunkTotal, onChunkProgre
 
     const controller = new AbortController()
     uploadControllers.value.add(controller)
+    const timeoutTimer = setTimeout(() => {
+        controller.abort()
+    }, chunkUploadTimeout)
 
     try {
         await apiUploadLargeChunk(
@@ -241,6 +273,7 @@ const uploadChunk = async (file, fileHash, chunkIndex, chunkTotal, onChunkProgre
             controller.signal,
         )
     } finally {
+        clearTimeout(timeoutTimer)
         uploadControllers.value.delete(controller)
     }
 
@@ -389,6 +422,7 @@ const pauseUpload = () => {
     uploadControllers.value.forEach((controller) => controller.abort())
     uploadControllers.value.clear()
     uploadStatus.value = 'paused'
+    ElMessage.info('上传已暂停')
 }
 
 const handleDelete = (row) => {
@@ -439,6 +473,7 @@ const formatDate = (dateString) => {
 
 const getTypeIcon = (type) => {
     if (type === 'video') return VideoCamera
+    if (type === 'audio') return Headset
     if (type === 'doc') return Document
     return Files
 }
@@ -466,11 +501,11 @@ onBeforeUnmount(() => {
                 drag
                 :auto-upload="false"
                 :show-file-list="false"
-                accept=".mp4,.webm,.pdf,.zip"
+                :accept="uploadAccept"
                 :on-change="handleFileSelected"
             >
                 <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
-                <div class="el-upload__text">选择 MP4、WebM、PDF 或 ZIP 文件</div>
+                <div class="el-upload__text">选择视频、音频、文档、压缩包或数据文件</div>
             </el-upload>
 
             <div v-if="selectedFile" class="upload-panel">
@@ -514,8 +549,10 @@ onBeforeUnmount(() => {
                         :options="[
                             { label: '全部', value: 'all' },
                             { label: '视频', value: 'video' },
-                            { label: 'PDF', value: 'doc' },
+                            { label: '音频', value: 'audio' },
+                            { label: '文档', value: 'doc' },
                             { label: '压缩包', value: 'package' },
+                            { label: '数据', value: 'data' },
                         ]"
                     />
                 </div>
