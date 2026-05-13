@@ -19,6 +19,7 @@ import {
     apiGetLargeUploadStatus,
     apiMergeLargeFile,
     apiUploadLargeChunk,
+    apiVerifyLargeFile,
 } from '@/api/files.js'
 import cfg from '@/config/index.js'
 
@@ -210,6 +211,23 @@ const startUpload = async () => {
 
         const fileHash = currentFileHash.value || await calculateHash(file)
         currentFileHash.value = fileHash
+
+        const verifyRes = await apiVerifyLargeFile({
+            fileHash,
+            filename: file.name,
+            size: file.size,
+            mime: file.type,
+        })
+
+        if (verifyRes.uploaded) {
+            progress.value = 100
+            uploadStatus.value = 'success'
+            speedText.value = '秒传'
+            ElMessage.success(`文件 "${verifyRes.file?.filename || file.name}" 秒传成功`)
+            await fetchLargeFiles()
+            return
+        }
+
         const chunkTotal = Math.ceil(file.size / chunkSize)
         const statusRes = await apiGetLargeUploadStatus(fileHash)
         const uploadedSet = new Set(statusRes.uploadedChunks || [])

@@ -83,6 +83,15 @@ export function apiGetLargeUploadStatus(fileHash) {
   });
 }
 
+export function apiVerifyLargeFile(params) {
+  return request({
+    url: '/upload/large/verify',
+    method: 'GET',
+    params,
+    requireAuth: true,
+  });
+}
+
 export function apiUploadLargeChunk(formData, onUploadProgress, signal) {
   return request({
     url: '/upload/large/chunk',

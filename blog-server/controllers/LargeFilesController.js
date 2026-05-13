@@ -106,6 +106,74 @@ const listChunkIndexes = async (fileHash) => {
     }
 }
 
+const getFileMeta = async (type, config, file) => {
+    const filePath = path.join(config.dir, file)
+    const stats = await fsp.stat(filePath)
+
+    if (!stats.isFile()) return null
+
+    return {
+        type,
+        filename: file,
+        name: file,
+        url: `${config.urlPrefix}/${file}`,
+        size: stats.size,
+        uploadDate: stats.birthtime,
+    }
+}
+
+const findMergedFile = async (fileHash, filename, size, mime) => {
+    const safeName = sanitizeFilename(filename)
+    const fileSize = Number(size)
+    const fileConfig = getFileConfig(safeName, mime)
+
+    if (!isSafeHash(fileHash) || !fileConfig || !Number.isFinite(fileSize)) {
+        return null
+    }
+
+    await ensureDir(fileConfig.config.dir)
+
+    const hashPrefix = fileHash.slice(0, 8).toLowerCase()
+    const files = await fsp.readdir(fileConfig.config.dir)
+
+    for (const file of files) {
+        const extMatched = path.extname(file).toLowerCase() === fileConfig.ext
+        const hashMatched = path.basename(file, path.extname(file)).toLowerCase().endsWith(`-${hashPrefix}`)
+
+        if (!extMatched || !hashMatched) continue
+
+        const meta = await getFileMeta(fileConfig.type, fileConfig.config, file)
+        if (meta?.size === fileSize) return meta
+    }
+
+    return null
+}
+
+export const verifyLargeFile = async (ctx) => {
+    const { fileHash, filename, size, mime } = ctx.query
+    const fileSize = Number(size)
+
+    if (!isSafeHash(fileHash)) {
+        ctx.status = 400
+        ctx.body = { success: false, message: '文件 hash 不合法' }
+        return
+    }
+
+    if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > maxFileSize) {
+        ctx.status = 400
+        ctx.body = { success: false, message: '文件大小超出限制' }
+        return
+    }
+
+    const fileMeta = await findMergedFile(fileHash, filename, fileSize, mime)
+
+    ctx.body = {
+        success: true,
+        uploaded: Boolean(fileMeta),
+        file: fileMeta,
+    }
+}
+
 export const uploadLargeChunk = async (ctx) => {
     const file = ctx.request.file
     const { fileHash, chunkIndex, chunkTotal, filename, size, mime } = ctx.request.body
@@ -204,6 +272,18 @@ export const mergeLargeFile = async (ctx) => {
         return
     }
 
+    const existingFile = await findMergedFile(fileHash, safeName, fileSize, mime)
+
+    if (existingFile) {
+        await fsp.rm(path.join(tmpDir, fileHash), { recursive: true, force: true })
+        ctx.body = {
+            success: true,
+            uploaded: true,
+            ...existingFile,
+        }
+        return
+    }
+
     const uploadedChunks = await listChunkIndexes(fileHash)
     const uploadedSet = new Set(uploadedChunks)
 
@@ -284,6 +364,7 @@ export const getLargeFiles = async (ctx) => {
             if (stats.isFile()) {
                 fileList.push({
                     type,
+                    filename: file,
                     name: file,
                     url: `${config.urlPrefix}/${file}`,
                     size: stats.size,
