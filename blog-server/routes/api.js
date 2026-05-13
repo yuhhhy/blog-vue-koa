@@ -8,7 +8,7 @@ import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } f
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
 import { getImageFiles, deleteImageFile, getMdFiles, deleteMdFile } from "../controllers/FilesController.js"
-import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus, mergeLargeFile, uploadLargeChunk, verifyLargeFile } from '../controllers/LargeFilesController.js'
+import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus, initLargeUpload, mergeLargeFile, uploadLargeChunk, verifyLargeFile } from '../controllers/LargeFilesController.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { storage } from '../config/upload.js'
 
@@ -228,6 +228,9 @@ router.get('/upload/large/status', requireAdmin, getLargeUploadStatus);
 
 // 校验大文件是否已上传
 router.get('/upload/large/verify', requireAdmin, verifyLargeFile);
+
+// 初始化大文件上传，返回秒传和断点续传信息
+router.post('/upload/large/init', requireAdmin, initLargeUpload);
 
 // 上传大文件分片
 router.post('/upload/large/chunk', requireAdmin, largeChunkUpload.single('file'), uploadLargeChunk);

@@ -16,14 +16,14 @@ import {
 import {
     apiDeleteLargeFile,
     apiGetLargeFileList,
-    apiGetLargeUploadStatus,
+    apiInitLargeUpload,
     apiMergeLargeFile,
     apiUploadLargeChunk,
-    apiVerifyLargeFile,
 } from '@/api/files.js'
 import cfg from '@/config/index.js'
 
 const chunkSize = 5 * 1024 * 1024
+const uploadConcurrency = 6
 const maxFileSize = 1024 * 1024 * 1024
 const allowedExtensions = ['.mp4', '.webm', '.pdf', '.zip']
 const typeLabels = {
@@ -46,7 +46,7 @@ const currentFileHash = ref('')
 const isPaused = ref(false)
 const uploadedBytes = ref(0)
 const startTime = ref(0)
-const abortController = ref(null)
+const uploadControllers = ref(new Set())
 const hashWorker = ref(null)
 
 const filteredFiles = computed(() => {
@@ -195,7 +195,28 @@ const updateSpeed = () => {
     speedText.value = `${formatSize(uploadedBytes.value / elapsedSeconds)}/s`
 }
 
-const uploadChunk = async (file, fileHash, chunkIndex, chunkTotal) => {
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+
+const getUploadErrorStatus = (error) => error?.response?.status || error?.status
+
+const isRetryableUploadError = (error) => {
+    const status = getUploadErrorStatus(error)
+
+    if (!status) return true
+    if (status === 429) return true
+    if (status >= 500) return true
+
+    return false
+}
+
+const getRetryDelay = (retryCount) => {
+    const baseDelay = 1000
+    const jitter = 1 + Math.random() * 0.3
+
+    return baseDelay * 2 ** retryCount * jitter
+}
+
+const uploadChunk = async (file, fileHash, chunkIndex, chunkTotal, onChunkProgress) => {
     const { start, end } = getChunkRange(chunkIndex, file.size)
     const chunk = file.slice(start, end, file.type)
     const formData = new FormData()
@@ -208,35 +229,81 @@ const uploadChunk = async (file, fileHash, chunkIndex, chunkTotal) => {
     formData.append('mime', file.type)
     formData.append('file', chunk, file.name)
 
-    abortController.value = new AbortController()
+    const controller = new AbortController()
+    uploadControllers.value.add(controller)
 
-    await apiUploadLargeChunk(
-        formData,
-        (event) => {
-            const currentLoaded = event.loaded || 0
-            progress.value = Math.min(99, ((uploadedBytes.value + currentLoaded) / file.size) * 100)
-        },
-        abortController.value.signal,
-    )
+    try {
+        await apiUploadLargeChunk(
+            formData,
+            (event) => {
+                onChunkProgress?.(chunkIndex, event.loaded || 0)
+            },
+            controller.signal,
+        )
+    } finally {
+        uploadControllers.value.delete(controller)
+    }
 
     uploadedBytes.value += chunk.size
     progress.value = Math.min(99, (uploadedBytes.value / file.size) * 100)
     updateSpeed()
 }
 
-const uploadChunkWithRetry = async (file, fileHash, chunkIndex, chunkTotal) => {
+const uploadChunkWithRetry = async (file, fileHash, chunkIndex, chunkTotal, onChunkProgress) => {
     let retryCount = 0
 
-    while (retryCount < 3) {
+    while (retryCount < 5) {
         try {
-            await uploadChunk(file, fileHash, chunkIndex, chunkTotal)
+            await uploadChunk(file, fileHash, chunkIndex, chunkTotal, onChunkProgress)
             return
         } catch (error) {
             if (isPaused.value) throw error
+            if (!isRetryableUploadError(error)) throw error
+
             retryCount += 1
-            if (retryCount >= 3) throw error
+            if (retryCount >= 5) throw error
+
+            await sleep(getRetryDelay(retryCount - 1))
         }
     }
+}
+
+const uploadAllChunks = async (chunks, file, fileHash, chunkTotal) => {
+    let pointer = 0
+    let failed = null
+    const activeChunkLoaded = new Map()
+    const onChunkProgress = (chunkIndex, loaded) => {
+        activeChunkLoaded.set(chunkIndex, loaded)
+        const activeLoaded = Array.from(activeChunkLoaded.values()).reduce((total, size) => total + size, 0)
+        progress.value = Math.min(99, ((uploadedBytes.value + activeLoaded) / file.size) * 100)
+    }
+
+    const worker = async () => {
+        while (!failed && !isPaused.value) {
+            const chunkIndex = chunks[pointer]
+            pointer += 1
+
+            if (chunkIndex === undefined) return
+
+            try {
+                await uploadChunkWithRetry(file, fileHash, chunkIndex, chunkTotal, onChunkProgress)
+                activeChunkLoaded.delete(chunkIndex)
+            } catch (error) {
+                activeChunkLoaded.delete(chunkIndex)
+                failed = error
+                throw error
+            }
+        }
+    }
+
+    const workers = Array.from(
+        { length: Math.min(uploadConcurrency, chunks.length) },
+        () => worker(),
+    )
+
+    await Promise.all(workers)
+
+    if (failed) throw failed
 }
 
 const startUpload = async () => {
@@ -251,26 +318,26 @@ const startUpload = async () => {
         const fileHash = currentFileHash.value || await calculateHash(file)
         currentFileHash.value = fileHash
         progress.value = 0
+        const chunkTotal = Math.ceil(file.size / chunkSize)
 
-        const verifyRes = await apiVerifyLargeFile({
+        const initRes = await apiInitLargeUpload({
             fileHash,
             filename: file.name,
             size: file.size,
             mime: file.type,
+            chunkTotal,
         })
 
-        if (verifyRes.uploaded) {
+        if (initRes.exists || initRes.uploaded) {
             progress.value = 100
             uploadStatus.value = 'success'
             speedText.value = '秒传'
-            ElMessage.success(`文件 "${verifyRes.file?.filename || file.name}" 秒传成功`)
+            ElMessage.success(`文件 "${initRes.file?.filename || file.name}" 秒传成功`)
             await fetchLargeFiles()
             return
         }
 
-        const chunkTotal = Math.ceil(file.size / chunkSize)
-        const statusRes = await apiGetLargeUploadStatus(fileHash)
-        const uploadedSet = new Set(statusRes.uploadedChunks || [])
+        const uploadedSet = new Set(initRes.uploadedIndices || initRes.uploadedChunks || [])
 
         uploadedBytes.value = Array.from(uploadedSet).reduce((total, index) => {
             return total + getChunkRange(index, file.size).size
@@ -278,15 +345,17 @@ const startUpload = async () => {
         progress.value = Math.min(99, (uploadedBytes.value / file.size) * 100)
         uploadStatus.value = 'uploading'
 
+        const pendingChunks = []
+
         for (let index = 0; index < chunkTotal; index += 1) {
-            if (isPaused.value) {
-                uploadStatus.value = 'paused'
-                return
-            }
+            if (!uploadedSet.has(index)) pendingChunks.push(index)
+        }
 
-            if (uploadedSet.has(index)) continue
+        await uploadAllChunks(pendingChunks, file, fileHash, chunkTotal)
 
-            await uploadChunkWithRetry(file, fileHash, index, chunkTotal)
+        if (isPaused.value) {
+            uploadStatus.value = 'paused'
+            return
         }
 
         uploadStatus.value = 'merging'
@@ -311,13 +380,14 @@ const startUpload = async () => {
         uploadStatus.value = 'error'
         ElMessage.error(error?.response?.data?.message || '大文件上传失败')
     } finally {
-        abortController.value = null
+        uploadControllers.value.clear()
     }
 }
 
 const pauseUpload = () => {
     isPaused.value = true
-    abortController.value?.abort()
+    uploadControllers.value.forEach((controller) => controller.abort())
+    uploadControllers.value.clear()
     uploadStatus.value = 'paused'
 }
 
@@ -377,7 +447,8 @@ onMounted(fetchLargeFiles)
 
 onBeforeUnmount(() => {
     hashWorker.value?.terminate()
-    abortController.value?.abort()
+    uploadControllers.value.forEach((controller) => controller.abort())
+    uploadControllers.value.clear()
 })
 </script>
 

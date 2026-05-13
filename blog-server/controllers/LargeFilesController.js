@@ -174,6 +174,52 @@ export const verifyLargeFile = async (ctx) => {
     }
 }
 
+export const initLargeUpload = async (ctx) => {
+    const { fileHash, filename, size, mime, chunkTotal } = ctx.request.body
+    const totalChunks = toInteger(chunkTotal)
+    const fileSize = Number(size)
+
+    if (!isSafeHash(fileHash)) {
+        ctx.status = 400
+        ctx.body = { success: false, message: '文件 hash 不合法' }
+        return
+    }
+
+    if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > maxFileSize) {
+        ctx.status = 400
+        ctx.body = { success: false, message: '文件大小超出限制' }
+        return
+    }
+
+    if (totalChunks === null || totalChunks <= 0) {
+        ctx.status = 400
+        ctx.body = { success: false, message: '分片总数不合法' }
+        return
+    }
+
+    const safeName = sanitizeFilename(filename)
+    const fileConfig = getFileConfig(safeName, mime)
+
+    if (!fileConfig) {
+        ctx.status = 400
+        ctx.body = { success: false, message: '不支持的文件类型' }
+        return
+    }
+
+    const fileMeta = await findMergedFile(fileHash, safeName, fileSize, mime)
+    const uploadedChunks = fileMeta ? [] : await listChunkIndexes(fileHash)
+    const uploadedIndices = uploadedChunks.filter((index) => index >= 0 && index < totalChunks)
+
+    ctx.body = {
+        success: true,
+        exists: Boolean(fileMeta),
+        uploaded: Boolean(fileMeta),
+        uploadedIndices,
+        uploadedChunks: uploadedIndices,
+        file: fileMeta,
+    }
+}
+
 export const uploadLargeChunk = async (ctx) => {
     const file = ctx.request.file
     const { fileHash, chunkIndex, chunkTotal, filename, size, mime } = ctx.request.body

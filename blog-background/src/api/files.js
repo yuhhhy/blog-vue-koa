@@ -92,6 +92,15 @@ export function apiVerifyLargeFile(params) {
   });
 }
 
+export function apiInitLargeUpload(data) {
+  return request({
+    url: '/upload/large/init',
+    method: 'POST',
+    data,
+    requireAuth: true,
+  });
+}
+
 export function apiUploadLargeChunk(formData, onUploadProgress, signal) {
   return request({
     url: '/upload/large/chunk',
