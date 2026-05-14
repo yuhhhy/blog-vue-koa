@@ -5,9 +5,26 @@ import viteCompression from 'vite-plugin-compression'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import { visualizer } from 'rollup-plugin-visualizer'
+
+const backendTarget = 'http://localhost:3000'
+const backendProxy = {
+  '/api': {
+    target: backendTarget,
+    changeOrigin: true
+  },
+  '/images': {
+    target: backendTarget,
+    changeOrigin: true
+  },
+  '/mds': {
+    target: backendTarget,
+    changeOrigin: true
+  }
+}
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
     // Gzip 压缩插件
@@ -19,13 +36,23 @@ export default defineConfig({
     }),
     Components({
       resolvers: [ElementPlusResolver()],
+    }),
+    mode === 'analyze' && visualizer({
+      filename: 'dist/treemap.html',
+      template: 'treemap',
+      gzipSize: true,
+      brotliSize: true,
+      open: false
     })
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
       '~': path.resolve(__dirname, './node_modules')
     }
+  },
+  build: {
+    sourcemap: mode === 'analyze'
   },
   css: {
     preprocessorOptions: {
@@ -40,15 +67,10 @@ export default defineConfig({
     port: 8096,
     // 代理请求，前端以/images开头的请求会被代理到后端的3000端口上 (http://localhost:3000/images)
     // 实际生产环境需要在 Nginx上配置代理
-    proxy: {
-      '/images': {
-        target: 'http://localhost:3000', // 后端接口地址
-        changeOrigin: true
-      },
-      '/mds': {
-        target: 'http://localhost:3000', // 后端接口地址
-        changeOrigin: true
-      }
-    }
+    proxy: backendProxy
+  },
+  // 本地预览生产构建时，模拟线上反向代理。
+  preview: {
+    proxy: backendProxy
   }
-})
+}))

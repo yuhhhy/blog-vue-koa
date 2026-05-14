@@ -6,6 +6,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import viteImagemin from 'vite-plugin-imagemin'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 const backendTarget = "http://localhost:3000"
 const backendProxy = {
@@ -25,10 +26,10 @@ const backendProxy = {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  // build: {
-  //   sourcemap: true
-  // },
+export default defineConfig(({ mode }) => ({
+  build: {
+    sourcemap: mode === "analyze",
+  },
   plugins: [
     vue(),
     // Gzip 压缩插件
@@ -73,7 +74,14 @@ export default defineConfig({
     Components({
       resolvers: [ElementPlusResolver()],
     }),
-  ],
+    mode === "analyze" && visualizer({
+      filename: "dist/treemap.html",
+      template: "treemap",
+      gzipSize: true,
+      brotliSize: true,
+      open: false,
+    }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
@@ -91,4 +99,4 @@ export default defineConfig({
   preview: {
     proxy: backendProxy,
   },
-})
+}))

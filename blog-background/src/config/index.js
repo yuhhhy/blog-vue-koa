@@ -10,7 +10,9 @@ const envConfig = {
     }
 }
 
+const currentEnvConfig = envConfig[env] || envConfig.production
+
 export default {
     env,
-    baseApi: envConfig[env].baseApi
+    baseApi: currentEnvConfig.baseApi
 }
