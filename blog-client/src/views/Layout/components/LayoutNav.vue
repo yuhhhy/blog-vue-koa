@@ -64,7 +64,7 @@ onMounted(() => {
             <NavSearch />
             <button @click="toggleTheme" aria-label="theme-toggle-button" class="theme-toggle">
                 <span class="iconfont icon-sun themeIcon" v-if="themeStore.theme === 'light'"></span>
-                <span class="iconfont icon-moon themeIcon" v-else style="color: #fff;"></span>
+                <span class="iconfont icon-moon themeIcon" v-else></span>
             </button>
         </div>
         <div class="el-drop-down">
@@ -116,7 +116,7 @@ onMounted(() => {
         transition: color 0.2s ease, font-weight 0.2s ease;
 
         &:hover {
-            color: var(--nav-active-color);
+            color: var(--dark);
         }
 
         &::after {
@@ -127,14 +127,13 @@ onMounted(() => {
             width: 18px;
             height: 2px;
             border-radius: 999px;
-            background-color: var(--nav-active-color);
+            background-color: var(--dark);
             transform: translateX(-50%) scaleX(0);
             transform-origin: center;
             transition: transform 0.2s ease;
         }
 
         &.nav-link--active {
-            color: var(--nav-active-color);
             font-weight: 700;
         }
 
@@ -184,8 +183,16 @@ onMounted(() => {
     place-items: center;
     background: none;
     border: none;
+    border-radius: 50%;
+    color: var(--dark);
     font-size: 1.2rem;
     cursor: pointer;
     padding: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+        background-color: var(--icon-background);
+        color: var(--dark);
+    }
 }
 </style>
