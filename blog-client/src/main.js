@@ -3,8 +3,8 @@ import { createHead } from '@vueuse/head'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import '@fontsource/noto-serif-sc/400.css'
 import './assets/styles/index.scss'
-import { loadCjkFontWhenIdle } from './utils/loadCjkFont.js'
 import 'element-plus/es/components/message/style/css';
 
 
@@ -17,4 +17,3 @@ app.use(router)
 app.use(head)
 
 app.mount('#app')
-loadCjkFontWhenIdle()

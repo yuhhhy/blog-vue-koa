@@ -9,6 +9,7 @@
     "analyze": "vite build --mode analyze"
   },
   "dependencies": {
+    "@fontsource/noto-serif-sc": "^5.2.9",
     "@vueuse/head": "^2.0.0",
     "axios": "^1.8.4",
     "crypto-js": "^4.2.0",

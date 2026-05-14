@@ -5,11 +5,13 @@ const canUseImageVariant = (src) => {
 }
 
 const getImageVariantUrl = (src, width) => {
-    const filename = src.split('/').pop()
+    const lastSlashIndex = src.lastIndexOf('/')
+    const dirname = src.slice(0, lastSlashIndex)
+    const filename = src.slice(lastSlashIndex + 1)
     const extensionIndex = filename.lastIndexOf('.')
     const basename = extensionIndex > 0 ? filename.slice(0, extensionIndex) : filename
 
-    return `/images/${encodeURIComponent(basename)}_${width}.avif`
+    return `${dirname}/${encodeURIComponent(basename)}_${width}.avif`
 }
 
 export const getImageVariantSrcset = (src) => {
