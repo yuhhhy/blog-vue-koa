@@ -45,6 +45,21 @@ export const getBlogContentList = async (ctx) => {
     ctx.body = blogContents
 }
 
+// 获取博客搜索索引
+export const getBlogContentSearchIndex = async (ctx) => {
+    const searchIndex = await BlogContent.find({})
+        .select('-_id id title tags content createTime updateTime')
+        .sort({ createTime: -1 })
+        .lean()
+        .exec()
+
+    ctx.status = 200
+    ctx.body = searchIndex.map((blogContent) => ({
+        ...blogContent,
+        link: `/blog/${blogContent.id}`
+    }))
+}
+
 // 删除一条博客内容
 export const deleteBlogContent = async (ctx) => {
     const { id } = ctx.request.params

@@ -1,6 +1,6 @@
 import Router from '@koa/router'
 import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
-import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
+import { createBlogContent, getBlogContent, getBlogContentList, getBlogContentSearchIndex, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { getWebsiteData, getWebsiteDataCount, updateWebsiteVisit, updateWebsiteView, updateWebsiteComment, updateWebsiteArticle, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
 import { getAllComments, getComments, createComment, reviewComment, deleteComment, updateComment, getPendingComments, sendEmailNotification } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
@@ -46,6 +46,9 @@ router.post('/blogcontent', createBlogContent)
 
 // 获取所有博客内容
 router.get('/blogcontent', getBlogContentList)
+
+// 获取博客搜索索引
+router.get('/blogcontent/search-index', getBlogContentSearchIndex)
 
 // 获取博客内容
 router.get('/blogcontent/:id', getBlogContent)

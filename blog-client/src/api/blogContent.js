@@ -13,6 +13,14 @@ export function apiGetBlogContent(blogId) {
     })
 }
 
+// 获取博客搜索索引
+export function apiGetBlogContentSearchIndex() {
+    return request({
+        url: '/blogcontent/search-index',
+        method: 'GET'
+    })
+}
+
 // 更新博客的浏览量
 export function apiUpdateBlogViewCount(blogId) {
     return request({
