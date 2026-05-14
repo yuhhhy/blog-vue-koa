@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
+import NavSearch from './NavSearch.vue'
 
 const themeStore = useThemeStore()
 const route = useRoute()
@@ -59,10 +60,13 @@ onMounted(() => {
                 {{ item.label }}
             </RouterLink>
         </div>
-        <button @click="toggleTheme" aria-label="theme-toggle-button" class="theme-toggle">
-            <span class="iconfont icon-sun themeIcon" v-if="themeStore.theme === 'light'"></span>
-            <span class="iconfont icon-moon themeIcon" v-else style="color: #fff;"></span>
-        </button>
+        <div class="nav-actions">
+            <NavSearch />
+            <button @click="toggleTheme" aria-label="theme-toggle-button" class="theme-toggle">
+                <span class="iconfont icon-sun themeIcon" v-if="themeStore.theme === 'light'"></span>
+                <span class="iconfont icon-moon themeIcon" v-else style="color: #fff;"></span>
+            </button>
+        </div>
         <div class="el-drop-down">
             <el-dropdown placement="top-start">
                 <span class="iconfont drop-down-icon">&#xe61b;</span>
@@ -88,6 +92,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .nav {
+    position: relative;
     background-color: var(--white);
     width: 100%;
     height: 64px;
@@ -160,17 +165,27 @@ onMounted(() => {
 
     .themeIcon {
         font-size: 1.2rem;
-        position: absolute;
-        top: 22px;
-        right: 30px;
     }
 }
 
+.nav-actions {
+    position: absolute;
+    top: 14px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .theme-toggle {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
     background: none;
     border: none;
     font-size: 1.2rem;
     cursor: pointer;
-    padding: 0 10px;
+    padding: 0;
 }
 </style>

@@ -13,6 +13,14 @@ export function apiGetBlogContent(blogId) {
     })
 }
 
+// 获取所有博客内容
+export function apiGetBlogContentList() {
+    return request({
+        url: '/blogcontent',
+        method: 'GET'
+    })
+}
+
 // 获取博客搜索索引
 export function apiGetBlogContentSearchIndex() {
     return request({
