@@ -114,9 +114,10 @@ onMounted(() => {
                     transition: filter 0.3s ease;
 
                     @media (max-width: 768px) {
+                        align-self: stretch;
                         flex-basis: 38%;
                         width: 38%;
-                        height: 120px;
+                        height: auto;
                         min-height: 120px;
                     }
                 }
