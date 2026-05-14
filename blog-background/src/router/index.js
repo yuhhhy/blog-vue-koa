@@ -15,6 +15,14 @@ const routes = [
         component: () => import("../views/Welcome/index.vue"),
       },
       {
+        path: "dashboard",
+        name: "DataDashboard",
+        component: () => import("../views/DataDashboard/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
+      },
+      {
         path: "article/list",
         name: "ArticleList",
         component: () => import("../views/ArticleList/index.vue"),

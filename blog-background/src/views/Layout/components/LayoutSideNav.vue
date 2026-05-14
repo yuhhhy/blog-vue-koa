@@ -11,6 +11,11 @@ const siderNavItems = [
         link: '/welcome',
     },
     {
+        title: '数据大屏',
+        link: '/dashboard',
+        requiresAdmin: true
+    },
+    {
         title: '文章',
         children: [
             {

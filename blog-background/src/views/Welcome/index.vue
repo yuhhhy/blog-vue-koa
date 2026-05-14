@@ -1,588 +1,420 @@
 <script setup>
-import * as echarts from 'echarts'
-import { ref, onMounted, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { apiGetWebsiteData } from '@/api/websiteData.js'
-
-onMounted(() => {
-  fetchData()
-})
-
-// 获取初始化数据
-async function fetchData() {
-  try {
-    const data = await apiGetWebsiteData('week')
-
-    // 更新顶部统计数据
-    Object.assign(topData.value.view, data.view)
-    Object.assign(topData.value.visit, data.visit)
-    Object.assign(topData.value.comment, data.comment)
-
-
-    // 更新主图表初始数据
-    mainData.value.view.weekData = data.view.data
-    mainData.value.visit.weekData = data.visit.data
-    mainData.value.comment.weekData = data.comment.data
-
-    // 更新热力图表数据
-    heatmapData.value = data.article.data
-    articleCount.value = data.article.total 
-
-    // 初始化图表
-    initTopCards()
-    initMainChart()
-    initArticleChart()
-  } catch (error) {
-    console.error('获取数据失败:', error)
-    ElMessage.error('数据获取失败')
+const quickActions = [
+  {
+    title: '新建文章',
+    desc: '进入编辑器完成正文、封面、标签和发布信息。',
+    link: '/article/create',
+    accent: 'blue'
+  },
+  {
+    title: '文章列表',
+    desc: '维护已发布文章，调整前台展示内容。',
+    link: '/article/list',
+    accent: 'emerald'
+  },
+  {
+    title: '待审评论',
+    desc: '处理新评论与回复，让互动内容保持干净。',
+    link: '/comment/pending',
+    accent: 'amber'
+  },
+  {
+    title: '数据大屏',
+    desc: '进入独立 ECharts 页面查看访问、评论和发布趋势。',
+    link: '/dashboard',
+    accent: 'violet'
   }
-}
-
-/**
- * 顶部卡片图表部分
- * initTopCards
- */
-
-// 顶部卡片数据
-const topData = ref({
-  view: { 
-    total: 0, 
-    data: [],
-    rate: 0
-  },
-  visit: { 
-    total: 0, 
-    data: [] 
-  },
-  comment: { 
-    total: 0, 
-    data: [] 
-  }
-})
-
-// 生成过去7天的日期数组
-const getLastSevenDays = () => {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  const today = new Date().getDay() // 0-6，0代表周日
-  const todayIndex = today === 0 ? 6 : today - 1 // 转换为数组索引
-
-  // 重新排序数组
-  return [
-    ...days.slice(todayIndex + 1),
-    ...days.slice(0, todayIndex + 1)
-  ]
-}
-
-// 使用这个函数替换固定的日期数组，作为xAxis的data
-const dateLabels = getLastSevenDays()
-
-// 初始化顶部卡片图表
-const initTopCards = () => {
-  
-  // 浏览量折线图
-  const viewChart = echarts.init(document.getElementById('viewChart'))
-  viewChart.setOption({
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'line'
-      }
-    },
-    grid: { top: 5, right: 0, bottom: 5, left: 0 },
-    xAxis: { 
-      data: dateLabels,
-      show: false
-    },
-    yAxis: { 
-      show: false
-    },
-    series: [{
-      data: topData.value.view.data,
-      type: 'line',
-      showSymbol: false,
-      areaStyle: { color: '#82BEFF' },
-      lineStyle: { color: '#82BEFF' }
-    }]
-  })
-
-
-  // 生成topData.value.view.rate
-  const lastDay = topData.value.view.data.length - 1
-  const todayView = topData.value.view.data[lastDay] || 0
-  const yesterdayView = topData.value.view.data[lastDay - 1] || 0
-  topData.value.view.rate = yesterdayView === 0 ? 0 : ((todayView - yesterdayView) / yesterdayView * 100).toFixed(2)
-
-  // 访问量柱状图
-  const visitChart = echarts.init(document.getElementById('visitChart'))
-  visitChart.setOption({
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow',
-      }
-    },
-    grid: { top: 0, right: 0, bottom: 5, left: 0 },
-    xAxis: { 
-      data: dateLabels,
-      show: false
-    },
-    yAxis: { 
-      show: false
-    },
-    series: [{
-      data: topData.value.visit.data,
-      type: 'bar',
-      itemStyle: { color: '#82BEFF' }
-    }]
-  })
-
-  // 评论数柱状图
-  const commentChart = echarts.init(document.getElementById('commentChart'))
-  commentChart.setOption({
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow',
-      }
-    },
-    grid: { top: 5, right: 5, bottom: 5, left: 5 },
-    xAxis: {
-      data: dateLabels,
-      show: false
-    },
-    yAxis: { show: false },
-    series: [{
-      type: 'bar',
-      data: topData.value.comment.data,
-      itemStyle: { color: '#3a4de9' }
-    }]
-  })
-}
-
-
-/**
- * 最大的主图表部分
- * initMainChart
- */
-
-// 主图表数据
-const mainData = ref({
-  view: { 
-    weekData: [],
-    monthData: [],
-    yearData: [],
-  },
-  visit: { 
-    weekData: [],
-    monthData: [],
-    yearData: []
-  },
-  comment: { 
-    weekData: [],
-    monthData: [],
-    yearData: []
-  }
-})
-
-// 时间范围选择
-const timeRange = ref('week')
-const timeRanges = [
-  { label: '七日', value: 'week' },
-  { label: '本月', value: 'month' },
-  { label: '本年', value: 'year' }
 ]
 
-// 数据类型选择
-const dataType = ref('view')
-const dataTypes = [
-  { label: '浏览量', value: 'view' },
-  { label: '访问量', value: 'visit' },
-  { label: '评论数', value: 'comment' }
+const features = [
+  {
+    title: '内容发布链路',
+    text: '从 Markdown 写作、封面上传到文章统计维护，后台把发布流程收束到一个清晰入口。'
+  },
+  {
+    title: '互动与权限管理',
+    text: '评论审核、友链维护和用户管理集中在侧边栏中，适合日常巡检和低频管理。'
+  },
+  {
+    title: '资源分区整理',
+    text: '图片、Markdown、大文件分开管理，减少素材散落，方便后续复用和清理。'
+  }
 ]
 
-// 定义中文周名称映射
-const weekDayMap = {
-  'Mon': '一',
-  'Tue': '二',
-  'Wed': '三',
-  'Thu': '四',
-  'Fri': '五',
-  'Sat': '六',
-  'Sun': '日'
-}
-
-watch([timeRange, dataType], async () => {
-  try {
-    if (timeRange.value !== 'week') {
-      if (mainData.value.view.monthData.length === 0 && timeRange.value === 'month') {
-        // 获取month数据
-        const dataMonth = await apiGetWebsiteData(timeRange.value)
-        mainData.value.view.monthData = dataMonth.view.data
-        mainData.value.visit.monthData = dataMonth.visit.data
-        mainData.value.comment.monthData = dataMonth.comment.data
-      }
-      if (mainData.value.view.yearData.length === 0 && timeRange.value === 'year') {
-        // 获取year数据
-        const dataYear = await apiGetWebsiteData(timeRange.value)
-        mainData.value.view.yearData = dataYear.view.data
-        mainData.value.visit.yearData = dataYear.visit.data
-        mainData.value.comment.yearData = dataYear.comment.data
-      }
-      // 重新渲染MainChart
-      initMainChart()
-    } else {
-      initMainChart()
-    }
-  } catch (error) {
-    console.error('更新主图表失败:', error)
-    ElMessage.error('更新主图表失败')
-  }
-})
-
-// 对主图表的引用
-const mainChartRef = ref(null)
-
-// 初始化主图表
-const initMainChart = () => {
-  if (mainChartRef.value) {
-    // 如果图表已存在，先销毁
-    mainChartRef.value.dispose()
-  }
-
-  mainChartRef.value = echarts.init(document.getElementById('mainChart'))
-
-  // 根据时间范围获取对应的标签
-  const getTimeLabels = () => {
-    const now = new Date()
-  
-    switch(timeRange.value) {
-      case 'week': {
-        // 获取过去7天的日期
-        const dates = Array.from({length: 7}, (_, i) => {
-          const date = new Date()
-          date.setDate(now.getDate() - (6 - i))
-          return date
-        })
-        return dates.map(date => `${date.getMonth() + 1}月${date.getDate()}日`)
-      }
-      case 'month': {
-        // 获取本月所有日期
-        const year = now.getFullYear()
-        const month = now.getMonth()
-        const daysInMonth = new Date(year, month + 1, 0).getDate()
-        return Array.from({length: daysInMonth}, (_, i) => `${i + 1}日`)
-      }
-      case 'year': {
-        // 获取今年所有月份
-        return Array.from({length: 12}, (_, i) => `${i + 1}月`)
-      }
-      default:
-        return []
-    }
-  }
-
-  // 获取当前数据类型的配置
-  const getCurrentTypeConfig = () => {
-    const typeConfigs = {
-      view: {
-        name: '浏览量',
-        color: '#3B82F6',
-        data: mainData.value.view[`${timeRange.value}Data`]
-      },
-      visit: {
-        name: '访问量',
-        color: '#10B981',
-        data: mainData.value.visit[`${timeRange.value}Data`]
-      },
-      comment: {
-        name: '评论数',
-        color: '#F59E0B',
-        data: mainData.value.comment[`${timeRange.value}Data`]
-      }
-    }
-    return typeConfigs[dataType.value]
-  }
-
-  const currentConfig = getCurrentTypeConfig()
-
-  mainChartRef.value.setOption({
-    title: { 
-      text: `${currentConfig.name}统计`,
-      left: 'center'
-    },
-    tooltip: { 
-      trigger: 'axis',
-      formatter: `{b}<br/>${currentConfig.name}：{c}`
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '10%',
-      containLabel: true
-    },
-    toolbox: {
-      feature: {
-        saveAsImage: {}
-      }
-    },
-    xAxis: {
-      type: 'category',
-      data: getTimeLabels(),
-      axisLabel: {
-        rotate: timeRange.value === 'month' ? 45 : 0,
-        interval: timeRange.value === 'month' ? 'auto' : 0 // 防止标签重叠
-      }
-    },
-    yAxis: { 
-      type: 'value',
-      name: currentConfig.name
-    },
-    series: [
-      {
-        name: currentConfig.name,
-        type: 'bar',
-        data: currentConfig.data,
-        itemStyle: {
-          color: currentConfig.color
-        },
-        emphasis: {
-          focus: 'series',
-          label: {
-            show: true,
-            formatter: '{c}',
-            position: 'top'
-          }
-        }
-      }
-    ]
-  })
-}
-
-const heatmapData = ref([])
-const articleCount = ref(0)
-
-// 文章统计图表 - 热力图
-const initArticleChart = () => {
-  const articleChart = echarts.init(document.getElementById('articleChart'))
-  
-  const getYearlyData = (year) => {
-    // 创建一个 Map 来存储日期和文章数量的对应关系
-    const articleMap = new Map()
-    
-    // 处理实际数据
-    heatmapData.value.forEach(item => {
-      const date = new Date(item.date)
-      const dateStr = echarts.time.format(+date, '{yyyy}-{MM}-{dd}', false)
-      articleMap.set(dateStr, item.count)
-    })
-    
-    // 生成完整的年度数据
-    const date = +echarts.time.parse(year + '-01-01')
-    const end = +echarts.time.parse((+year + 1) + '-01-01')
-    const dayTime = 3600 * 24 * 1000
-    const data = []
-    
-    // 遍历整年的每一天
-    for (let time = date; time < end; time += dayTime) {
-      const dateStr = echarts.time.format(time, '{yyyy}-{MM}-{dd}', false)
-      data.push([
-        dateStr,
-        articleMap.get(dateStr) || 0  // 如果该日期没有数据则返回0
-      ])
-    }
-    
-    return data
-  }
-
-  articleChart.setOption({
-    title: {
-      top: 30,
-      left: 'center',
-      text: '文章发布'
-    },
-    tooltip: {
-      formatter: function(params) {
-        const value = params.value[1]
-        const date = new Date(params.value[0])
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-        // 获取日期的后缀
-        const getDaySuffix = (day) => {
-          if (day > 3 && day < 21) return 'th'
-          switch (day % 10) {
-            case 1: return 'st'
-            case 2: return 'nd'
-            case 3: return 'rd'
-            default: return 'th'
-          }
-        }
-
-        const month = months[date.getMonth()]
-        const day = date.getDate()
-        const suffix = getDaySuffix(day)
-
-        return value === 1 || value === 0
-          ? `${value} article written on ${month} ${day}${suffix}`
-          : `${value} articles written on ${month} ${day}${suffix}`
-      }
-    },
-    visualMap: {
-      min: 0,
-      max: 10,
-      type: 'piecewise',
-      orient: 'horizontal',
-      left: 'center',
-      top: 75,
-      pieces: [
-        { gte: 4, color: '#216e39' },
-        { value: 3, color: '#30a14e' },
-        { value: 2, color: '#40c463' },
-        { value: 1, color: '#9be9a8' },
-        { value: 0, color: '#ebedf0' }
-      ]
-    },
-    calendar: {
-      top: 140,
-      left: 30,
-      right: 30,
-      cellSize: ['auto', 16],
-      range: '2025',
-      splitLine: false,
-      itemStyle: {
-        borderWidth: 0.5,
-        borderWidth: 3,
-        borderColor: 'rgb(255, 255, 255)'
-      },
-      yearLabel: { show: false }
-    },
-    series: {
-      type: 'heatmap',
-      coordinateSystem: 'calendar',
-      data: getYearlyData('2025')
-    },
-    // 添加文章总数显示
-    graphic: {
-      elements: [
-        {
-          type: 'text',
-          right: 32,
-          bottom: 160,
-          style: {
-            text: `total: ${articleCount.value}`,
-            font: '14px sans-serif',
-            fill: '#333'
-          }
-        }
-      ]
-    }
-  })
-}
-
-
-// 通知管理
-const notificationList = ref([
-  { type: '评论通知', count: 2, color: '#3B82F6', icon: 'ChatDotRound' },
-  { type: '互动通知', count: 5, color: '#F59E0B', icon: 'Star' },
-  { type: '订阅通知', count: 1, color: '#EC4899', icon: 'Bell' },
-  { type: '友链申请', count: 3, color: '#10B981', icon: 'Link' }
-])
+const steps = [
+  '写作与素材准备',
+  '发布并同步统计',
+  '审核评论与友链',
+  '进入数据大屏复盘'
+]
 </script>
 
 <template>
-<div class="p-6 space-y-6">
-    <!-- 顶部卡片 -->
-    <div class="grid grid-cols-3 gap-6">
-      <!-- 浏览量卡片 -->
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div class="flex justify-between items-start mb-4">
+  <main class="welcome-page">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Blog Admin Console</p>
+        <h1>一曝十寒博客后台</h1>
+        <p class="hero-text">
+          轻量首页只保留入口、说明和工作流，不再首屏加载 ECharts。数据大屏已经拆到独立页面，
+          需要分析趋势时再进入，平时打开后台会更快、更安静。
+        </p>
+        <div class="hero-actions">
+          <RouterLink to="/article/create" class="primary-action">开始写作</RouterLink>
+          <RouterLink to="/dashboard" class="secondary-action">查看数据大屏</RouterLink>
+        </div>
+      </div>
+
+      <aside class="hero-card">
+        <div class="status-line">
+          <span></span>
+          <strong>首屏轻量化</strong>
+        </div>
+        <p>图表、热力图和 ECharts 初始化已移出默认路径。</p>
+        <div class="metric-row">
           <div>
-            <h3 class="text-gray-500">总浏览量</h3>
-            <p class="text-2xl font-bold">{{ topData.view.total }}</p>
+            <strong>0</strong>
+            <span>首屏图表</span>
           </div>
-          <div :class="topData.view.rate >= 0 ? 'text-green-500' : 'text-red-500'">
-            <span>{{ topData.view.rate >= 0 ? '↑' : '↓' }}{{ Math.abs(topData.view.rate) }}%</span>
-          </div>
-        </div>
-        <div id="viewChart" class="h-16 w-full"></div>
-      </div>
-
-      <!-- 访问量卡片 -->
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div class="mb-4">
-          <h3 class="text-gray-500">总访问量</h3>
-          <p class="text-2xl font-bold">{{ topData.visit.total }}</p>
-        </div>
-        <div id="visitChart" class="h-16 w-full"></div>
-      </div>
-
-      <!-- 评论数卡片 -->
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div class="mb-4">
-          <h3 class="text-gray-500">总评论数</h3>
-          <p class="text-2xl font-bold">{{ topData.comment.total }}</p>
-        </div>
-        <div id="commentChart" class="h-16 w-full"></div>
-      </div>
-    </div>
-
-    <!-- 主图表 -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex justify-between mb-4">
-        <el-radio-group v-model="dataType">
-          <el-radio-button 
-            v-for="type in dataTypes" 
-            :key="type.value" 
-            :value="type.value"
-          >
-            {{ type.label }}
-          </el-radio-button>
-        </el-radio-group>
-
-        <el-radio-group v-model="timeRange">
-          <el-radio-button 
-            v-for="range in timeRanges" 
-            :key="range.value" 
-            :value="range.value"
-          >
-            {{ range.label }}
-          </el-radio-button>
-        </el-radio-group>
-      </div>
-      <div id="mainChart" class="w-full h-80"></div>
-    </div>
-
-     <!-- 底部图表 -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- 热力图表 -->
-      <div class="lg:col-span-3 bg-white p-4 rounded-lg shadow">
-        <div id="articleChart" class="w-full h-64"></div>
-      </div>
-      <!-- 通知管理 -->
-      <div class="lg:col-span-1 bg-white p-4 rounded-lg shadow">
-        <h3 class="text-lg font-bold mb-4">通知管理</h3>
-        <div class="space-y-4">
-          <div v-for="item in notificationList" 
-              :key="item.type" 
-              class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <div class="flex items-center space-x-3">
-              <el-icon :style="{color: item.color}" class="text-xl">
-                <component :is="item.icon" />
-              </el-icon>
-              <span class="text-gray-600">{{ item.type }}</span>
-            </div>
-            <div class="flex items-center space-x-2">
-              <span class="text-lg font-semibold" :style="{color: item.color}">{{ item.count }}</span>
-              <span class="text-gray-400 text-sm">条</span>
-            </div>
+          <div>
+            <strong>1</strong>
+            <span>独立大屏</span>
           </div>
         </div>
+      </aside>
+    </section>
+
+    <section class="quick-grid" aria-label="快捷入口">
+      <RouterLink
+        v-for="item in quickActions"
+        :key="item.title"
+        :to="item.link"
+        class="quick-card"
+        :class="`quick-card--${item.accent}`"
+      >
+        <span>{{ item.title }}</span>
+        <p>{{ item.desc }}</p>
+      </RouterLink>
+    </section>
+
+    <section class="lower-grid">
+      <div class="feature-panel">
+        <div class="section-title">
+          <p>Capabilities</p>
+          <h2>后台现在负责什么</h2>
+        </div>
+        <div class="feature-list">
+          <article v-for="feature in features" :key="feature.title">
+            <h3>{{ feature.title }}</h3>
+            <p>{{ feature.text }}</p>
+          </article>
+        </div>
       </div>
-    </div>
 
-    <!-- 用户访问的热点地图 中国地图 -->
-
-  </div>
+      <div class="workflow-panel">
+        <div class="section-title">
+          <p>Workflow</p>
+          <h2>日常维护路径</h2>
+        </div>
+        <ol>
+          <li v-for="(step, index) in steps" :key="step">
+            <span>{{ index + 1 }}</span>
+            <p>{{ step }}</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+  </main>
 </template>
 
 <style scoped>
+.welcome-page {
+  min-height: 100%;
+  padding: 32px;
+  color: #172033;
+  background:
+    linear-gradient(135deg, rgba(248, 250, 252, 0.96), rgba(239, 246, 255, 0.9)),
+    url('/src/assets/avatar.jpg') right 36px top 36px / 170px 170px no-repeat;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  padding: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.eyebrow,
+.section-title p {
+  margin: 0 0 10px;
+  color: #2563eb;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 2.35rem;
+  line-height: 1.2;
+}
+
+.hero-text {
+  max-width: 740px;
+  margin: 18px 0 0;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.9;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.primary-action,
+.secondary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primary-action {
+  color: #fff;
+  background: #1d4ed8;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+}
+
+.secondary-action {
+  color: #1d4ed8;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  background: #fff;
+}
+
+.primary-action:hover,
+.secondary-action:hover,
+.quick-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+}
+
+.hero-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px;
+  border-radius: 8px;
+  color: #fff;
+  background: #0f172a;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+}
+
+.status-line span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.16);
+}
+
+.hero-card p {
+  margin: 22px 0;
+  color: #cbd5e1;
+  line-height: 1.8;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric-row div {
+  padding: 14px;
+  border: 1px solid rgba(226, 232, 240, 0.16);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.metric-row strong {
+  display: block;
+  font-size: 1.45rem;
+}
+
+.metric-row span {
+  display: block;
+  margin-top: 4px;
+  color: #cbd5e1;
+  font-size: 0.86rem;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.quick-card,
+.feature-panel,
+.workflow-panel {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.quick-card {
+  min-height: 136px;
+  padding: 20px;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quick-card span {
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.quick-card p {
+  margin: 14px 0 0;
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.quick-card--blue {
+  border-top: 4px solid #2563eb;
+}
+
+.quick-card--emerald {
+  border-top: 4px solid #10b981;
+}
+
+.quick-card--amber {
+  border-top: 4px solid #f59e0b;
+}
+
+.quick-card--violet {
+  border-top: 4px solid #7c3aed;
+}
+
+.lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.feature-panel,
+.workflow-panel {
+  padding: 24px;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 1.42rem;
+}
+
+.feature-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.feature-list article {
+  padding: 18px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.feature-list h3 {
+  margin: 0 0 10px;
+  font-size: 1.02rem;
+}
+
+.feature-list p,
+.workflow-panel li p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.75;
+}
+
+.workflow-panel ol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workflow-panel li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.workflow-panel li span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #1d4ed8;
+  font-weight: 800;
+  background: #dbeafe;
+}
+
+@media (max-width: 1200px) {
+  .hero,
+  .lower-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-grid,
+  .feature-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-page {
+    padding: 18px;
+  }
+
+  .hero {
+    padding: 24px;
+  }
+
+  .hero h1 {
+    font-size: 1.85rem;
+  }
+
+  .quick-grid,
+  .feature-list {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

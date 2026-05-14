@@ -132,6 +132,30 @@ export const getWebsiteData = async (ctx) => {
             return thisYearData.sort((a, b) => new Date(a.date) - new Date(b.date))
         }
 
+        const getArticleDailyDataFromContent = async () => {
+            const articles = await BlogContent.find({})
+                .select('createTime -_id')
+                .lean()
+                .exec()
+
+            const dailyMap = new Map()
+
+            articles.forEach((article) => {
+                const date = new Date(article.createTime)
+                date.setHours(0, 0, 0, 0)
+                const key = date.toISOString()
+                dailyMap.set(key, (dailyMap.get(key) || 0) + 1)
+            })
+
+            return Array.from(dailyMap.entries())
+                .map(([date, count]) => ({ date: new Date(date), count }))
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+        }
+
+        const articleDailyData = data.article.dailyData.length
+            ? data.article.dailyData
+            : await getArticleDailyDataFromContent()
+
         // 处理返回数据
         ctx.status = 200
         ctx.body = {
@@ -149,7 +173,7 @@ export const getWebsiteData = async (ctx) => {
             },
             article: {
                 total: data.article.total,
-                data: getThisYear(data.article.dailyData) // 不管传递什么参数，始终返回一年的数据
+                data: articleDailyData // 返回完整文章发布日统计，前端选择最新年份显示
             },
             updateTime: data.updateTime,
             totalWordCount: data.totalWordCount
