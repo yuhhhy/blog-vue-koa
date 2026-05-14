@@ -1,4 +1,5 @@
 import { Blog } from '../models/BlogSchema.js'
+import { BlogContent } from '../models/BlogContentSchema.js'
 
 /**
  * Blog Controller
@@ -10,9 +11,40 @@ import { Blog } from '../models/BlogSchema.js'
 export const getBlogList = async (ctx) => {
     const posts = await Blog.find({})
         .sort({ createTime: -1 }) // -1 表示降序，最新的排在前面
+        .lean()
         .exec()
+
+    const contents = await BlogContent.find({ id: { $in: posts.map((post) => post.id) } })
+        .select('id content -_id')
+        .lean()
+        .exec()
+
+    const contentMap = new Map(contents.map((item) => [item.id, item.content]))
+
     ctx.status = 200
-    ctx.body = posts
+    ctx.body = posts.map((post) => ({
+        ...post,
+        excerpt: createBlogExcerpt(contentMap.get(post.id))
+    }))
+}
+
+const createBlogExcerpt = (content = '', maxLength = 96) => {
+    const text = content
+        .replace(/```[\s\S]*?```/g, ' ')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
+        .replace(/\[([^\]]+)]\([^)]*\)/g, '$1')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/[#>*_~|[\](){}-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+    if (!text) return '暂无摘要'
+
+    const characters = Array.from(text)
+    const excerpt = characters.slice(0, maxLength).join('')
+
+    return characters.length > maxLength ? `${excerpt}...` : excerpt
 }
 
 // 通过id获取博客

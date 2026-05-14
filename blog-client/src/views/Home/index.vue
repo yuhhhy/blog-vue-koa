@@ -45,7 +45,10 @@ onMounted(() => {
                       @error="handleImageError"
                     >
                     <div class="blog-intro">
-                        <div class="blog-title">{{ blog.title }}</div>
+                        <div>
+                            <div class="blog-title">{{ blog.title }}</div>
+                            <div class="blog-excerpt">{{ blog.excerpt }}</div>
+                        </div>
                         <div class="blog-time-tags">
                             <span class="blog-time">{{ blog.createTime.substring(0, 10) }}</span>
                             <span class="blog-tag" v-for="tag in blog.tags" :key="tag">{{ tag }}</span>
@@ -104,9 +107,10 @@ onMounted(() => {
                 }
 
                 .blog-img {
+                    align-self: stretch;
                     flex: 0 0 240px;
                     width: 240px;
-                    height: 150px;
+                    height: auto;
                     min-height: 150px;
                     display: block;
                     object-fit: cover;
@@ -114,7 +118,6 @@ onMounted(() => {
                     transition: filter 0.3s ease;
 
                     @media (max-width: 768px) {
-                        align-self: stretch;
                         flex-basis: 38%;
                         width: 38%;
                         height: auto;
@@ -157,7 +160,23 @@ onMounted(() => {
 
                         @media (max-width: 768px) {
                             font-size: 1rem;
-                            margin-bottom: 10px;
+                            margin-bottom: 8px;
+                        }
+                    }
+
+                    .blog-excerpt {
+                        display: -webkit-box;
+                        overflow: hidden;
+                        color: var(--quote-color);
+                        font-size: 0.95rem;
+                        line-height: 1.7;
+                        -webkit-box-orient: vertical;
+                        -webkit-line-clamp: 2;
+
+                        @media (max-width: 768px) {
+                            font-size: 0.875rem;
+                            line-height: 1.6;
+                            -webkit-line-clamp: 2;
                         }
                     }
 
