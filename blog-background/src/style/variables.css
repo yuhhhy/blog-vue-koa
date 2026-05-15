@@ -1,9 +1,52 @@
-/* 全局变量 */
 :root {
-    --success: #48c78e;
-    --info: #17a2b8;
-    --warning: #ffc107;
-    --error: #dc3545;
-    --primary: #007bff;
-    --secondary: #6c757d;
+    --admin-bg: #edf2f7;
+    --admin-bg-soft: #f6f8fb;
+    --admin-surface: rgba(248, 250, 252, 0.92);
+    --admin-surface-solid: #f8fafc;
+    --admin-surface-muted: #eef3f8;
+    --admin-line: rgba(21, 30, 43, 0.12);
+    --admin-line-strong: rgba(21, 30, 43, 0.2);
+    --admin-text: #17212f;
+    --admin-text-muted: #607084;
+    --admin-text-soft: #8a98a8;
+    --admin-primary: #2454ff;
+    --admin-primary-strong: #1236c8;
+    --admin-primary-soft: #e7ecff;
+    --admin-accent: #008b8b;
+    --admin-accent-soft: #e1f4f4;
+    --admin-warning: #b46b14;
+    --admin-warning-soft: #fff1d6;
+    --admin-danger: #d04437;
+    --admin-danger-soft: #ffe9e5;
+    --admin-ink: #0f1724;
+    --admin-shadow: 0 18px 46px rgba(15, 23, 36, 0.08);
+    --admin-shadow-soft: 0 10px 26px rgba(15, 23, 36, 0.06);
+    --admin-radius: 8px;
+    --admin-radius-sm: 6px;
+    --admin-sidebar-width: 228px;
+    --admin-header-height: 64px;
+
+    --success: var(--admin-accent);
+    --info: #217a93;
+    --warning: var(--admin-warning);
+    --error: var(--admin-danger);
+    --primary: var(--admin-primary);
+    --secondary: var(--admin-text-muted);
+
+    --el-color-primary: var(--admin-primary);
+    --el-color-primary-light-3: #5e7cff;
+    --el-color-primary-light-5: #91a5ff;
+    --el-color-primary-light-7: #c3ccff;
+    --el-color-primary-light-8: #d9dfff;
+    --el-color-primary-light-9: var(--admin-primary-soft);
+    --el-color-primary-dark-2: var(--admin-primary-strong);
+    --el-color-success: var(--admin-accent);
+    --el-color-warning: var(--admin-warning);
+    --el-color-danger: var(--admin-danger);
+    --el-border-radius-base: var(--admin-radius-sm);
+    --el-border-color: var(--admin-line);
+    --el-border-color-light: rgba(21, 30, 43, 0.09);
+    --el-fill-color-light: var(--admin-surface-muted);
+    --el-text-color-primary: var(--admin-text);
+    --el-text-color-regular: var(--admin-text-muted);
 }

@@ -1,51 +1,59 @@
 <script setup>
 const quickActions = [
   {
-    title: '新建文章',
-    desc: '进入编辑器完成正文、封面、标签和发布信息。',
+    title: '进入写作流',
+    desc: '从草稿、标签、封面到正文编辑，保留最短发布路径。',
     link: '/article/create',
-    accent: 'blue'
+    code: 'write'
   },
   {
-    title: '文章列表',
-    desc: '维护已发布文章，调整前台展示内容。',
+    title: '内容资产库',
+    desc: '集中维护文章、Markdown、图片和大文件，降低素材散落成本。',
     link: '/article/list',
-    accent: 'emerald'
+    code: 'assets'
   },
   {
-    title: '待审评论',
-    desc: '处理新评论与回复，让互动内容保持干净。',
+    title: '互动审核台',
+    desc: '把评论、回复、友链申请纳入可巡检的队列。',
     link: '/comment/pending',
-    accent: 'amber'
+    code: 'review'
   },
   {
-    title: '数据大屏',
-    desc: '进入独立 ECharts 页面查看访问、评论和发布趋势。',
+    title: '数据观测面',
+    desc: '用访问、浏览、评论与发布趋势判断内容状态。',
     link: '/dashboard',
-    accent: 'violet'
+    code: 'signal'
   }
 ]
 
-const features = [
+const designPrinciples = [
   {
-    title: '内容发布链路',
-    text: '从 Markdown 写作、封面上传到文章统计维护，后台把发布流程收束到一个清晰入口。'
+    title: '内容先行',
+    text: '后台不是装饰页面，而是把写作、发布、维护这些高频动作压缩到清晰路径里。'
   },
   {
-    title: '互动与权限管理',
-    text: '评论审核、友链维护和用户管理集中在侧边栏中，适合日常巡检和低频管理。'
+    title: '低噪管理',
+    text: '导航、表格、弹窗和提示保持同一套节奏，让日常巡检不被视觉噪声打断。'
   },
   {
-    title: '资源分区整理',
-    text: '图片、Markdown、大文件分开管理，减少素材散落，方便后续复用和清理。'
+    title: '可观测运营',
+    text: '数据不是大屏表演，而是辅助判断内容生命力、互动质量和站点变化的信号层。'
   }
 ]
 
-const steps = [
-  '写作与素材准备',
-  '发布并同步统计',
-  '审核评论与友链',
-  '进入数据大屏复盘'
+const systemLayers = [
+  '权限与身份',
+  '内容发布',
+  '素材治理',
+  '互动审核',
+  '数据反馈'
+]
+
+const healthSignals = [
+  { label: 'Content', value: 'Structured' },
+  { label: 'Review', value: 'Queued' },
+  { label: 'Assets', value: 'Indexed' },
+  { label: 'Metrics', value: 'Observable' }
 ]
 </script>
 
@@ -53,73 +61,73 @@ const steps = [
   <main class="welcome-page">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">Blog Admin Console</p>
-        <h1>一曝十寒博客后台</h1>
+        <p class="eyebrow">Admin System Philosophy</p>
+        <h1>把博客后台设计成一个安静、锋利、可持续的内容控制台。</h1>
         <p class="hero-text">
-          轻量首页只保留入口、说明和工作流，不再首屏加载 ECharts。数据大屏已经拆到独立页面，
-          需要分析趋势时再进入，平时打开后台会更快、更安静。
+          这个后台的核心不是堆功能，而是建立一条稳定的内容生产链路：写作有入口，素材有归档，
+          互动有审核，数据有反馈。每个模块都应该像开发工具一样直接、克制、可预测。
         </p>
         <div class="hero-actions">
-          <RouterLink to="/article/create" class="primary-action">开始写作</RouterLink>
-          <RouterLink to="/dashboard" class="secondary-action">查看数据大屏</RouterLink>
+          <RouterLink to="/article/create" class="primary-action">新建文章</RouterLink>
+          <RouterLink to="/dashboard" class="secondary-action">查看数据</RouterLink>
         </div>
       </div>
 
-      <aside class="hero-card">
-        <div class="status-line">
+      <aside class="console-card" aria-label="系统状态">
+        <div class="console-top">
           <span></span>
-          <strong>首屏轻量化</strong>
+          <span></span>
+          <span></span>
         </div>
-        <p>图表、热力图和 ECharts 初始化已移出默认路径。</p>
-        <div class="metric-row">
-          <div>
-            <strong>0</strong>
-            <span>首屏图表</span>
-          </div>
-          <div>
-            <strong>1</strong>
-            <span>独立大屏</span>
+        <div class="console-title">
+          <p>system.intent</p>
+          <strong>Operate content with clarity.</strong>
+        </div>
+        <div class="signal-list">
+          <div v-for="signal in healthSignals" :key="signal.label">
+            <span>{{ signal.label }}</span>
+            <strong>{{ signal.value }}</strong>
           </div>
         </div>
       </aside>
     </section>
 
-    <section class="quick-grid" aria-label="快捷入口">
+    <section class="quick-grid" aria-label="核心入口">
       <RouterLink
         v-for="item in quickActions"
         :key="item.title"
         :to="item.link"
         class="quick-card"
-        :class="`quick-card--${item.accent}`"
       >
+        <code>{{ item.code }}</code>
         <span>{{ item.title }}</span>
         <p>{{ item.desc }}</p>
       </RouterLink>
     </section>
 
-    <section class="lower-grid">
-      <div class="feature-panel">
+    <section class="thinking-grid">
+      <div class="principles-panel">
         <div class="section-title">
-          <p>Capabilities</p>
-          <h2>后台现在负责什么</h2>
+          <p>Design Rules</p>
+          <h2>后台管理的设计思路</h2>
         </div>
-        <div class="feature-list">
-          <article v-for="feature in features" :key="feature.title">
-            <h3>{{ feature.title }}</h3>
-            <p>{{ feature.text }}</p>
+        <div class="principle-list">
+          <article v-for="principle in designPrinciples" :key="principle.title">
+            <h3>{{ principle.title }}</h3>
+            <p>{{ principle.text }}</p>
           </article>
         </div>
       </div>
 
-      <div class="workflow-panel">
+      <div class="layers-panel">
         <div class="section-title">
-          <p>Workflow</p>
-          <h2>日常维护路径</h2>
+          <p>System Layers</p>
+          <h2>模块边界</h2>
         </div>
         <ol>
-          <li v-for="(step, index) in steps" :key="step">
-            <span>{{ index + 1 }}</span>
-            <p>{{ step }}</p>
+          <li v-for="(layer, index) in systemLayers" :key="layer">
+            <span>{{ String(index + 1).padStart(2, '0') }}</span>
+            <p>{{ layer }}</p>
           </li>
         </ol>
       </div>
@@ -130,53 +138,75 @@ const steps = [
 <style scoped>
 .welcome-page {
   min-height: 100%;
-  padding: 32px;
-  color: #172033;
-  background:
-    linear-gradient(135deg, rgba(248, 250, 252, 0.96), rgba(239, 246, 255, 0.9)),
-    url('/src/assets/avatar.jpg') right 36px top 36px / 170px 170px no-repeat;
+  color: var(--admin-text);
 }
 
 .hero {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 24px;
-  padding: 34px;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 28px;
+  padding: 46px;
+  overflow: hidden;
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  background:
+    linear-gradient(135deg, rgba(248, 250, 252, 0.94), rgba(239, 245, 251, 0.86)),
+    linear-gradient(90deg, rgba(36, 84, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(0, 139, 139, 0.06) 1px, transparent 1px);
+  background-size: auto, 38px 38px, 38px 38px;
+  box-shadow: var(--admin-shadow);
+}
+
+.hero::after {
+  position: absolute;
+  inset: 0 0 auto auto;
+  width: 44%;
+  height: 100%;
+  content: "";
+  background: linear-gradient(135deg, transparent 20%, rgba(36, 84, 255, 0.08), rgba(0, 139, 139, 0.1));
+  clip-path: polygon(28% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.hero-copy,
+.console-card {
+  position: relative;
+  z-index: 1;
 }
 
 .eyebrow,
 .section-title p {
-  margin: 0 0 10px;
-  color: #2563eb;
+  margin: 0 0 12px;
+  color: var(--admin-primary);
+  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 850;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .hero h1 {
+  max-width: 820px;
   margin: 0;
-  font-size: 2.35rem;
-  line-height: 1.2;
+  color: var(--admin-ink);
+  font-size: clamp(2.2rem, 4vw, 4rem);
+  font-weight: 920;
+  line-height: 1.08;
 }
 
 .hero-text {
-  max-width: 740px;
-  margin: 18px 0 0;
-  color: #475569;
+  max-width: 760px;
+  margin: 20px 0 0;
+  color: var(--admin-text-muted);
   font-size: 1rem;
-  line-height: 1.9;
+  line-height: 1.95;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 26px;
+  margin-top: 30px;
 }
 
 .primary-action,
@@ -186,85 +216,98 @@ const steps = [
   justify-content: center;
   min-height: 42px;
   padding: 0 18px;
-  border-radius: 6px;
-  font-weight: 700;
-  text-decoration: none;
+  border-radius: var(--admin-radius-sm);
+  font-weight: 850;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .primary-action {
   color: #fff;
-  background: #1d4ed8;
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+  background: var(--admin-primary);
+  box-shadow: 0 12px 26px rgba(36, 84, 255, 0.24);
 }
 
 .secondary-action {
-  color: #1d4ed8;
-  border: 1px solid rgba(37, 99, 235, 0.28);
-  background: #fff;
+  color: var(--admin-primary);
+  border: 1px solid rgba(36, 84, 255, 0.26);
+  background: rgba(248, 250, 252, 0.82);
 }
 
 .primary-action:hover,
 .secondary-action:hover,
 .quick-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--admin-shadow);
 }
 
-.hero-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+.console-card {
+  align-self: stretch;
   padding: 22px;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--admin-radius);
   color: #fff;
-  background: #0f172a;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 36, 0.98), rgba(22, 31, 46, 0.96)),
+    radial-gradient(circle at 100% 0, rgba(110, 231, 249, 0.18), transparent 160px);
+  box-shadow: 0 22px 52px rgba(15, 23, 36, 0.24);
 }
 
-.status-line {
+.console-top {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 28px;
+}
+
+.console-top span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.console-top span:first-child {
+  background: #6ee7f9;
+}
+
+.console-title p {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.42);
+  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+  font-size: 12px;
+}
+
+.console-title strong {
+  display: block;
+  max-width: 240px;
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+.signal-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.signal-list div {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1.2rem;
+  justify-content: space-between;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--admin-radius-sm);
+  background: rgba(255, 255, 255, 0.055);
 }
 
-.status-line span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.16);
+.signal-list span {
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+  font-size: 12px;
 }
 
-.hero-card p {
-  margin: 22px 0;
-  color: #cbd5e1;
-  line-height: 1.8;
-}
-
-.metric-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.metric-row div {
-  padding: 14px;
-  border: 1px solid rgba(226, 232, 240, 0.16);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.metric-row strong {
-  display: block;
-  font-size: 1.45rem;
-}
-
-.metric-row span {
-  display: block;
-  margin-top: 4px;
-  color: #cbd5e1;
-  font-size: 0.86rem;
+.signal-list strong {
+  font-size: 13px;
 }
 
 .quick-grid {
@@ -275,145 +318,143 @@ const steps = [
 }
 
 .quick-card,
-.feature-panel,
-.workflow-panel {
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.92);
+.principles-panel,
+.layers-panel {
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow-soft);
 }
 
 .quick-card {
-  min-height: 136px;
+  min-height: 154px;
   padding: 20px;
-  color: inherit;
-  text-decoration: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.quick-card code {
+  display: inline-flex;
+  margin-bottom: 22px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: var(--admin-primary);
+  background: var(--admin-primary-soft);
+  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+  font-size: 12px;
+}
+
 .quick-card span {
+  display: block;
+  color: var(--admin-ink);
   font-size: 1.08rem;
-  font-weight: 800;
+  font-weight: 850;
 }
 
 .quick-card p {
-  margin: 14px 0 0;
-  color: #64748b;
-  line-height: 1.7;
+  margin: 12px 0 0;
+  color: var(--admin-text-muted);
+  line-height: 1.75;
 }
 
-.quick-card--blue {
-  border-top: 4px solid #2563eb;
-}
-
-.quick-card--emerald {
-  border-top: 4px solid #10b981;
-}
-
-.quick-card--amber {
-  border-top: 4px solid #f59e0b;
-}
-
-.quick-card--violet {
-  border-top: 4px solid #7c3aed;
-}
-
-.lower-grid {
+.thinking-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 22px;
   margin-top: 22px;
 }
 
-.feature-panel,
-.workflow-panel {
+.principles-panel,
+.layers-panel {
   padding: 24px;
 }
 
 .section-title h2 {
   margin: 0;
+  color: var(--admin-ink);
   font-size: 1.42rem;
+  font-weight: 880;
 }
 
-.feature-list {
+.principle-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 20px;
+  margin-top: 22px;
 }
 
-.feature-list article {
+.principle-list article {
+  min-height: 150px;
   padding: 18px;
-  border-radius: 8px;
-  background: #f8fafc;
+  border: 1px solid rgba(21, 30, 43, 0.08);
+  border-radius: var(--admin-radius-sm);
+  background: var(--admin-surface-muted);
 }
 
-.feature-list h3 {
+.principle-list h3 {
   margin: 0 0 10px;
-  font-size: 1.02rem;
+  color: var(--admin-ink);
+  font-size: 1.03rem;
+  font-weight: 850;
 }
 
-.feature-list p,
-.workflow-panel li p {
+.principle-list p,
+.layers-panel li p {
   margin: 0;
-  color: #64748b;
-  line-height: 1.75;
+  color: var(--admin-text-muted);
+  line-height: 1.78;
 }
 
-.workflow-panel ol {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.layers-panel ol {
+  display: grid;
+  gap: 12px;
   margin: 22px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.workflow-panel li {
+.layers-panel li {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 44px minmax(0, 1fr);
   gap: 12px;
   align-items: center;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid rgba(21, 30, 43, 0.08);
+  border-radius: var(--admin-radius-sm);
+  background: rgba(238, 243, 248, 0.76);
 }
 
-.workflow-panel li span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  color: #1d4ed8;
-  font-weight: 800;
-  background: #dbeafe;
+.layers-panel li span {
+  color: var(--admin-primary);
+  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.layers-panel li p {
+  color: var(--admin-text);
+  font-weight: 750;
 }
 
 @media (max-width: 1200px) {
   .hero,
-  .lower-grid {
+  .thinking-grid {
     grid-template-columns: 1fr;
   }
 
   .quick-grid,
-  .feature-list {
+  .principle-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
-  .welcome-page {
-    padding: 18px;
-  }
-
   .hero {
-    padding: 24px;
-  }
-
-  .hero h1 {
-    font-size: 1.85rem;
+    padding: 28px;
   }
 
   .quick-grid,
-  .feature-list {
+  .principle-list {
     grid-template-columns: 1fr;
   }
 }

@@ -4,6 +4,69 @@ import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { apiGetWebsiteData } from '@/api/websiteData.js'
 
+const chartTheme = {
+  primary: '#2454ff',
+  accent: '#008b8b',
+  violet: '#6d74ff',
+  amber: '#d08b20',
+  danger: '#d04437',
+  surface: '#f8fafc',
+  text: '#17212f',
+  muted: '#607084',
+  line: 'rgba(21, 30, 43, 0.1)',
+  splitLine: 'rgba(21, 30, 43, 0.07)',
+  palette: ['#2454ff', '#008b8b', '#6d74ff', '#d08b20', '#d04437']
+}
+
+const chartTitle = {
+  textStyle: {
+    color: chartTheme.text,
+    fontSize: 15,
+    fontWeight: 700
+  }
+}
+
+const chartTooltip = {
+  backgroundColor: 'rgba(15, 23, 36, 0.94)',
+  borderColor: 'rgba(255, 255, 255, 0.08)',
+  borderWidth: 1,
+  textStyle: {
+    color: '#f8fafc'
+  },
+  extraCssText: 'border-radius: 8px; box-shadow: 0 18px 46px rgba(15, 23, 36, 0.18);'
+}
+
+const axisLabel = {
+  color: chartTheme.muted,
+  fontSize: 12
+}
+
+const axisLine = {
+  lineStyle: {
+    color: chartTheme.line
+  }
+}
+
+const splitLine = {
+  lineStyle: {
+    color: chartTheme.splitLine
+  }
+}
+
+const hexToRgba = (hex, alpha) => {
+  const normalized = hex.replace('#', '')
+  const bigint = parseInt(normalized, 16)
+  const r = (bigint >> 16) & 255
+  const g = (bigint >> 8) & 255
+  const b = bigint & 255
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+const chartGradient = (color, opacity = 0.18) => new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+  { offset: 0, color },
+  { offset: 1, color: hexToRgba(color, opacity) }
+])
+
 onMounted(() => {
   fetchData()
 })
@@ -83,7 +146,9 @@ const initTopCards = () => {
   // 浏览量折线图
   const viewChart = echarts.init(document.getElementById('viewChart'))
   viewChart.setOption({
+    color: [chartTheme.primary],
     tooltip: {
+      ...chartTooltip,
       trigger: 'axis',
       axisPointer: {
         type: 'line'
@@ -101,8 +166,8 @@ const initTopCards = () => {
       data: topData.value.view.data,
       type: 'line',
       showSymbol: false,
-      areaStyle: { color: '#82BEFF' },
-      lineStyle: { color: '#82BEFF' }
+      areaStyle: { color: chartGradient(chartTheme.primary, 0.08) },
+      lineStyle: { color: chartTheme.primary, width: 2 }
     }]
   })
 
@@ -116,7 +181,9 @@ const initTopCards = () => {
   // 访问量柱状图
   const visitChart = echarts.init(document.getElementById('visitChart'))
   visitChart.setOption({
+    color: [chartTheme.accent],
     tooltip: {
+      ...chartTooltip,
       trigger: 'axis',
       axisPointer: {
         type: 'shadow',
@@ -133,14 +200,17 @@ const initTopCards = () => {
     series: [{
       data: topData.value.visit.data,
       type: 'bar',
-      itemStyle: { color: '#82BEFF' }
+      barWidth: 8,
+      itemStyle: { color: chartTheme.accent, borderRadius: [4, 4, 0, 0] }
     }]
   })
 
   // 评论数柱状图
   const commentChart = echarts.init(document.getElementById('commentChart'))
   commentChart.setOption({
+    color: [chartTheme.violet],
     tooltip: {
+      ...chartTooltip,
       trigger: 'axis',
       axisPointer: {
         type: 'shadow',
@@ -155,7 +225,8 @@ const initTopCards = () => {
     series: [{
       type: 'bar',
       data: topData.value.comment.data,
-      itemStyle: { color: '#3a4de9' }
+      barWidth: 8,
+      itemStyle: { color: chartTheme.violet, borderRadius: [4, 4, 0, 0] }
     }]
   })
 }
@@ -287,17 +358,17 @@ const initMainChart = () => {
     const typeConfigs = {
       view: {
         name: '浏览量',
-        color: '#3B82F6',
+        color: chartTheme.primary,
         data: mainData.value.view[`${timeRange.value}Data`]
       },
       visit: {
         name: '访问量',
-        color: '#10B981',
+        color: chartTheme.accent,
         data: mainData.value.visit[`${timeRange.value}Data`]
       },
       comment: {
         name: '评论数',
-        color: '#F59E0B',
+        color: chartTheme.violet,
         data: mainData.value.comment[`${timeRange.value}Data`]
       }
     }
@@ -307,11 +378,14 @@ const initMainChart = () => {
   const currentConfig = getCurrentTypeConfig()
 
   mainChartRef.value.setOption({
+    color: [currentConfig.color],
     title: { 
+      ...chartTitle,
       text: `${currentConfig.name}统计`,
       left: 'center'
     },
     tooltip: { 
+      ...chartTooltip,
       trigger: 'axis',
       formatter: `{b}<br/>${currentConfig.name}：{c}`
     },
@@ -322,21 +396,39 @@ const initMainChart = () => {
       containLabel: true
     },
     toolbox: {
+      right: 8,
       feature: {
         saveAsImage: {}
+      },
+      iconStyle: {
+        borderColor: chartTheme.muted
+      },
+      emphasis: {
+        iconStyle: {
+          borderColor: chartTheme.primary
+        }
       }
     },
     xAxis: {
       type: 'category',
       data: getTimeLabels(),
       axisLabel: {
+        ...axisLabel,
         rotate: timeRange.value === 'month' ? 45 : 0,
         interval: timeRange.value === 'month' ? 'auto' : 0 // 防止标签重叠
-      }
+      },
+      axisLine,
+      axisTick: { lineStyle: { color: chartTheme.line } }
     },
     yAxis: { 
       type: 'value',
-      name: currentConfig.name
+      name: currentConfig.name,
+      nameTextStyle: {
+        color: chartTheme.muted
+      },
+      axisLabel,
+      axisLine,
+      splitLine
     },
     series: [
       {
@@ -344,7 +436,8 @@ const initMainChart = () => {
         type: 'bar',
         data: currentConfig.data,
         itemStyle: {
-          color: currentConfig.color
+          color: currentConfig.color,
+          borderRadius: [6, 6, 0, 0]
         },
         emphasis: {
           focus: 'series',
@@ -405,12 +498,15 @@ const initArticleChart = () => {
   }
 
   articleChart.setOption({
+    color: chartTheme.palette,
     title: {
+      ...chartTitle,
       top: 30,
       left: 'center',
       text: '文章发布'
     },
     tooltip: {
+      ...chartTooltip,
       formatter: function(params) {
         const value = params.value[1]
         const date = new Date(params.value[0])
@@ -444,12 +540,15 @@ const initArticleChart = () => {
       left: 'center',
       top: 75,
       pieces: [
-        { gte: 4, color: '#216e39' },
-        { value: 3, color: '#30a14e' },
-        { value: 2, color: '#40c463' },
-        { value: 1, color: '#9be9a8' },
-        { value: 0, color: '#ebedf0' }
-      ]
+        { gte: 4, color: chartTheme.primary },
+        { value: 3, color: '#5476ff' },
+        { value: 2, color: chartTheme.accent },
+        { value: 1, color: '#9be7e7' },
+        { value: 0, color: '#e6edf5' }
+      ],
+      textStyle: {
+        color: chartTheme.muted
+      }
     },
     calendar: {
       top: 140,
@@ -460,13 +559,17 @@ const initArticleChart = () => {
       splitLine: false,
       itemStyle: {
         borderWidth: 3,
-        borderColor: 'rgb(255, 255, 255)'
+        borderColor: chartTheme.surface,
+        borderRadius: 3
       },
       yearLabel: { show: false }
     },
     series: {
       type: 'heatmap',
       coordinateSystem: 'calendar',
+      itemStyle: {
+        borderRadius: 3
+      },
       data: getYearlyData(heatmapYear)
     },
     // 添加文章总数显示
@@ -478,8 +581,8 @@ const initArticleChart = () => {
           bottom: 160,
           style: {
             text: `total: ${articleCount.value}`,
-            font: '14px sans-serif',
-            fill: '#333'
+            font: '14px IBM Plex Sans, sans-serif',
+            fill: chartTheme.text
           }
         }
       ]
@@ -509,24 +612,36 @@ const initHeavyCharts = () => {
   const total = topData.value.view.total + topData.value.visit.total + topData.value.comment.total
 
   echarts.init(document.getElementById('trafficTrendChart')).setOption({
-    title: { text: '首屏多指标趋势', left: 'center' },
-    tooltip: { trigger: 'axis' },
-    legend: { top: 32 },
+    color: chartTheme.palette,
+    title: { ...chartTitle, text: '首屏多指标趋势', left: 'center' },
+    tooltip: { ...chartTooltip, trigger: 'axis' },
+    legend: { top: 32, textStyle: { color: chartTheme.muted } },
     grid: { top: 72, left: 42, right: 24, bottom: 36 },
-    xAxis: { type: 'category', data: dateLabels.map(day => weekDayMap[day]) },
-    yAxis: { type: 'value' },
+    xAxis: { type: 'category', data: dateLabels.map(day => weekDayMap[day]), axisLabel, axisLine, axisTick: { lineStyle: { color: chartTheme.line } } },
+    yAxis: { type: 'value', axisLabel, axisLine, splitLine },
     series: [
-      { name: '浏览量', type: 'line', smooth: true, areaStyle: {}, data: viewData },
-      { name: '访问量', type: 'line', smooth: true, areaStyle: {}, data: visitData },
-      { name: '评论数', type: 'line', smooth: true, areaStyle: {}, data: commentData }
+      { name: '浏览量', type: 'line', smooth: true, areaStyle: { opacity: 0.1 }, lineStyle: { width: 2 }, data: viewData },
+      { name: '访问量', type: 'line', smooth: true, areaStyle: { opacity: 0.1 }, lineStyle: { width: 2 }, data: visitData },
+      { name: '评论数', type: 'line', smooth: true, areaStyle: { opacity: 0.1 }, lineStyle: { width: 2 }, data: commentData }
     ]
   })
 
   echarts.init(document.getElementById('contentRadarChart')).setOption({
-    title: { text: '内容运营雷达', left: 'center' },
-    tooltip: {},
+    color: [chartTheme.primary],
+    title: { ...chartTitle, text: '内容运营雷达', left: 'center' },
+    tooltip: chartTooltip,
     radar: {
       radius: '62%',
+      axisName: {
+        color: chartTheme.muted
+      },
+      splitLine,
+      splitArea: {
+        areaStyle: {
+          color: ['rgba(36, 84, 255, 0.03)', 'rgba(0, 139, 139, 0.035)']
+        }
+      },
+      axisLine,
       indicator: [
         { name: '浏览', max: maxValue },
         { name: '访问', max: maxValue },
@@ -537,7 +652,8 @@ const initHeavyCharts = () => {
     },
     series: [{
       type: 'radar',
-      areaStyle: {},
+      areaStyle: { opacity: 0.14 },
+      lineStyle: { width: 2 },
       data: [{
         value: [
           topData.value.view.total,
@@ -552,41 +668,62 @@ const initHeavyCharts = () => {
   })
 
   echarts.init(document.getElementById('trafficPieChart')).setOption({
-    title: { text: '访问构成', left: 'center' },
-    tooltip: { trigger: 'item' },
+    color: chartTheme.palette,
+    title: { ...chartTitle, text: '访问构成', left: 'center' },
+    tooltip: { ...chartTooltip, trigger: 'item' },
     series: [{
       type: 'pie',
       radius: ['38%', '68%'],
+      itemStyle: {
+        borderRadius: 8,
+        borderColor: chartTheme.surface,
+        borderWidth: 3
+      },
       data: [
         { name: '浏览量', value: topData.value.view.total },
         { name: '访问量', value: topData.value.visit.total },
         { name: '评论数', value: topData.value.comment.total },
         { name: '文章数', value: articleCount.value }
       ],
-      label: { formatter: '{b}\n{d}%' }
+      label: { formatter: '{b}\n{d}%', color: chartTheme.muted }
     }]
   })
 
   echarts.init(document.getElementById('scatterChart')).setOption({
-    title: { text: '访问与评论散点', left: 'center' },
-    tooltip: {},
+    color: [chartTheme.accent],
+    title: { ...chartTitle, text: '访问与评论散点', left: 'center' },
+    tooltip: chartTooltip,
     grid: { top: 56, left: 42, right: 24, bottom: 36 },
-    xAxis: { name: '访问量' },
-    yAxis: { name: '评论数' },
+    xAxis: { name: '访问量', nameTextStyle: { color: chartTheme.muted }, axisLabel, axisLine, splitLine },
+    yAxis: { name: '评论数', nameTextStyle: { color: chartTheme.muted }, axisLabel, axisLine, splitLine },
     series: [{
       type: 'scatter',
+      itemStyle: {
+        color: chartTheme.accent,
+        borderColor: '#f8fafc',
+        borderWidth: 2
+      },
       symbolSize: value => Math.max(10, value[2] / 2 + 8),
       data: metricSeries.map(item => [item.visit, item.comment, item.view])
     }]
   })
 
   echarts.init(document.getElementById('funnelChart')).setOption({
-    title: { text: '内容转化漏斗', left: 'center' },
-    tooltip: { trigger: 'item' },
+    color: chartTheme.palette,
+    title: { ...chartTitle, text: '内容转化漏斗', left: 'center' },
+    tooltip: { ...chartTooltip, trigger: 'item' },
     series: [{
       type: 'funnel',
       top: 52,
       bottom: 24,
+      itemStyle: {
+        borderColor: chartTheme.surface,
+        borderWidth: 2,
+        borderRadius: 6
+      },
+      label: {
+        color: chartTheme.text
+      },
       data: [
         { name: '访问', value: topData.value.visit.total },
         { name: '浏览', value: topData.value.view.total },
@@ -597,66 +734,94 @@ const initHeavyCharts = () => {
   })
 
   echarts.init(document.getElementById('gaugeChart')).setOption({
-    title: { text: '后台活跃度', left: 'center' },
+    color: [chartTheme.primary],
+    title: { ...chartTitle, text: '后台活跃度', left: 'center' },
     series: [{
       type: 'gauge',
-      progress: { show: true },
-      detail: { formatter: '{value}%' },
+      axisLine: {
+        lineStyle: {
+          width: 12,
+          color: [[1, '#dbe6f2']]
+        }
+      },
+      progress: {
+        show: true,
+        width: 12,
+        itemStyle: {
+          color: chartTheme.primary,
+          borderRadius: 8
+        }
+      },
+      pointer: {
+        itemStyle: {
+          color: chartTheme.text
+        }
+      },
+      axisLabel: {
+        color: chartTheme.muted
+      },
+      axisTick: {
+        lineStyle: {
+          color: chartTheme.line
+        }
+      },
+      splitLine: {
+        lineStyle: {
+          color: chartTheme.line
+        }
+      },
+      detail: { formatter: '{value}%', color: chartTheme.text, fontWeight: 700 },
       data: [{ value: Math.min(100, Math.round(total / 10)), name: '活跃' }]
     }]
   })
 }
 
-
-// 通知管理
-const notificationList = ref([
-  { type: '评论通知', count: 2, color: '#3B82F6', icon: 'ChatDotRound' },
-  { type: '互动通知', count: 5, color: '#F59E0B', icon: 'Star' },
-  { type: '订阅通知', count: 1, color: '#EC4899', icon: 'Bell' },
-  { type: '友链申请', count: 3, color: '#10B981', icon: 'Link' }
-])
 </script>
 
 <template>
-<div class="p-6 space-y-6">
+<main class="dashboard-page">
     <!-- 顶部卡片 -->
-    <div class="grid grid-cols-3 gap-6">
+    <section class="metric-grid">
       <!-- 浏览量卡片 -->
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div class="flex justify-between items-start mb-4">
+      <article class="dashboard-card metric-card">
+        <div class="metric-head">
           <div>
-            <h3 class="text-gray-500">总浏览量</h3>
-            <p class="text-2xl font-bold">{{ topData.view.total }}</p>
+            <h3>总浏览量</h3>
+            <p>{{ topData.view.total }}</p>
           </div>
-          <div :class="topData.view.rate >= 0 ? 'text-green-500' : 'text-red-500'">
+          <div class="metric-rate" :class="topData.view.rate >= 0 ? 'is-up' : 'is-down'">
             <span>{{ topData.view.rate >= 0 ? '↑' : '↓' }}{{ Math.abs(topData.view.rate) }}%</span>
           </div>
         </div>
-        <div id="viewChart" class="h-16 w-full"></div>
-      </div>
+        <div id="viewChart" class="mini-chart"></div>
+      </article>
 
       <!-- 访问量卡片 -->
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div class="mb-4">
-          <h3 class="text-gray-500">总访问量</h3>
-          <p class="text-2xl font-bold">{{ topData.visit.total }}</p>
+      <article class="dashboard-card metric-card">
+        <div class="metric-head">
+          <div>
+            <h3>总访问量</h3>
+            <p>{{ topData.visit.total }}</p>
+          </div>
         </div>
-        <div id="visitChart" class="h-16 w-full"></div>
-      </div>
+        <div id="visitChart" class="mini-chart"></div>
+      </article>
 
       <!-- 评论数卡片 -->
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div class="mb-4">
-          <h3 class="text-gray-500">总评论数</h3>
-          <p class="text-2xl font-bold">{{ topData.comment.total }}</p>
+      <article class="dashboard-card metric-card">
+        <div class="metric-head">
+          <div>
+            <h3>总评论数</h3>
+            <p>{{ topData.comment.total }}</p>
+          </div>
         </div>
-        <div id="commentChart" class="h-16 w-full"></div>
-      </div>
-    </div>
+        <div id="commentChart" class="mini-chart"></div>
+      </article>
+    </section>
 
     <!-- 主图表 -->
-    <div class="bg-white p-4 rounded-lg shadow">
-      <div class="flex justify-between mb-4">
+    <section class="dashboard-card main-chart-card">
+      <div class="chart-toolbar">
         <el-radio-group v-model="dataType">
           <el-radio-button 
             v-for="type in dataTypes" 
@@ -677,61 +842,185 @@ const notificationList = ref([
           </el-radio-button>
         </el-radio-group>
       </div>
-      <div id="mainChart" class="w-full h-80"></div>
-    </div>
+      <div id="mainChart" class="chart chart--main"></div>
+    </section>
 
      <!-- 底部图表 -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <section class="lower-grid">
       <!-- 热力图表 -->
-      <div class="lg:col-span-3 bg-white p-4 rounded-lg shadow">
-        <div id="articleChart" class="w-full h-64"></div>
-      </div>
-      <!-- 通知管理 -->
-      <div class="lg:col-span-1 bg-white p-4 rounded-lg shadow">
-        <h3 class="text-lg font-bold mb-4">通知管理</h3>
-        <div class="space-y-4">
-          <div v-for="item in notificationList" 
-              :key="item.type" 
-              class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <div class="flex items-center space-x-3">
-              <el-icon :style="{color: item.color}" class="text-xl">
-                <component :is="item.icon" />
-              </el-icon>
-              <span class="text-gray-600">{{ item.type }}</span>
-            </div>
-            <div class="flex items-center space-x-2">
-              <span class="text-lg font-semibold" :style="{color: item.color}">{{ item.count }}</span>
-              <span class="text-gray-400 text-sm">条</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      <article class="dashboard-card heatmap-card">
+        <div id="articleChart" class="chart chart--heatmap"></div>
+      </article>
+    </section>
 
     <!-- 故意放入更多首屏 ECharts，用于制造 FCP 优化前的重负载基线 -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div id="trafficTrendChart" class="w-full h-80"></div>
-      </div>
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div id="contentRadarChart" class="w-full h-80"></div>
-      </div>
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div id="trafficPieChart" class="w-full h-80"></div>
-      </div>
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div id="scatterChart" class="w-full h-80"></div>
-      </div>
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div id="funnelChart" class="w-full h-80"></div>
-      </div>
-      <div class="bg-white p-4 rounded-lg shadow">
-        <div id="gaugeChart" class="w-full h-80"></div>
-      </div>
-    </div>
+    <section class="chart-grid">
+      <article class="dashboard-card">
+        <div id="trafficTrendChart" class="chart chart--large"></div>
+      </article>
+      <article class="dashboard-card">
+        <div id="contentRadarChart" class="chart chart--large"></div>
+      </article>
+      <article class="dashboard-card">
+        <div id="trafficPieChart" class="chart chart--large"></div>
+      </article>
+      <article class="dashboard-card">
+        <div id="scatterChart" class="chart chart--large"></div>
+      </article>
+      <article class="dashboard-card">
+        <div id="funnelChart" class="chart chart--large"></div>
+      </article>
+      <article class="dashboard-card">
+        <div id="gaugeChart" class="chart chart--large"></div>
+      </article>
+    </section>
 
-  </div>
+  </main>
 </template>
 
 <style scoped>
+.dashboard-page {
+  display: grid;
+  gap: 16px;
+}
+
+.dashboard-card {
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(244, 247, 251, 0.92));
+  box-shadow: var(--admin-shadow-soft);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  min-height: 160px;
+  padding: 18px 18px 14px;
+}
+
+.metric-head,
+.chart-toolbar,
+.notification-item,
+.notification-type,
+.notification-count {
+  display: flex;
+  align-items: center;
+}
+
+.metric-head,
+.chart-toolbar,
+.notification-item {
+  justify-content: space-between;
+}
+
+.metric-head h3 {
+  margin: 0;
+  color: var(--admin-text-muted);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.metric-head p {
+  margin: 6px 0 0;
+  color: var(--admin-ink);
+  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+  font-size: 28px;
+  font-weight: 860;
+  line-height: 1.15;
+}
+
+.metric-rate {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.metric-rate.is-up {
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+}
+
+.metric-rate.is-down {
+  color: var(--admin-danger);
+  background: var(--admin-danger-soft);
+}
+
+.mini-chart {
+  width: 100%;
+  height: 64px;
+  margin-top: 12px;
+}
+
+.main-chart-card,
+.heatmap-card,
+.chart-grid .dashboard-card {
+  padding: 18px;
+}
+
+.chart-toolbar {
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.chart {
+  width: 100%;
+}
+
+.chart--main,
+.chart--large {
+  height: 320px;
+}
+
+.chart--heatmap {
+  height: 260px;
+}
+
+.lower-grid {
+  display: block;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+:deep(.el-radio-button__inner) {
+  border-color: var(--admin-line);
+  color: var(--admin-text-muted);
+  font-weight: 750;
+  background: rgba(248, 250, 252, 0.86);
+}
+
+:deep(.el-radio-button:first-child .el-radio-button__inner) {
+  border-radius: var(--admin-radius-sm) 0 0 var(--admin-radius-sm);
+}
+
+:deep(.el-radio-button:last-child .el-radio-button__inner) {
+  border-radius: 0 var(--admin-radius-sm) var(--admin-radius-sm) 0;
+}
+
+:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  border-color: var(--admin-primary);
+  background: var(--admin-primary);
+  box-shadow: -1px 0 0 0 var(--admin-primary);
+}
+
+@media (max-width: 1200px) {
+  .metric-grid,
+  .lower-grid,
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
