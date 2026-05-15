@@ -779,17 +779,20 @@ const initHeavyCharts = () => {
 </script>
 
 <template>
-<main class="dashboard-page">
+<main class="grid gap-4 p-4">
     <!-- 顶部卡片 -->
-    <section class="metric-grid">
+    <section class="grid grid-cols-3 gap-4 max-xl:grid-cols-1">
       <!-- 浏览量卡片 -->
-      <article class="dashboard-card metric-card">
-        <div class="metric-head">
+      <article class="glass-panel min-h-40 p-[18px_18px_14px]">
+        <div class="flex items-center justify-between">
           <div>
-            <h3>总浏览量</h3>
-            <p>{{ topData.view.total }}</p>
+            <h3 class="text-[13px] font-bold text-admin-muted">总浏览量</h3>
+            <p class="mt-1.5 font-mono text-[28px] font-extrabold leading-none text-admin-ink">{{ topData.view.total }}</p>
           </div>
-          <div class="metric-rate" :class="topData.view.rate >= 0 ? 'is-up' : 'is-down'">
+          <div
+            class="glass-chip min-h-7 px-2.5 font-mono text-xs font-extrabold"
+            :class="topData.view.rate >= 0 ? 'bg-cyan-50/60 text-admin-accent' : 'bg-red-50/60 text-[var(--admin-danger)]'"
+          >
             <span>{{ topData.view.rate >= 0 ? '↑' : '↓' }}{{ Math.abs(topData.view.rate) }}%</span>
           </div>
         </div>
@@ -797,22 +800,22 @@ const initHeavyCharts = () => {
       </article>
 
       <!-- 访问量卡片 -->
-      <article class="dashboard-card metric-card">
-        <div class="metric-head">
+      <article class="glass-panel min-h-40 p-[18px_18px_14px]">
+        <div class="flex items-center justify-between">
           <div>
-            <h3>总访问量</h3>
-            <p>{{ topData.visit.total }}</p>
+            <h3 class="text-[13px] font-bold text-admin-muted">总访问量</h3>
+            <p class="mt-1.5 font-mono text-[28px] font-extrabold leading-none text-admin-ink">{{ topData.visit.total }}</p>
           </div>
         </div>
         <div id="visitChart" class="mini-chart"></div>
       </article>
 
       <!-- 评论数卡片 -->
-      <article class="dashboard-card metric-card">
-        <div class="metric-head">
+      <article class="glass-panel min-h-40 p-[18px_18px_14px]">
+        <div class="flex items-center justify-between">
           <div>
-            <h3>总评论数</h3>
-            <p>{{ topData.comment.total }}</p>
+            <h3 class="text-[13px] font-bold text-admin-muted">总评论数</h3>
+            <p class="mt-1.5 font-mono text-[28px] font-extrabold leading-none text-admin-ink">{{ topData.comment.total }}</p>
           </div>
         </div>
         <div id="commentChart" class="mini-chart"></div>
@@ -820,8 +823,8 @@ const initHeavyCharts = () => {
     </section>
 
     <!-- 主图表 -->
-    <section class="dashboard-card main-chart-card">
-      <div class="chart-toolbar">
+    <section class="glass-panel p-[18px]">
+      <div class="mb-3 flex items-center justify-between gap-4">
         <el-radio-group v-model="dataType">
           <el-radio-button 
             v-for="type in dataTypes" 
@@ -846,31 +849,31 @@ const initHeavyCharts = () => {
     </section>
 
      <!-- 底部图表 -->
-    <section class="lower-grid">
+    <section>
       <!-- 热力图表 -->
-      <article class="dashboard-card heatmap-card">
+      <article class="glass-panel p-[18px]">
         <div id="articleChart" class="chart chart--heatmap"></div>
       </article>
     </section>
 
     <!-- 故意放入更多首屏 ECharts，用于制造 FCP 优化前的重负载基线 -->
-    <section class="chart-grid">
-      <article class="dashboard-card">
+    <section class="grid grid-cols-2 gap-4 max-xl:grid-cols-1">
+      <article class="glass-panel p-[18px]">
         <div id="trafficTrendChart" class="chart chart--large"></div>
       </article>
-      <article class="dashboard-card">
+      <article class="glass-panel p-[18px]">
         <div id="contentRadarChart" class="chart chart--large"></div>
       </article>
-      <article class="dashboard-card">
+      <article class="glass-panel p-[18px]">
         <div id="trafficPieChart" class="chart chart--large"></div>
       </article>
-      <article class="dashboard-card">
+      <article class="glass-panel p-[18px]">
         <div id="scatterChart" class="chart chart--large"></div>
       </article>
-      <article class="dashboard-card">
+      <article class="glass-panel p-[18px]">
         <div id="funnelChart" class="chart chart--large"></div>
       </article>
-      <article class="dashboard-card">
+      <article class="glass-panel p-[18px]">
         <div id="gaugeChart" class="chart chart--large"></div>
       </article>
     </section>
@@ -879,97 +882,10 @@ const initHeavyCharts = () => {
 </template>
 
 <style scoped>
-.dashboard-page {
-  display: grid;
-  gap: 16px;
-}
-
-.dashboard-card {
-  border: 1px solid var(--admin-line);
-  border-radius: var(--admin-radius);
-  background:
-    linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(244, 247, 251, 0.92));
-  box-shadow: var(--admin-shadow-soft);
-}
-
-.metric-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.metric-card {
-  min-height: 160px;
-  padding: 18px 18px 14px;
-}
-
-.metric-head,
-.chart-toolbar,
-.notification-item,
-.notification-type,
-.notification-count {
-  display: flex;
-  align-items: center;
-}
-
-.metric-head,
-.chart-toolbar,
-.notification-item {
-  justify-content: space-between;
-}
-
-.metric-head h3 {
-  margin: 0;
-  color: var(--admin-text-muted);
-  font-size: 13px;
-  font-weight: 760;
-}
-
-.metric-head p {
-  margin: 6px 0 0;
-  color: var(--admin-ink);
-  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
-  font-size: 28px;
-  font-weight: 860;
-  line-height: 1.15;
-}
-
-.metric-rate {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-family: "JetBrains Mono", "SFMono-Regular", monospace;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.metric-rate.is-up {
-  color: var(--admin-accent);
-  background: var(--admin-accent-soft);
-}
-
-.metric-rate.is-down {
-  color: var(--admin-danger);
-  background: var(--admin-danger-soft);
-}
-
 .mini-chart {
   width: 100%;
   height: 64px;
   margin-top: 12px;
-}
-
-.main-chart-card,
-.heatmap-card,
-.chart-grid .dashboard-card {
-  padding: 18px;
-}
-
-.chart-toolbar {
-  gap: 16px;
-  margin-bottom: 12px;
 }
 
 .chart {
@@ -985,21 +901,12 @@ const initHeavyCharts = () => {
   height: 260px;
 }
 
-.lower-grid {
-  display: block;
-}
-
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
 :deep(.el-radio-button__inner) {
-  border-color: var(--admin-line);
+  border-color: rgba(255, 255, 255, 0.32);
   color: var(--admin-text-muted);
   font-weight: 750;
-  background: rgba(248, 250, 252, 0.86);
+  background: rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(12px);
 }
 
 :deep(.el-radio-button:first-child .el-radio-button__inner) {
@@ -1016,11 +923,4 @@ const initHeavyCharts = () => {
   box-shadow: -1px 0 0 0 var(--admin-primary);
 }
 
-@media (max-width: 1200px) {
-  .metric-grid,
-  .lower-grid,
-  .chart-grid {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

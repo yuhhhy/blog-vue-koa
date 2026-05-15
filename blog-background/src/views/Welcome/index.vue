@@ -58,8 +58,8 @@ const healthSignals = [
 </script>
 
 <template>
-  <main class="welcome-page">
-    <section class="hero">
+  <main class="welcome-page p-4">
+    <section class="hero glass-panel-strong">
       <div class="hero-copy">
         <p class="eyebrow">Admin System Philosophy</p>
         <h1>把博客后台设计成一个安静、锋利、可持续的内容控制台。</h1>
@@ -73,7 +73,7 @@ const healthSignals = [
         </div>
       </div>
 
-      <aside class="console-card" aria-label="系统状态">
+      <aside class="console-card glass-panel-dark" aria-label="系统状态">
         <div class="console-top">
           <span></span>
           <span></span>
@@ -97,7 +97,7 @@ const healthSignals = [
         v-for="item in quickActions"
         :key="item.title"
         :to="item.link"
-        class="quick-card"
+        class="quick-card glass-panel"
       >
         <code>{{ item.code }}</code>
         <span>{{ item.title }}</span>
@@ -106,26 +106,26 @@ const healthSignals = [
     </section>
 
     <section class="thinking-grid">
-      <div class="principles-panel">
+      <div class="principles-panel glass-panel">
         <div class="section-title">
           <p>Design Rules</p>
           <h2>后台管理的设计思路</h2>
         </div>
         <div class="principle-list">
-          <article v-for="principle in designPrinciples" :key="principle.title">
+          <article v-for="principle in designPrinciples" :key="principle.title" class="glass-tile">
             <h3>{{ principle.title }}</h3>
             <p>{{ principle.text }}</p>
           </article>
         </div>
       </div>
 
-      <div class="layers-panel">
+      <div class="layers-panel glass-panel">
         <div class="section-title">
           <p>System Layers</p>
           <h2>模块边界</h2>
         </div>
         <ol>
-          <li v-for="(layer, index) in systemLayers" :key="layer">
+          <li v-for="(layer, index) in systemLayers" :key="layer" class="glass-tile">
             <span>{{ String(index + 1).padStart(2, '0') }}</span>
             <p>{{ layer }}</p>
           </li>
@@ -148,14 +148,6 @@ const healthSignals = [
   gap: 28px;
   padding: 46px;
   overflow: hidden;
-  border: 1px solid var(--admin-line);
-  border-radius: var(--admin-radius);
-  background:
-    linear-gradient(135deg, rgba(248, 250, 252, 0.94), rgba(239, 245, 251, 0.86)),
-    linear-gradient(90deg, rgba(36, 84, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(0, 139, 139, 0.06) 1px, transparent 1px);
-  background-size: auto, 38px 38px, 38px 38px;
-  box-shadow: var(--admin-shadow);
 }
 
 .hero::after {
@@ -229,8 +221,9 @@ const healthSignals = [
 
 .secondary-action {
   color: var(--admin-primary);
-  border: 1px solid rgba(36, 84, 255, 0.26);
-  background: rgba(248, 250, 252, 0.82);
+  border: 0;
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.68) inset;
 }
 
 .primary-action:hover,
@@ -243,13 +236,6 @@ const healthSignals = [
 .console-card {
   align-self: stretch;
   padding: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--admin-radius);
-  color: #fff;
-  background:
-    linear-gradient(145deg, rgba(15, 23, 36, 0.98), rgba(22, 31, 46, 0.96)),
-    radial-gradient(circle at 100% 0, rgba(110, 231, 249, 0.18), transparent 160px);
-  box-shadow: 0 22px 52px rgba(15, 23, 36, 0.24);
 }
 
 .console-top {
@@ -295,7 +281,7 @@ const healthSignals = [
   justify-content: space-between;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 0;
   border-radius: var(--admin-radius-sm);
   background: rgba(255, 255, 255, 0.055);
 }
@@ -320,10 +306,6 @@ const healthSignals = [
 .quick-card,
 .principles-panel,
 .layers-panel {
-  border: 1px solid var(--admin-line);
-  border-radius: var(--admin-radius);
-  background: var(--admin-surface);
-  box-shadow: var(--admin-shadow-soft);
 }
 
 .quick-card {
@@ -338,7 +320,8 @@ const healthSignals = [
   padding: 4px 8px;
   border-radius: 999px;
   color: var(--admin-primary);
-  background: var(--admin-primary-soft);
+  background: rgba(231, 236, 255, 0.58);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
   font-family: "JetBrains Mono", "SFMono-Regular", monospace;
   font-size: 12px;
 }
@@ -385,9 +368,6 @@ const healthSignals = [
 .principle-list article {
   min-height: 150px;
   padding: 18px;
-  border: 1px solid rgba(21, 30, 43, 0.08);
-  border-radius: var(--admin-radius-sm);
-  background: var(--admin-surface-muted);
 }
 
 .principle-list h3 {
@@ -419,9 +399,6 @@ const healthSignals = [
   align-items: center;
   min-height: 46px;
   padding: 0 12px;
-  border: 1px solid rgba(21, 30, 43, 0.08);
-  border-radius: var(--admin-radius-sm);
-  background: rgba(238, 243, 248, 0.76);
 }
 
 .layers-panel li span {

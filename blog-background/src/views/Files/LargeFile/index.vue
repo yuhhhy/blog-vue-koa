@@ -526,7 +526,7 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="large-file-page">
-        <el-card class="mb-4">
+        <el-card>
             <template #header>
                 <div class="flex justify-between items-center">
                     <span>大文件上传</span>
@@ -633,10 +633,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.large-file-page {
-    padding-bottom: 24px;
-}
-
 .upload-panel {
     margin-top: 16px;
 }

@@ -169,9 +169,10 @@ function handleLogin() {
     height: var(--admin-header-height);
     margin-left: var(--admin-sidebar-width);
     padding: 0 24px;
-    border-bottom: 1px solid var(--admin-line);
-    background: rgba(248, 250, 252, 0.82);
-    backdrop-filter: blur(18px);
+    border-bottom: 0;
+    background: rgba(248, 250, 252, 0.54);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.48) inset, 0 10px 28px rgba(15, 23, 36, 0.04);
+    backdrop-filter: blur(22px) saturate(1.35);
 }
 
 .header-left,
@@ -193,22 +194,23 @@ function handleLogin() {
     align-items: center;
     height: 26px;
     padding: 0 10px;
-    border: 1px solid var(--admin-line);
+    border: 0;
     border-radius: 999px;
     color: var(--admin-text-muted);
     font-family: "JetBrains Mono", "SFMono-Regular", monospace;
     font-size: 12px;
-    background: rgba(248, 250, 252, 0.72);
+    background: rgba(255, 255, 255, 0.42);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.68) inset;
 }
 
 .avatar-frame {
     width: 38px;
     height: 38px;
     padding: 2px;
-    border: 1px solid var(--admin-line);
+    border: 0;
     border-radius: 50%;
     overflow: hidden;
-    background: var(--admin-surface-solid);
+    background: rgba(255, 255, 255, 0.5);
     box-shadow: var(--admin-shadow-soft);
 }
 
@@ -225,10 +227,11 @@ function handleLogin() {
     align-items: center;
     justify-content: center;
     min-height: 36px;
-    border: 1px solid var(--admin-line);
+    border: 0;
     border-radius: 999px;
     color: var(--admin-text);
-    background: var(--admin-surface-solid);
+    background: rgba(255, 255, 255, 0.46);
+    backdrop-filter: blur(16px);
     cursor: pointer;
     transition: border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }

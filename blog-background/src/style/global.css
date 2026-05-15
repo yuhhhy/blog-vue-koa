@@ -18,9 +18,9 @@ body,
     min-height: 100vh;
     overflow: hidden;
     background:
-        linear-gradient(135deg, rgba(248, 250, 252, 0.82), rgba(237, 242, 247, 0.92)),
-        radial-gradient(circle at 16px 16px, rgba(21, 30, 43, 0.045) 1px, transparent 1.2px);
-    background-size: auto, 24px 24px;
+        linear-gradient(135deg, rgba(248, 250, 252, 0.88), rgba(225, 234, 246, 0.88)),
+        linear-gradient(115deg, rgba(36, 84, 255, 0.08), transparent 34%, rgba(0, 139, 139, 0.08) 78%, transparent);
+    background-size: auto;
 }
 
 a {
@@ -87,19 +87,35 @@ select {
 }
 
 .el-card {
-    --el-card-border-color: var(--admin-line);
-    background: var(--admin-surface-solid);
+    --el-card-border-color: transparent;
+    border: 0;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(248, 250, 252, 0.34)),
+        var(--admin-glass-tint);
     box-shadow: var(--admin-shadow-soft) !important;
+    backdrop-filter: blur(22px) saturate(1.35);
 }
 
 .el-table {
-    --el-table-border-color: rgba(21, 30, 43, 0.08);
-    --el-table-header-bg-color: #edf3f8;
-    --el-table-row-hover-bg-color: #f5f8ff;
+    --el-table-border-color: rgba(255, 255, 255, 0.18);
+    --el-table-header-bg-color: rgba(255, 255, 255, 0.28);
+    --el-table-row-hover-bg-color: rgba(231, 236, 255, 0.32);
+    --el-table-bg-color: transparent;
+    --el-table-tr-bg-color: transparent;
+    --el-table-expanded-cell-bg-color: transparent;
     color: var(--admin-text);
-    border: 1px solid var(--admin-line);
+    border: 0;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(248, 250, 252, 0.28)),
+        rgba(231, 236, 255, 0.18);
     box-shadow: var(--admin-shadow-soft);
     overflow: hidden;
+    backdrop-filter: blur(22px) saturate(1.35);
+}
+
+.el-table::before,
+.el-table__inner-wrapper::before {
+    display: none;
 }
 
 .el-table th.el-table__cell {
@@ -111,10 +127,15 @@ select {
 
 .el-table .el-table__cell {
     padding: 12px 0;
+    border-bottom-color: rgba(255, 255, 255, 0.22);
 }
 
 .el-table__row {
     transition: background-color 0.18s ease;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+    background: rgba(255, 255, 255, 0.18);
 }
 
 .el-tag {
@@ -125,29 +146,32 @@ select {
 .el-input__wrapper,
 .el-textarea__inner {
     border-radius: var(--admin-radius-sm);
-    box-shadow: 0 0 0 1px var(--admin-line) inset;
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 1px 0 var(--admin-glass-highlight) inset;
+    backdrop-filter: blur(14px);
 }
 
 .el-input__wrapper:hover,
 .el-textarea__inner:hover {
-    box-shadow: 0 0 0 1px var(--admin-line-strong) inset;
+    box-shadow: 0 1px 0 var(--admin-glass-highlight) inset, 0 0 0 1px rgba(36, 84, 255, 0.12);
 }
 
 .el-input__wrapper.is-focus,
 .el-textarea__inner:focus {
-    box-shadow: 0 0 0 1px var(--admin-primary) inset, 0 0 0 4px rgba(36, 84, 255, 0.1);
+    box-shadow: 0 1px 0 var(--admin-glass-highlight) inset, 0 0 0 3px rgba(36, 84, 255, 0.1);
 }
 
 .el-dialog {
-    --el-dialog-bg-color: var(--admin-surface-solid);
-    border: 1px solid var(--admin-line);
+    --el-dialog-bg-color: rgba(248, 250, 252, 0.72);
+    border: 0;
     box-shadow: 0 28px 70px rgba(15, 23, 36, 0.2);
     overflow: hidden;
+    backdrop-filter: blur(26px) saturate(1.35);
 }
 
 .el-dialog__header {
     padding: 22px 24px 14px;
-    border-bottom: 1px solid var(--admin-line);
+    border-bottom: 0;
 }
 
 .el-dialog__title {
@@ -163,9 +187,11 @@ select {
 }
 
 .el-popover.el-popper {
-    border: 1px solid var(--admin-line);
+    border: 0;
     border-radius: var(--admin-radius) !important;
+    background: rgba(248, 250, 252, 0.74);
     box-shadow: var(--admin-shadow);
+    backdrop-filter: blur(22px) saturate(1.35);
 }
 
 .el-pagination.is-background .el-pager li.is-active {

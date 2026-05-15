@@ -10,14 +10,13 @@
 
 <style scoped>
 .admin-content {
+    position: relative;
     height: calc(100vh - var(--admin-header-height));
     margin-left: var(--admin-sidebar-width);
-    padding: 16px;
+    padding: 0;
     overflow: auto;
     background:
-        linear-gradient(180deg, rgba(246, 248, 251, 0.9), rgba(237, 242, 247, 0.94)),
-        linear-gradient(90deg, rgba(36, 84, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(36, 84, 255, 0.032) 1px, transparent 1px);
-    background-size: auto, 32px 32px, 32px 32px;
+        linear-gradient(135deg, rgba(248, 250, 252, 0.7), rgba(225, 234, 246, 0.72)),
+        linear-gradient(115deg, rgba(36, 84, 255, 0.08), transparent 42%, rgba(0, 139, 139, 0.08));
 }
 </style>
