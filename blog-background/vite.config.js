@@ -5,7 +5,6 @@ import viteCompression from 'vite-plugin-compression'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-import { visualizer } from 'rollup-plugin-visualizer'
 
 const backendTarget = 'http://localhost:3000'
 const backendProxy = {
@@ -36,13 +35,6 @@ export default defineConfig(({ mode }) => ({
     }),
     Components({
       resolvers: [ElementPlusResolver()],
-    }),
-    mode === 'analyze' && visualizer({
-      filename: 'dist/treemap.html',
-      template: 'treemap',
-      gzipSize: true,
-      brotliSize: true,
-      open: false
     })
   ].filter(Boolean),
   resolve: {
