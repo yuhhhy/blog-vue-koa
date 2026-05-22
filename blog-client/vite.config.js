@@ -5,7 +5,9 @@ import viteCompression from 'vite-plugin-compression'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-import viteImagemin from 'vite-plugin-imagemin'
+import viteImageminModule from 'vite-plugin-imagemin'
+
+const viteImagemin = viteImageminModule.default || viteImageminModule
 
 const backendTarget = "http://localhost:3000"
 const backendProxy = {

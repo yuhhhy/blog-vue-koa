@@ -17,31 +17,32 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.18.0'
-      # 第三步：缓存 node_modules 依赖
-      - name: Cache Dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          cache: 'npm'
+          cache-dependency-path: |
+            blog-client/package-lock.json
+            blog-background/package-lock.json
+            blog-server/package-lock.json
+      - name: Configure npm registry
+        run: npm config set registry https://registry.npmjs.org/
+      # 第三步：清理旧的 node_modules 缓存
+      - name: Remove stale node_modules
+        run: rm -rf blog-client/node_modules blog-background/node_modules blog-server/node_modules
       # 第四步：构建前端
       - name: Build Frontend
         run: |
           echo "🚀 Building frontend..."
           cd blog-client
-          npm install
+          npm ci --registry=https://registry.npmjs.org/ --no-audit --fund=false
           npm run build
           cd ../blog-background
-          npm install
+          npm ci --registry=https://registry.npmjs.org/ --no-audit --fund=false
           npm run build
       # 第五步：构建后端
       - name: Build Backend
         run: |
           echo "🚀 Building backend..."
           cd blog-server
-          npm ci
+          npm ci --registry=https://registry.npmjs.org/ --no-audit --fund=false
           cd ../
           node scripts/blog-server-update.js
       # 创建 .env 文件
@@ -115,7 +116,7 @@ jobs:
             
             echo "🔧 Installing backend dependencies..."
             cd $DEPLOY_PATH/server
-            npm ci --omit=dev
+            npm ci --omit=dev --registry=https://registry.npmjs.org/ --no-audit --fund=false
             
             echo "🔄 Restarting services..."
             pm2 restart blog-server
