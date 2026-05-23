@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { computed, reactive, ref, onMounted } from 'vue'
 import { apiGetBlogList, apiDeleteBlog, apiUpdateBlog } from '@/api/blog.js'
 import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } from '@/api/blogContent.js'
 import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount } from '@/api/websiteData.js'
@@ -14,10 +14,30 @@ const form = reactive({
   id: '',
   author: '',
   title: '',
+  coverImage: '',
   tags: [],
   content: ''
 })
 
+const normalizeCoverFilename = (value = '') => {
+  const trimmedValue = value.trim()
+
+  if (!trimmedValue) return ''
+
+  try {
+    const url = new URL(trimmedValue)
+    return decodeURIComponent(url.pathname.replace(/^\/images\//, ''))
+  } catch (error) {
+    return trimmedValue.replace(/^\/?images\//, '')
+  }
+}
+
+const buildCoverImageUrl = (filename) => {
+  const normalizedFilename = normalizeCoverFilename(filename)
+  return normalizedFilename ? `/images/${normalizedFilename}` : ''
+}
+
+const coverPreviewUrl = computed(() => buildCoverImageUrl(form.coverImage))
 
 onMounted(() => {
   getBlogs()
@@ -72,6 +92,7 @@ function handleEdit(index, row) {
   form.id = row.id
   form.author = row.author
   form.title = row.title
+  form.coverImage = normalizeCoverFilename(row.coverImage)
   form.tags = row.tags
   form.content = row.content
 }
@@ -79,7 +100,7 @@ function handleEdit(index, row) {
 // 处理更改
 async function handleConfirm() {
   // 确认信息完整
-  if (!form.author || !form.title || !form.tags || !form.content) {
+  if (!form.author || !form.title || !form.coverImage || !form.tags || !form.content) {
     ElMessageBox.alert('请填写完整信息', '提示', {
       confirmButtonText: '确定',
       type: 'warning'
@@ -110,11 +131,13 @@ async function handleConfirm() {
 // 更改函数
 async function UpdateBlog(id) {
   const updateTime = new Date()
+  const coverImage = buildCoverImageUrl(form.coverImage)
 
   await apiUpdateBlog({
     id,
     author: form.author,
     title: form.title,
+    coverImage,
     tags: form.tags,
     updateTime
   })
@@ -123,6 +146,7 @@ async function UpdateBlog(id) {
     id,
     author: form.author,
     title: form.title,
+    coverImage,
     tags: form.tags,
     content: form.content,
     wordCount: countWord(form.content),
@@ -199,6 +223,28 @@ async function UpdateBlog(id) {
       <el-form-item label="标题" label-width="80px">
         <el-input v-model="form.title" />
       </el-form-item>
+      <el-form-item label="封面" label-width="80px">
+        <div class="cover-edit">
+          <el-input v-model="form.coverImage" placeholder="例如：dev-covers/vite.jpg">
+            <template #prepend>/images/</template>
+          </el-input>
+          <div class="cover-preview">
+            <el-image
+              v-if="coverPreviewUrl"
+              class="cover-preview-image"
+              :src="coverPreviewUrl"
+              :preview-src-list="[coverPreviewUrl]"
+              fit="cover"
+              preview-teleported
+            >
+              <template #error>
+                <div class="cover-preview-placeholder">封面加载失败</div>
+              </template>
+            </el-image>
+            <div v-else class="cover-preview-placeholder">暂无封面</div>
+          </div>
+        </div>
+      </el-form-item>
       <el-form-item label="标签" label-width="80px">
         <el-input-tag v-model="form.tags" placeholder="按Enter键添加标签"/>
       </el-form-item>
@@ -223,5 +269,34 @@ tr.el-table__row {
 }
 tr.el-table__row.el-table__row--striped {
   height: 60px;
+}
+
+.cover-edit {
+  width: 100%;
+}
+
+.cover-preview {
+  width: 240px;
+  height: 128px;
+  margin-top: 10px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--el-fill-color-lighter);
+}
+
+.cover-preview-image {
+  width: 100%;
+  height: 100%;
+}
+
+.cover-preview-placeholder {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
 }
 </style>

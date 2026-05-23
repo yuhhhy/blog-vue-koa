@@ -7,7 +7,7 @@ import { getAllComments, getComments, createComment, reviewComment, deleteCommen
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
-import { getImageFiles, deleteImageFile, getMdFiles, deleteMdFile } from "../controllers/FilesController.js"
+import { getImageFiles, deleteImageFile, reuploadImageFile, generateImageFileVariants, getMdFiles, deleteMdFile } from "../controllers/FilesController.js"
 import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus, initLargeUpload, mergeLargeFile, uploadLargeChunk, verifyLargeFile } from '../controllers/LargeFilesController.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { storage } from '../config/upload.js'
@@ -190,8 +190,14 @@ router.put('/links/:id', requireAdmin, updateLink)
 // 获取图片列表
 router.get('/files/images', requireAdmin, getImageFiles);
 
+// 重传图片，保持文件名和访问地址不变
+router.put('/files/images/:filename(.+)', requireAdmin, upload.single('file'), reuploadImageFile);
+
+// 为指定图片生成缩略图
+router.post('/files/images/:filename(.+)/variants', requireAdmin, generateImageFileVariants);
+
 // 删除图片文件
-router.delete('/files/images/:filename', requireAdmin, deleteImageFile);
+router.delete('/files/images/:filename(.+)', requireAdmin, deleteImageFile);
 
 // 获取 Markdown 文件列表
 router.get("/files/mds", requireAdmin, getMdFiles);

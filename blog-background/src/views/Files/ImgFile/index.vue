@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { apiGetImageList, apiDeleteImage } from '@/api/files.js';
+import { apiDeleteImage, apiGenerateImageVariants, apiGetImageList, apiReuploadImage } from '@/api/files.js';
 import cfg from '@/config/index.js';
 import { useUserStore } from '@/stores/userStore';
 
@@ -19,6 +19,8 @@ const searchQuery = ref('');
 const currentPage = ref(1);
 const pageSize = ref(8);
 const uploadMode = ref('keep');
+const generatingImages = ref(new Set());
+const reuploadingImages = ref(new Set());
 const sortState = ref({
     prop: 'uploadTime',
     order: 'descending',
@@ -27,6 +29,19 @@ const sortState = ref({
 const uploadData = computed(() => ({
     convertToAvif: uploadMode.value === 'avif' ? 'true' : 'false'
 }));
+
+const isGenerating = (name) => generatingImages.value.has(name);
+const isReuploading = (name) => reuploadingImages.value.has(name);
+
+const setLoadingName = (state, name, loading) => {
+    const nextState = new Set(state.value);
+    if (loading) {
+        nextState.add(name);
+    } else {
+        nextState.delete(name);
+    }
+    state.value = nextState;
+};
 
 const filteredImages = computed(() => {
     if (!searchQuery.value) {
@@ -92,6 +107,38 @@ const handleUploadError = (error) => {
     ElMessage.error('图片上传失败，请检查文件大小或网络，或提升权限');
 };
 
+const handleGenerateVariants = async (row) => {
+    setLoadingName(generatingImages, row.name, true);
+
+    try {
+        await apiGenerateImageVariants(row.name);
+        await fetchImageList();
+        ElMessage.success(`"${row.name}" 缩略图已生成`);
+    } catch (error) {
+        ElMessage.error('缩略图生成失败');
+    } finally {
+        setLoadingName(generatingImages, row.name, false);
+    }
+};
+
+const handleReupload = async (row, options) => {
+    const formData = new FormData();
+    formData.append('file', options.file);
+    setLoadingName(reuploadingImages, row.name, true);
+
+    try {
+        await apiReuploadImage(row.name, formData);
+        await fetchImageList();
+        options.onSuccess?.();
+        ElMessage.success(`"${row.name}" 重传成功`);
+    } catch (error) {
+        options.onError?.(error);
+        ElMessage.error('图片重传失败，请确认文件扩展名和原图片一致');
+    } finally {
+        setLoadingName(reuploadingImages, row.name, false);
+    }
+};
+
 // 删除图片
 const handleDelete = (row) => {
     ElMessageBox.confirm(`确定要删除图片 "${row.name}" 吗？`, '警告', {
@@ -151,6 +198,14 @@ const formatDate = (dateString) => {
         hour: '2-digit',
         minute: '2-digit',
     }).format(date);
+};
+
+const getVariantTip = (row) => {
+    if (!row.variantWidths?.length) return '暂无缩略图信息';
+
+    return row.variantWidths
+        .map(width => `${width}w：${row.variants?.[width] ? '已生成' : '缺少'}`)
+        .join(' / ');
 };
 
 onMounted(() => {
@@ -230,14 +285,41 @@ watch([searchQuery, filteredImages], () => {
                     {{ formatSize(row.size) }}
                 </template>
             </el-table-column>
+            <el-table-column label="缩略图" width="150">
+                <template #default="{ row }">
+                    <el-tooltip :content="getVariantTip(row)" placement="top">
+                        <el-tag :type="row.hasAllVariants ? 'success' : 'warning'" effect="plain">
+                            {{ row.hasAllVariants ? '完整' : '缺少' }}
+                        </el-tag>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
             <el-table-column prop="uploadTime" label="上传时间" width="180" sortable="custom">
                 <template #default="{ row }">
                     {{ formatDate(row.uploadDate) }}
                 </template>
             </el-table-column>
-            <el-table-column label="操作" width="250" fixed="right">
+            <el-table-column label="操作" width="360" fixed="right">
                 <template #default="{ row }">
                     <el-button size="small" @click="handleDownload(row)">下载</el-button>
+                    <el-button
+                        size="small"
+                        type="success"
+                        :loading="isGenerating(row.name)"
+                        @click="handleGenerateVariants(row)"
+                    >
+                        生成缩略图
+                    </el-button>
+                    <el-upload
+                        class="inline-upload"
+                        :show-file-list="false"
+                        :http-request="(options) => handleReupload(row, options)"
+                        accept="image/*"
+                    >
+                        <el-button size="small" type="warning" :loading="isReuploading(row.name)">
+                            重传
+                        </el-button>
+                    </el-upload>
                     <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
                 </template>
             </el-table-column>
@@ -259,4 +341,9 @@ watch([searchQuery, filteredImages], () => {
 </template>
 
 <style scoped>
+.inline-upload {
+    display: inline-block;
+    margin: 0 12px;
+    vertical-align: middle;
+}
 </style>

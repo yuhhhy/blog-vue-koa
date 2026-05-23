@@ -9,6 +9,7 @@
     "start-all": "concurrently \"npm run server\" \"npm run client\" \"npm run background\"",
     "start-client": "concurrently \"npm run server\" \"npm run client\"",
     "start-admin": "concurrently \"npm run server\" \"npm run background\"",
+    "generate:image-variants": "cd blog-server && npm run generate:image-variants",
     "install-all": "npm install && cd blog-client && npm install && cd ../blog-server && npm install && cd ../blog-background && npm install"
   },
   "devDependencies": {
