@@ -3,6 +3,7 @@ import { computed, watch, onMounted, onBeforeUnmount } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { useUserStore } from "@/stores/userStore.js"
 import { useNotificationStore } from "@/stores/notificationStore.js"
+import avatarUrl from "@/assets/avatar.jpg"
 
 const userStore = useUserStore()
 const notificationStore = useNotificationStore()
@@ -27,6 +28,15 @@ const routeNameMap = {
 }
 
 const currentRouteTitle = computed(() => routeNameMap[route.name] || 'Console')
+const userRoleText = computed(() => {
+    const role = userStore.userData.role
+    const roleNameMap = {
+        admin: '管理员',
+        user: '用户'
+    }
+
+    return roleNameMap[role] || role
+})
 
 // 监听路由变化
 watch(() => route.path, () => {
@@ -91,16 +101,18 @@ function handleLogin() {
         <!-- 右侧 -->
         <div class="header-right">
 
-            <!-- 头像 -->
-            <div v-if="userStore.isAuthenticated" class="avatar-frame">
-                <img src="/src/assets/avatar.jpg" alt="avatar">
-            </div>
-
             <!-- 用户信息，登录 -->
-            <el-popover v-if="userStore.isAuthenticated" width="260">
+            <el-popover
+                v-if="userStore.isAuthenticated"
+                width="280"
+                placement="bottom-end"
+                popper-class="admin-user-popover-panel"
+                :show-arrow="false"
+            >
                 <!-- 用户名 -->
                 <template #reference>
                     <button class="user-trigger">
+                        <img class="trigger-avatar" :src="avatarUrl" alt="avatar">
                         <!-- 使用总通知数量来显示红点 -->
                         <el-badge 
                             :value="notificationStore.totalNotifications" 
@@ -116,10 +128,18 @@ function handleLogin() {
                 <!-- 弹出框 -->
                 <div class="user-popover">
                     <div class="user-meta">
-                        <el-tag :type="userStore.userData.role === 'admin' ? 'success' : 'primary'">
-                            {{ userStore.userData.role }}
+                        <img class="popover-avatar" :src="avatarUrl" alt="avatar">
+                        <div class="user-meta-main">
+                            <div class="popover-username">{{ userStore.userData.username }}</div>
+                            <div class="popover-email">{{ userStore.userData.email }}</div>
+                        </div>
+                        <el-tag
+                            class="role-tag"
+                            :type="userStore.userData.role === 'admin' ? 'success' : 'primary'"
+                            effect="light"
+                        >
+                            {{ userRoleText }}
                         </el-tag>
-                        <div>{{ userStore.userData.email }}</div>
                     </div>
                     <RouterLink v-if="isAdmin" to="/comment/pending" class="popover-link">
                         <span>待审评论</span>
@@ -146,7 +166,13 @@ function handleLogin() {
             </el-popover>
 
             <!-- 用户未登录 -->
-            <el-popover v-else>
+            <el-popover
+                v-else
+                width="180"
+                placement="bottom-end"
+                popper-class="admin-user-popover-panel"
+                :show-arrow="false"
+            >
                 <template #reference>
                     <!-- IconFont的 Symbol 引用 -->
                     <svg class="icon user-icon" aria-hidden="true">
@@ -203,24 +229,6 @@ function handleLogin() {
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.68) inset;
 }
 
-.avatar-frame {
-    width: 38px;
-    height: 38px;
-    padding: 2px;
-    border: 0;
-    border-radius: 50%;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.5);
-    box-shadow: var(--admin-shadow-soft);
-}
-
-.avatar-frame img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
 .user-trigger,
 .user-icon {
     display: inline-flex;
@@ -237,8 +245,17 @@ function handleLogin() {
 }
 
 .user-trigger {
-    padding: 0 14px;
+    gap: 8px;
+    padding: 3px 14px 3px 4px;
     font-weight: 750;
+}
+
+.trigger-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.72);
 }
 
 .user-trigger:hover,
@@ -251,16 +268,53 @@ function handleLogin() {
 .user-popover {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
 .user-meta {
     display: grid;
-    gap: 8px;
-    padding: 4px 4px 10px;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 10px 14px;
     color: var(--admin-text-muted);
     font-size: 13px;
     border-bottom: 1px solid var(--admin-line);
+}
+
+.popover-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.72);
+}
+
+.user-meta-main {
+    min-width: 0;
+}
+
+.popover-username,
+.popover-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.popover-username {
+    color: var(--admin-text);
+    font-size: 15px;
+    font-weight: 850;
+}
+
+.popover-email {
+    margin-top: 4px;
+    color: var(--admin-text-muted);
+    font-size: 12px;
+}
+
+.role-tag {
+    border-radius: 999px;
 }
 
 .popover-link {
@@ -269,18 +323,20 @@ function handleLogin() {
     justify-content: space-between;
     width: 100%;
     min-height: 36px;
-    padding: 0 10px;
+    padding: 0 12px;
     border: 0;
     border-radius: var(--admin-radius-sm);
     color: var(--admin-text);
     font-weight: 650;
     background: transparent;
     cursor: pointer;
+    transition: color 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
 
 .popover-link:hover {
     color: var(--admin-primary);
     background: var(--admin-primary-soft);
+    transform: translateX(2px);
 }
 
 .notice-count {
@@ -290,6 +346,15 @@ function handleLogin() {
 
 .logout-link {
     text-align: left;
+}
+
+:global(.admin-user-popover-panel.el-popper) {
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: var(--admin-radius);
+    background: rgba(248, 250, 252, 0.88);
+    box-shadow: 0 24px 60px rgba(15, 23, 36, 0.14), 0 1px 0 rgba(255, 255, 255, 0.72) inset;
+    backdrop-filter: blur(22px) saturate(1.25);
 }
 
 </style>

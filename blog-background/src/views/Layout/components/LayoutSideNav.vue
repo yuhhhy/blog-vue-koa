@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import SideNavItem from '@/components/SideNavItem/index.vue'
 import { useUserStore } from '@/stores/userStore'
+import avatarUrl from '@/assets/avatar.jpg'
 
 const userStore = useUserStore()
 const route = useRoute()
@@ -129,7 +130,7 @@ const visibleSiderNavItems = computed(() => filterNavItems(siderNavItems))
 <template>
     <aside class="layout-sidenav">
         <RouterLink to="/welcome" class="brand-block">
-            <div class="brand-mark">Y</div>
+            <img class="brand-mark" :src="avatarUrl" alt="avatar">
             <div>
                 <strong>一曝十寒</strong>
                 <span>Admin Studio</span>
@@ -179,16 +180,11 @@ const visibleSiderNavItems = computed(() => filterNavItems(siderNavItems))
 }
 
 .brand-mark {
-    display: grid;
-    place-items: center;
     width: 42px;
     height: 42px;
     border-radius: var(--admin-radius-sm);
-    color: #101719;
-    font-family: "JetBrains Mono", "SFMono-Regular", monospace;
-    font-size: 20px;
-    font-weight: 900;
-    background: linear-gradient(135deg, #b7f7ff, #6ee7f9 48%, #8ea2ff);
+    object-fit: cover;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .brand-block strong,

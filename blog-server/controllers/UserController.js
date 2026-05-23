@@ -77,7 +77,7 @@ export const createUser = async (ctx) => {
             message: '用户已存在',
         }
     } else {
-        const newUser = new User({ userId, username, password, email, role: 'client' })
+        const newUser = new User({ userId, username, password, email, role: 'user' })
         await newUser.save()
         ctx.status = 201
         ctx.body = {
