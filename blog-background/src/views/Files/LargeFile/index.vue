@@ -26,7 +26,7 @@ import cfg from '@/config/index.js'
 const chunkSize = 5 * 1024 * 1024
 const uploadConcurrency = 6
 const chunkUploadTimeout = 30 * 1000
-const maxFileSize = 1024 * 1024 * 1024
+const maxFileSize = 5 * 1024 * 1024 * 1024
 const allowedExtensions = [
     '.mp4',
     '.webm',
@@ -166,7 +166,7 @@ const validateFile = (file) => {
     if (!file) return false
 
     if (file.size > maxFileSize) {
-        ElMessage.error('单个文件不能超过 1GB')
+        ElMessage.error('单个文件不能超过 5GB')
         return false
     }
 

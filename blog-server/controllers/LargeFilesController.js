@@ -10,7 +10,7 @@ const publicDir = path.join(__dirname, '..', '..', 'public')
 const uploadRootDir = path.join(publicDir, 'uploads')
 const tmpDir = path.join(uploadRootDir, 'tmp')
 
-const maxFileSize = 1024 * 1024 * 1024
+const maxFileSize = 5 * 1024 * 1024 * 1024
 
 const typeConfig = {
     video: {
