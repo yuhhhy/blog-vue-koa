@@ -4,12 +4,14 @@ import { apiGetBlogList, apiDeleteBlog, apiUpdateBlog } from '@/api/blog.js'
 import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } from '@/api/blogContent.js'
 import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount } from '@/api/websiteData.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Download } from '@element-plus/icons-vue'
 import { getFormatDate } from '@/utils/date.js'
 import countWord from '@/utils/wordCount.js'
 import Vditor from '@/views/ArticleCreate/components/Vditor.vue'
 
 const tableData = ref()
 const dialogFormVisible = ref(false)
+const exporting = ref(false)
 const form = reactive({
   id: '',
   author: '',
@@ -58,6 +60,63 @@ async function getBlogs() {
   tableData.value = res.map((item, index) => {
     return { ...item, ...resContent[index] }
   })
+}
+
+const formatExportDate = (value) => {
+  if (!value) return ''
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? '' : date.toISOString()
+}
+
+const escapeYamlValue = (value = '') => String(value)
+  .replace(/\\/g, '\\\\')
+  .replace(/"/g, '\\"')
+  .replace(/\r?\n/g, ' ')
+
+const createArticleMarkdown = (article) => {
+  const tags = Array.isArray(article.tags) ? article.tags : []
+  const frontMatter = [
+    '---',
+    `title: "${escapeYamlValue(article.title)}"`,
+    `author: "${escapeYamlValue(article.author)}"`,
+    `date: "${formatExportDate(article.createTime)}"`,
+    `updated: "${formatExportDate(article.updateTime)}"`,
+    `cover: "${escapeYamlValue(article.coverImage)}"`,
+    `tags: [${tags.map((tag) => `"${escapeYamlValue(tag)}"`).join(', ')}]`,
+    '---'
+  ]
+
+  return `${frontMatter.join('\n')}\n\n${article.content || ''}`.trimEnd()
+}
+
+const handleExportAll = async () => {
+  if (!tableData.value?.length) {
+    ElMessage.warning('暂无文章可导出')
+    return
+  }
+
+  exporting.value = true
+  try {
+    const markdown = tableData.value.map(createArticleMarkdown).join('\n\n<!-- article-separator -->\n\n')
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    const date = new Date().toISOString().slice(0, 10)
+
+    link.href = url
+    link.download = `articles-${date}.md`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    ElMessage.success(`已导出 ${tableData.value.length} 篇文章`)
+  } catch (error) {
+    ElMessage.error('导出文章失败，请重试')
+  } finally {
+    exporting.value = false
+  }
 }
 
 // 处理删除
@@ -161,6 +220,12 @@ async function UpdateBlog(id) {
 </script>
 
 <template>
+  <div class="article-list-toolbar">
+    <el-button type="primary" :icon="Download" :loading="exporting" @click="handleExportAll">
+      导出全部 Markdown
+    </el-button>
+  </div>
+
   <el-table :data="tableData" stripe max-height="700px">
     <el-table-column
       prop="createTime"
@@ -269,6 +334,12 @@ tr.el-table__row {
 }
 tr.el-table__row.el-table__row--striped {
   height: 60px;
+}
+
+.article-list-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
 }
 
 .cover-edit {
