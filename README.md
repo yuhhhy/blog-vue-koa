@@ -22,11 +22,11 @@
 http://yuhhhy.cn
 
 ### 首页
-![home](/images/doc_md-1.jpg)
+![home](assets/images/doc_md-1.jpg)
 ### 归档页（黑暗模式展示）
-![archive](/images/doc_md-2.jpg)
+![archive](assets/images/doc_md-2.jpg)
 ### 文章详情页
-![blog](/images/doc_md-3.jpg)
+![blog](assets/images/doc_md-3.jpg)
 
 ## 实现功能
 ### 整体
@@ -93,7 +93,8 @@ blog-vue-koa/
 │   │   ├─ app.js               // 应用主入口文件
 │   │   ├─ package-lock.json
 │   |   └─ package.json         // 项目依赖
-├─ images/                  // 图片资源
+├─ assets/                 // 项目文档资源
+│   └─ images/              // README 图片
 ├─ .gitignore                   // git忽略文件
 ├─ LICENSE                      // 开源协议
 ├─ package-lock.json            // 锁定版本

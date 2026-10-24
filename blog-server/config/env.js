@@ -36,5 +36,6 @@ const envConfig = {
     }
 }
 
-const selectedEnvConfig = envConfig['development'] // 根据环境选择配置
+const currentEnv = process.env.NODE_ENV === 'production' ? 'production' : 'development'
+const selectedEnvConfig = envConfig[currentEnv]
 export default selectedEnvConfig
