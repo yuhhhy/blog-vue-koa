@@ -19,7 +19,7 @@ async function prepareRelease() {
   await copy('blog-client/dist', 'frontend/dist')
   await copy('blog-background/dist', 'admin/dist')
 
-  for (const directory of ['config', 'controllers', 'middlewares', 'models', 'routes', 'utils']) {
+  for (const directory of ['config', 'controllers', 'middlewares', 'models', 'routes', 'services', 'utils']) {
     await copy(`blog-server/${directory}`, `workspace/blog-server/${directory}`)
   }
 
