@@ -1,6 +1,6 @@
 <script setup>
 import { Chart } from 'frappe-charts'
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { apiGetWebsiteData } from '@/api/websiteData.js'
 import MaterialIcon from '@/components/MaterialIcon.vue'
@@ -516,22 +516,38 @@ const getHeatmapYear = () => {
   return years.length ? Math.max(...years) : new Date().getFullYear()
 }
 
+const heatmapYearArticleCount = computed(() => {
+  const heatmapYear = getHeatmapYear()
+
+  return heatmapData.value.reduce((total, item) => {
+    const date = new Date(item.date)
+
+    if (Number.isNaN(date.getTime()) || date.getFullYear() !== heatmapYear) {
+      return total
+    }
+
+    return total + (Number(item.count) || 0)
+  }, 0)
+})
+
 // 文章统计图表 - 热力图
 const initArticleChart = () => {
   setChartLoading('article', true)
 
   const heatmapYear = getHeatmapYear()
   const dataPoints = Object.fromEntries(
-    heatmapData.value.map(item => {
-      const date = new Date(item.date)
-      const dateKey = [
-        date.getFullYear(),
-        String(date.getMonth() + 1).padStart(2, '0'),
-        String(date.getDate()).padStart(2, '0')
-      ].join('-')
+    heatmapData.value
+      .filter(item => new Date(item.date).getFullYear() === heatmapYear)
+      .map(item => {
+        const date = new Date(item.date)
+        const dateKey = [
+          date.getFullYear(),
+          String(date.getMonth() + 1).padStart(2, '0'),
+          String(date.getDate()).padStart(2, '0')
+        ].join('-')
 
-      return [dateKey, item.count]
-    })
+        return [dateKey, item.count]
+      })
   )
 
   replaceChart('article', 'articleChart', {
@@ -651,18 +667,24 @@ const initArticleChart = () => {
       </div>
     </section>
 
-     <!-- 底部图表 -->
+    <!-- 底部图表 -->
     <section class="material-card chart-card article-card">
-        <div class="section-header">
-          <div>
-            <h2 class="chart-heading">文章发布热力图 · {{ getHeatmapYear() }}</h2>
-          </div>
-          <span class="article-total">{{ formatMetric(articleCount) }} 篇</span>
+      <div class="section-header">
+        <div>
+          <h2 class="chart-heading">文章发布热力图</h2>
         </div>
-        <div id="articleChart" class="chart chart--heatmap" :class="{ 'is-loading': chartLoading.article }"></div>
-        <div v-if="chartLoading.article" class="chart-loading chart-loading--heatmap" role="status" aria-label="文章发布图表加载中">
-          <span class="chart-loading__spinner"></span>
+        <div class="article-stats" aria-label="文章发布统计">
+          <span class="article-year-total">
+            <strong>{{ getHeatmapYear() }}</strong>
+            <span>{{ formatMetric(heatmapYearArticleCount) }} 篇</span>
+          </span>
+          <span class="article-total">累计 {{ formatMetric(articleCount) }} 篇</span>
         </div>
+      </div>
+      <div id="articleChart" class="chart chart--heatmap" :class="{ 'is-loading': chartLoading.article }"></div>
+      <div v-if="chartLoading.article" class="chart-loading chart-loading--heatmap" role="status" aria-label="文章发布图表加载中">
+        <span class="chart-loading__spinner"></span>
+      </div>
     </section>
 
   </main>
@@ -748,16 +770,45 @@ const initArticleChart = () => {
   letter-spacing: 0;
 }
 
+.article-stats,
+.article-year-total,
 .article-total {
   display: inline-flex;
   align-items: center;
+}
+
+.article-stats {
+  gap: 8px;
+}
+
+.article-year-total,
+.article-total {
   min-height: 28px;
   padding: 0 10px;
   border-radius: 999px;
-  color: var(--admin-on-primary-soft);
   font-size: 12px;
   font-weight: 700;
+}
+
+.article-year-total {
+  gap: 6px;
+  color: var(--admin-on-primary-soft);
   background: var(--admin-primary-soft);
+}
+
+.article-year-total strong {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.article-year-total span {
+  padding-left: 6px;
+  border-left: 1px solid color-mix(in srgb, var(--admin-on-primary-soft) 22%, transparent);
+}
+
+.article-total {
+  color: var(--admin-text-muted);
+  background: var(--admin-surface-muted);
 }
 
 .metric-rate {
@@ -1045,6 +1096,14 @@ const initArticleChart = () => {
 
   .chart--heatmap :deep(.chart-container) {
     min-width: 760px;
+  }
+}
+
+@media (max-width: 620px) {
+  .article-card .section-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
   }
 }
 
