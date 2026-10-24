@@ -17,10 +17,51 @@ const chartTheme = {
 }
 
 const charts = new Map()
+const chartLoading = ref({
+  view: true,
+  visit: true,
+  comment: true,
+  main: true,
+  article: true
+})
+const chartReadyFrames = new Map()
 let currentMainChartMax = 1
 let yAxisRestoreTimer = null
 let heatmapFitTimer = null
 let resizeRestoreTimer = null
+
+const setChartLoading = (key, value) => {
+  chartLoading.value[key] = value
+}
+
+const setAllChartsLoading = value => {
+  Object.keys(chartLoading.value).forEach(key => setChartLoading(key, value))
+}
+
+const revealChartWhenReady = (key, elementId, attempts = 0, readyFrames = 0) => {
+  window.cancelAnimationFrame(chartReadyFrames.get(key))
+
+  const frame = window.requestAnimationFrame(() => {
+    const element = document.getElementById(elementId)
+    const svg = element?.querySelector('svg')
+    const hasDataPlot = element?.querySelector('.line-graph-path, .bar')
+
+    if ((!svg || !hasDataPlot || readyFrames < 1) && attempts < 60) {
+      revealChartWhenReady(
+        key,
+        elementId,
+        attempts + 1,
+        svg && hasDataPlot ? readyFrames + 1 : 0
+      )
+      return
+    }
+
+    chartReadyFrames.delete(key)
+    setChartLoading(key, false)
+  })
+
+  chartReadyFrames.set(key, frame)
+}
 
 const formatMetric = value => new Intl.NumberFormat('zh-CN').format(value || 0)
 
@@ -53,7 +94,7 @@ const scaleChartValues = (values, useFullRange = false, maxOverride = null) => {
   return { scaled, max, getOriginalValue }
 }
 
-const restoreYAxisLabels = (element, max) => {
+const restoreYAxisLabels = (element, max, onComplete) => {
   requestAnimationFrame(() => {
     const tickGroups = [...element.querySelectorAll('.y.axis > g')]
 
@@ -75,10 +116,12 @@ const restoreYAxisLabels = (element, max) => {
         group.dataset.axisReady = 'true'
       }
     })
+
+    onComplete?.()
   })
 }
 
-const fitArticleChart = () => {
+const fitArticleChart = onComplete => {
   requestAnimationFrame(() => {
     const element = document.getElementById('articleChart')
     const container = element?.querySelector('.chart-container')
@@ -86,7 +129,10 @@ const fitArticleChart = () => {
     const plot = svg?.querySelector('.heatmap-chart')
     const legend = svg?.querySelector('.chart-legend')
 
-    if (!element || !container || !svg || !plot) return
+    if (!element || !container || !svg || !plot) {
+      onComplete?.()
+      return
+    }
 
     const baseTransform = plot.dataset.baseTransform || plot.getAttribute('transform') || ''
     const baseWidth = Number(svg.dataset.baseWidth || svg.getAttribute('width') || 860)
@@ -122,24 +168,33 @@ const fitArticleChart = () => {
     if (legend) {
       legend.setAttribute('transform', `translate(${Math.max(edge, translateX)} 164)`)
     }
+
+    onComplete?.()
   })
 }
 
 const queueArticleChartFit = () => {
   fitArticleChart()
   window.clearTimeout(heatmapFitTimer)
-  heatmapFitTimer = window.setTimeout(fitArticleChart, 750)
+  heatmapFitTimer = window.setTimeout(() => {
+    heatmapFitTimer = null
+    fitArticleChart(() => setChartLoading('article', false))
+  }, 750)
 }
 
-const restoreMainYAxis = () => {
+const restoreMainYAxis = onComplete => {
   const element = document.getElementById('mainChart')
-  if (element) restoreYAxisLabels(element, currentMainChartMax)
+  if (element) restoreYAxisLabels(element, currentMainChartMax, onComplete)
+  else onComplete?.()
 }
 
 const queueYAxisRestore = () => {
   restoreMainYAxis()
   window.clearTimeout(yAxisRestoreTimer)
-  yAxisRestoreTimer = window.setTimeout(restoreMainYAxis, 750)
+  yAxisRestoreTimer = window.setTimeout(() => {
+    yAxisRestoreTimer = null
+    restoreMainYAxis(() => setChartLoading('main', false))
+  }, 750)
 }
 
 const handleChartResize = () => {
@@ -156,10 +211,18 @@ const replaceChart = (key, elementId, options) => {
 
   if (!element) return
 
-  charts.set(key, new Chart(element, {
+  const chart = new Chart(element, {
     animate: 0,
     ...options
-  }))
+  })
+
+  // Axis charts initially render Frappe's zero-value seed and update after 700ms.
+  // Apply the real dataset synchronously so that intermediate state stays behind loading.
+  if (options.type === 'line' || options.type === 'bar') {
+    chart.update(options.data)
+  }
+
+  charts.set(key, chart)
 }
 
 onMounted(() => {
@@ -170,6 +233,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.clearTimeout(yAxisRestoreTimer)
   window.clearTimeout(heatmapFitTimer)
+  chartReadyFrames.forEach(frame => window.cancelAnimationFrame(frame))
+  chartReadyFrames.clear()
   window.clearTimeout(resizeRestoreTimer)
   window.removeEventListener('resize', handleChartResize)
   charts.forEach(chart => chart.destroy())
@@ -178,6 +243,8 @@ onBeforeUnmount(() => {
 
 // 获取初始化数据
 async function fetchData() {
+  setAllChartsLoading(true)
+
   try {
     const data = await apiGetWebsiteData('week')
 
@@ -201,6 +268,7 @@ async function fetchData() {
   } catch (error) {
     console.error('获取数据失败:', error)
     ElMessage.error('数据获取失败')
+    setAllChartsLoading(false)
   }
 }
 
@@ -244,6 +312,10 @@ const dateLabels = getLastSevenDays()
 
 // 初始化顶部卡片图表
 const initTopCards = () => {
+  setChartLoading('view', true)
+  setChartLoading('visit', true)
+  setChartLoading('comment', true)
+
   const miniChartOptions = {
     height: 120,
     axisOptions: {
@@ -310,6 +382,10 @@ const initTopCards = () => {
       formatTooltipY: value => formatMetric(commentSeries.getOriginalValue(value))
     }
   })
+
+  revealChartWhenReady('view', 'viewChart')
+  revealChartWhenReady('visit', 'visitChart')
+  revealChartWhenReady('comment', 'commentChart')
 }
 
 
@@ -336,6 +412,8 @@ const timeRanges = [
 ]
 
 watch(timeRange, async () => {
+  setChartLoading('main', true)
+
   try {
     if (timeRange.value !== 'week') {
       if (mainData.value.view.monthData.length === 0 && timeRange.value === 'month') {
@@ -356,11 +434,14 @@ watch(timeRange, async () => {
   } catch (error) {
     console.error('更新主图表失败:', error)
     ElMessage.error('更新主图表失败')
+    setChartLoading('main', false)
   }
 })
 
 // 初始化主图表
 const initMainChart = () => {
+  setChartLoading('main', true)
+
   // 根据时间范围获取对应的标签
   const getTimeLabels = () => {
     const now = new Date()
@@ -437,6 +518,8 @@ const getHeatmapYear = () => {
 
 // 文章统计图表 - 热力图
 const initArticleChart = () => {
+  setChartLoading('article', true)
+
   const heatmapYear = getHeatmapYear()
   const dataPoints = Object.fromEntries(
     heatmapData.value.map(item => {
@@ -489,7 +572,10 @@ const initArticleChart = () => {
             <span>{{ topData.view.rate >= 0 ? '↑' : '↓' }}{{ Math.abs(topData.view.rate) }}%</span>
           </div>
         </div>
-        <div id="viewChart" class="mini-chart"></div>
+        <div id="viewChart" class="mini-chart" :class="{ 'is-loading': chartLoading.view }"></div>
+        <div v-if="chartLoading.view" class="chart-loading chart-loading--mini" role="status" aria-label="总浏览量图表加载中">
+          <span class="chart-loading__spinner"></span>
+        </div>
       </article>
 
       <!-- 访问量卡片 -->
@@ -502,7 +588,10 @@ const initArticleChart = () => {
           </div>
           <span class="metric-period">近 7 日</span>
         </div>
-        <div id="visitChart" class="mini-chart"></div>
+        <div id="visitChart" class="mini-chart" :class="{ 'is-loading': chartLoading.visit }"></div>
+        <div v-if="chartLoading.visit" class="chart-loading chart-loading--mini" role="status" aria-label="总访问量图表加载中">
+          <span class="chart-loading__spinner"></span>
+        </div>
       </article>
 
       <!-- 评论数卡片 -->
@@ -515,7 +604,10 @@ const initArticleChart = () => {
           </div>
           <span class="metric-period">近 7 日</span>
         </div>
-        <div id="commentChart" class="mini-chart"></div>
+        <div id="commentChart" class="mini-chart" :class="{ 'is-loading': chartLoading.comment }"></div>
+        <div v-if="chartLoading.comment" class="chart-loading chart-loading--mini" role="status" aria-label="总评论数图表加载中">
+          <span class="chart-loading__spinner"></span>
+        </div>
       </article>
     </section>
 
@@ -544,7 +636,19 @@ const initArticleChart = () => {
           </button>
         </div>
       </div>
-      <div id="mainChart" class="chart chart--main"></div>
+      <div
+        id="mainChart"
+        class="chart chart--main"
+        :class="{ 'is-loading': chartLoading.main }"
+      ></div>
+      <div
+        v-if="chartLoading.main"
+        class="chart-loading chart-loading--main"
+        role="status"
+        aria-label="浏览量趋势图表加载中"
+      >
+        <span class="chart-loading__spinner"></span>
+      </div>
     </section>
 
      <!-- 底部图表 -->
@@ -556,7 +660,10 @@ const initArticleChart = () => {
           </div>
           <span class="article-total">{{ formatMetric(articleCount) }} 篇</span>
         </div>
-        <div id="articleChart" class="chart chart--heatmap"></div>
+        <div id="articleChart" class="chart chart--heatmap" :class="{ 'is-loading': chartLoading.article }"></div>
+        <div v-if="chartLoading.article" class="chart-loading chart-loading--heatmap" role="status" aria-label="文章发布图表加载中">
+          <span class="chart-loading__spinner"></span>
+        </div>
     </section>
 
   </main>
@@ -564,10 +671,10 @@ const initArticleChart = () => {
 
 <style scoped>
 .mini-chart {
-  width: calc(100% + 120px);
+  width: calc(100% + 36px);
   height: 120px;
   margin-top: 8px;
-  margin-left: -70px;
+  margin-left: -18px;
   overflow: visible;
 }
 
@@ -576,13 +683,62 @@ const initArticleChart = () => {
 }
 
 .chart--main {
-  min-height: 300px;
+  height: 300px;
 }
 
 .chart--heatmap {
-  min-height: 190px;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  height: 190px;
+  container-type: inline-size;
+}
+
+.mini-chart.is-loading,
+.chart.is-loading {
+  opacity: 0;
+}
+
+.chart-loading {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: var(--admin-surface);
+}
+
+.chart-loading--mini {
+  right: 18px;
+  bottom: 12px;
+  left: 18px;
+  height: 120px;
+}
+
+.chart-loading--main {
+  right: 20px;
+  bottom: 20px;
+  left: 20px;
+  height: 300px;
+}
+
+.chart-loading--heatmap {
+  right: 20px;
+  bottom: 20px;
+  left: 20px;
+  height: 190px;
+}
+
+.chart-loading__spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--admin-primary-soft);
+  border-top-color: var(--admin-primary);
+  border-radius: 50%;
+  animation: chart-loading-spin 700ms linear infinite;
+}
+
+@keyframes chart-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .chart-heading {
@@ -635,11 +791,6 @@ const initArticleChart = () => {
   font-family: inherit;
 }
 
-:deep(.chart-container .title),
-:deep(.chart-container .sub-title) {
-  display: none;
-}
-
 :deep(.chart-container .chart-label) {
   fill: #625f69;
   font-family: inherit;
@@ -656,6 +807,12 @@ const initArticleChart = () => {
   border-radius: 8px;
   background: rgba(15, 23, 36, 0.94);
   box-shadow: 0 18px 46px rgba(15, 23, 36, 0.18);
+}
+
+.chart--heatmap :deep(.graph-svg-tip) {
+  box-sizing: border-box;
+  max-width: calc(100cqw - 16px);
+  white-space: normal;
 }
 
 :deep(.graph-svg-tip .svg-pointer) {
@@ -807,6 +964,7 @@ const initArticleChart = () => {
 }
 
 .chart-card {
+  position: relative;
   padding: 20px;
 }
 
@@ -876,6 +1034,10 @@ const initArticleChart = () => {
 @media (prefers-reduced-motion: reduce) {
   .range-switch::before {
     transition: none;
+  }
+
+  .chart-loading__spinner {
+    animation-duration: 1400ms;
   }
 }
 
