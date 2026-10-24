@@ -1,15 +1,5 @@
 import { BlogContent } from '../models/BlogContentSchema.js'
-import { generateLatestPostsRSS } from "../utils/RSS.js";
-import logger from '../config/logger.js'
-
-const refreshRSS = async () => {
-    try {
-        const { count } = await generateLatestPostsRSS()
-        logger.info(`[RSS] Feed generated with ${count} posts`)
-    } catch (error) {
-        logger.error(`[RSS] Feed generation failed: ${error.stack || error.message}`)
-    }
-}
+import { refreshRSS } from '../services/RSSService.js'
 
 /**
  * BlogContent Controller
