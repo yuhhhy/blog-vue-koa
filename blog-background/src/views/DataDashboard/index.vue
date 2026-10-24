@@ -1,74 +1,179 @@
 <script setup>
-import * as echarts from 'echarts'
-import { ref, onMounted, watch } from 'vue'
+import { Chart } from 'frappe-charts'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { apiGetWebsiteData } from '@/api/websiteData.js'
+import MaterialIcon from '@/components/MaterialIcon.vue'
+import {
+  mdiAccountGroupOutline,
+  mdiCommentTextMultipleOutline,
+  mdiEyeOutline
+} from '@mdi/js'
 
 const chartTheme = {
-  primary: '#2454ff',
-  accent: '#008b8b',
-  violet: '#6d74ff',
-  amber: '#d08b20',
-  danger: '#d04437',
-  surface: '#f8fafc',
-  text: '#17212f',
-  muted: '#607084',
-  line: 'rgba(21, 30, 43, 0.1)',
-  splitLine: 'rgba(21, 30, 43, 0.07)',
-  palette: ['#2454ff', '#008b8b', '#6d74ff', '#d08b20', '#d04437']
+  primary: '#6750a4',
+  accent: '#4f6350',
+  violet: '#7d5260'
 }
 
-const chartTitle = {
-  textStyle: {
-    color: chartTheme.text,
-    fontSize: 15,
-    fontWeight: 700
+const charts = new Map()
+let currentMainChartMax = 1
+let yAxisRestoreTimer = null
+let heatmapFitTimer = null
+let resizeRestoreTimer = null
+
+const formatMetric = value => new Intl.NumberFormat('zh-CN').format(value || 0)
+
+const getNiceAxisMax = value => {
+  const source = Math.max(Number(value) || 0, 1)
+  const magnitude = 10 ** Math.floor(Math.log10(source))
+  const step = magnitude / 5
+
+  return Math.ceil((source + Number.EPSILON) / step) * step
+}
+
+const scaleChartValues = (values, useFullRange = false, maxOverride = null) => {
+  const source = values.map(value => Number(value) || 0)
+  const dataMax = Math.max(...source, 1)
+  const max = Math.max(Number(maxOverride) || dataMax, dataMax)
+  const min = Math.min(...source)
+  const range = Math.max(max - min, 1)
+  const scaled = source.map(value => {
+    if (useFullRange) return Number((8 + ((value - min) / range) * 84).toFixed(2))
+    return Number(((value / max) * 100).toFixed(2))
+  })
+
+  const getOriginalValue = scaledValue => {
+    const closestIndex = scaled.reduce((bestIndex, value, index) => (
+      Math.abs(value - scaledValue) < Math.abs(scaled[bestIndex] - scaledValue) ? index : bestIndex
+    ), 0)
+    return source[closestIndex]
   }
+
+  return { scaled, max, getOriginalValue }
 }
 
-const chartTooltip = {
-  backgroundColor: 'rgba(15, 23, 36, 0.94)',
-  borderColor: 'rgba(255, 255, 255, 0.08)',
-  borderWidth: 1,
-  textStyle: {
-    color: '#f8fafc'
-  },
-  extraCssText: 'border-radius: 8px; box-shadow: 0 18px 46px rgba(15, 23, 36, 0.18);'
+const restoreYAxisLabels = (element, max) => {
+  requestAnimationFrame(() => {
+    const tickGroups = [...element.querySelectorAll('.y.axis > g')]
+
+    tickGroups.forEach((group, index) => {
+      const label = group.querySelector('text')
+
+      if (label && !label.dataset.valueRestored) {
+        const percentage = Number(label.textContent)
+        if (!Number.isNaN(percentage)) {
+          label.textContent = formatMetric(Math.round((percentage / 100) * max))
+          label.dataset.valueRestored = 'true'
+        }
+      }
+
+      const isHighestTick = index === tickGroups.length - 1
+      group.style.display = isHighestTick ? '' : 'none'
+
+      if (isHighestTick && label?.dataset.valueRestored) {
+        group.dataset.axisReady = 'true'
+      }
+    })
+  })
 }
 
-const axisLabel = {
-  color: chartTheme.muted,
-  fontSize: 12
+const fitArticleChart = () => {
+  requestAnimationFrame(() => {
+    const element = document.getElementById('articleChart')
+    const container = element?.querySelector('.chart-container')
+    const svg = element?.querySelector('svg')
+    const plot = svg?.querySelector('.heatmap-chart')
+    const legend = svg?.querySelector('.chart-legend')
+
+    if (!element || !container || !svg || !plot) return
+
+    const baseTransform = plot.dataset.baseTransform || plot.getAttribute('transform') || ''
+    const baseWidth = Number(svg.dataset.baseWidth || svg.getAttribute('width') || 860)
+    plot.dataset.baseTransform = baseTransform
+    svg.dataset.baseWidth = String(baseWidth)
+    plot.setAttribute('transform', baseTransform)
+
+    const svgRect = svg.getBoundingClientRect()
+    const plotRect = plot.getBoundingClientRect()
+    const translateMatch = baseTransform.match(/translate\(\s*([\d.-]+)[,\s]+([\d.-]+)\s*\)/)
+    const baseX = Number(translateMatch?.[1] || 0)
+    const baseY = Number(translateMatch?.[2] || 0)
+    const localX = plotRect.left - svgRect.left - baseX
+    const localY = plotRect.top - svgRect.top - baseY
+    const edge = 12
+    const renderWidth = Math.max(element.clientWidth, baseWidth)
+    const scale = Math.max(1, (renderWidth - edge * 2) / plotRect.width)
+    const translateX = edge - localX * scale
+    const translateY = edge - localY * scale
+
+    element.style.overflowX = renderWidth > element.clientWidth ? 'auto' : 'hidden'
+    container.style.width = `${renderWidth}px`
+    svg.setAttribute('width', String(renderWidth))
+    svg.style.width = `${renderWidth}px`
+    plot.setAttribute(
+      'transform',
+      `translate(${translateX} ${translateY}) scale(${scale})`
+    )
+    plot.querySelectorAll('.domain-name, .subdomain-name').forEach(label => {
+      label.style.fontSize = `${12 / scale}px`
+    })
+
+    if (legend) {
+      legend.setAttribute('transform', `translate(${Math.max(edge, translateX)} 164)`)
+    }
+  })
 }
 
-const axisLine = {
-  lineStyle: {
-    color: chartTheme.line
-  }
+const queueArticleChartFit = () => {
+  fitArticleChart()
+  window.clearTimeout(heatmapFitTimer)
+  heatmapFitTimer = window.setTimeout(fitArticleChart, 750)
 }
 
-const splitLine = {
-  lineStyle: {
-    color: chartTheme.splitLine
-  }
+const restoreMainYAxis = () => {
+  const element = document.getElementById('mainChart')
+  if (element) restoreYAxisLabels(element, currentMainChartMax)
 }
 
-const hexToRgba = (hex, alpha) => {
-  const normalized = hex.replace('#', '')
-  const bigint = parseInt(normalized, 16)
-  const r = (bigint >> 16) & 255
-  const g = (bigint >> 8) & 255
-  const b = bigint & 255
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+const queueYAxisRestore = () => {
+  restoreMainYAxis()
+  window.clearTimeout(yAxisRestoreTimer)
+  yAxisRestoreTimer = window.setTimeout(restoreMainYAxis, 750)
 }
 
-const chartGradient = (color, opacity = 0.18) => new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-  { offset: 0, color },
-  { offset: 1, color: hexToRgba(color, opacity) }
-])
+const handleChartResize = () => {
+  window.clearTimeout(resizeRestoreTimer)
+  resizeRestoreTimer = window.setTimeout(() => {
+    restoreMainYAxis()
+    fitArticleChart()
+  }, 100)
+}
+
+const replaceChart = (key, elementId, options) => {
+  charts.get(key)?.destroy()
+  const element = document.getElementById(elementId)
+
+  if (!element) return
+
+  charts.set(key, new Chart(element, {
+    animate: 0,
+    ...options
+  }))
+}
 
 onMounted(() => {
   fetchData()
+  window.addEventListener('resize', handleChartResize)
+})
+
+onBeforeUnmount(() => {
+  window.clearTimeout(yAxisRestoreTimer)
+  window.clearTimeout(heatmapFitTimer)
+  window.clearTimeout(resizeRestoreTimer)
+  window.removeEventListener('resize', handleChartResize)
+  charts.forEach(chart => chart.destroy())
+  charts.clear()
 })
 
 // 获取初始化数据
@@ -84,18 +189,15 @@ async function fetchData() {
 
     // 更新主图表初始数据
     mainData.value.view.weekData = data.view.data
-    mainData.value.visit.weekData = data.visit.data
-    mainData.value.comment.weekData = data.comment.data
 
     // 更新热力图表数据
     heatmapData.value = data.article.data
     articleCount.value = data.article.total 
 
-    // 初始化图表
+    await nextTick()
     initTopCards()
     initMainChart()
     initArticleChart()
-    initHeavyCharts()
   } catch (error) {
     console.error('获取数据失败:', error)
     ElMessage.error('数据获取失败')
@@ -142,92 +244,71 @@ const dateLabels = getLastSevenDays()
 
 // 初始化顶部卡片图表
 const initTopCards = () => {
-  
-  // 浏览量折线图
-  const viewChart = echarts.init(document.getElementById('viewChart'))
-  viewChart.setOption({
-    color: [chartTheme.primary],
-    tooltip: {
-      ...chartTooltip,
-      trigger: 'axis',
-      axisPointer: {
-        type: 'line'
-      }
+  const miniChartOptions = {
+    height: 120,
+    axisOptions: {
+      xAxisMode: 'tick',
+      yAxisMode: 'span',
+      xIsSeries: 1
     },
-    grid: { top: 5, right: 0, bottom: 5, left: 0 },
-    xAxis: { 
-      data: dateLabels,
-      show: false
+    tooltipOptions: {
+      formatTooltipY: value => String(value)
+    }
+  }
+
+  const viewSeries = scaleChartValues(topData.value.view.data, true)
+  const visitSeries = scaleChartValues(topData.value.visit.data)
+  const commentSeries = scaleChartValues(topData.value.comment.data)
+
+  replaceChart('view', 'viewChart', {
+    ...miniChartOptions,
+    type: 'line',
+    colors: [chartTheme.primary],
+    data: {
+      labels: dateLabels,
+      datasets: [{ name: '浏览量', values: viewSeries.scaled }]
     },
-    yAxis: { 
-      show: false
+    lineOptions: {
+      hideDots: 1,
+      regionFill: 1,
+      spline: 1
     },
-    series: [{
-      data: topData.value.view.data,
-      type: 'line',
-      showSymbol: false,
-      areaStyle: { color: chartGradient(chartTheme.primary, 0.08) },
-      lineStyle: { color: chartTheme.primary, width: 2 }
-    }]
+    tooltipOptions: {
+      formatTooltipY: value => formatMetric(viewSeries.getOriginalValue(value))
+    }
   })
 
-
-  // 生成topData.value.view.rate
   const lastDay = topData.value.view.data.length - 1
   const todayView = topData.value.view.data[lastDay] || 0
   const yesterdayView = topData.value.view.data[lastDay - 1] || 0
   topData.value.view.rate = yesterdayView === 0 ? 0 : ((todayView - yesterdayView) / yesterdayView * 100).toFixed(2)
 
-  // 访问量柱状图
-  const visitChart = echarts.init(document.getElementById('visitChart'))
-  visitChart.setOption({
-    color: [chartTheme.accent],
-    tooltip: {
-      ...chartTooltip,
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow',
-      }
+  replaceChart('visit', 'visitChart', {
+    ...miniChartOptions,
+    type: 'bar',
+    colors: [chartTheme.accent],
+    data: {
+      labels: dateLabels,
+      datasets: [{ name: '访问量', values: visitSeries.scaled }]
     },
-    grid: { top: 0, right: 0, bottom: 5, left: 0 },
-    xAxis: { 
-      data: dateLabels,
-      show: false
-    },
-    yAxis: { 
-      show: false
-    },
-    series: [{
-      data: topData.value.visit.data,
-      type: 'bar',
-      barWidth: 8,
-      itemStyle: { color: chartTheme.accent, borderRadius: [4, 4, 0, 0] }
-    }]
+    barOptions: { spaceRatio: 0.55 },
+    tooltipOptions: {
+      formatTooltipY: value => formatMetric(visitSeries.getOriginalValue(value))
+    }
   })
 
-  // 评论数柱状图
-  const commentChart = echarts.init(document.getElementById('commentChart'))
-  commentChart.setOption({
-    color: [chartTheme.violet],
-    tooltip: {
-      ...chartTooltip,
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow',
-      }
+  replaceChart('comment', 'commentChart', {
+    ...miniChartOptions,
+    type: 'bar',
+    colors: [chartTheme.violet],
+    data: {
+      labels: dateLabels,
+      datasets: [{ name: '评论数', values: commentSeries.scaled }]
     },
-    grid: { top: 5, right: 5, bottom: 5, left: 5 },
-    xAxis: {
-      data: dateLabels,
-      show: false
-    },
-    yAxis: { show: false },
-    series: [{
-      type: 'bar',
-      data: topData.value.comment.data,
-      barWidth: 8,
-      itemStyle: { color: chartTheme.violet, borderRadius: [4, 4, 0, 0] }
-    }]
+    barOptions: { spaceRatio: 0.55 },
+    tooltipOptions: {
+      formatTooltipY: value => formatMetric(commentSeries.getOriginalValue(value))
+    }
   })
 }
 
@@ -243,16 +324,6 @@ const mainData = ref({
     weekData: [],
     monthData: [],
     yearData: [],
-  },
-  visit: { 
-    weekData: [],
-    monthData: [],
-    yearData: []
-  },
-  comment: { 
-    weekData: [],
-    monthData: [],
-    yearData: []
   }
 })
 
@@ -264,41 +335,18 @@ const timeRanges = [
   { label: '本年', value: 'year' }
 ]
 
-// 数据类型选择
-const dataType = ref('view')
-const dataTypes = [
-  { label: '浏览量', value: 'view' },
-  { label: '访问量', value: 'visit' },
-  { label: '评论数', value: 'comment' }
-]
-
-// 定义中文周名称映射
-const weekDayMap = {
-  'Mon': '一',
-  'Tue': '二',
-  'Wed': '三',
-  'Thu': '四',
-  'Fri': '五',
-  'Sat': '六',
-  'Sun': '日'
-}
-
-watch([timeRange, dataType], async () => {
+watch(timeRange, async () => {
   try {
     if (timeRange.value !== 'week') {
       if (mainData.value.view.monthData.length === 0 && timeRange.value === 'month') {
         // 获取month数据
         const dataMonth = await apiGetWebsiteData(timeRange.value)
         mainData.value.view.monthData = dataMonth.view.data
-        mainData.value.visit.monthData = dataMonth.visit.data
-        mainData.value.comment.monthData = dataMonth.comment.data
       }
       if (mainData.value.view.yearData.length === 0 && timeRange.value === 'year') {
         // 获取year数据
         const dataYear = await apiGetWebsiteData(timeRange.value)
         mainData.value.view.yearData = dataYear.view.data
-        mainData.value.visit.yearData = dataYear.visit.data
-        mainData.value.comment.yearData = dataYear.comment.data
       }
       // 重新渲染MainChart
       initMainChart()
@@ -311,18 +359,8 @@ watch([timeRange, dataType], async () => {
   }
 })
 
-// 对主图表的引用
-const mainChartRef = ref(null)
-
 // 初始化主图表
 const initMainChart = () => {
-  if (mainChartRef.value) {
-    // 如果图表已存在，先销毁
-    mainChartRef.value.dispose()
-  }
-
-  mainChartRef.value = echarts.init(document.getElementById('mainChart'))
-
   // 根据时间范围获取对应的标签
   const getTimeLabels = () => {
     const now = new Date()
@@ -353,103 +391,37 @@ const initMainChart = () => {
     }
   }
 
-  // 获取当前数据类型的配置
-  const getCurrentTypeConfig = () => {
-    const typeConfigs = {
-      view: {
+  const currentData = mainData.value.view[`${timeRange.value}Data`]
+  const dataMax = Math.max(...currentData.map(value => Number(value) || 0), 1)
+  const chartSeries = scaleChartValues(currentData, false, getNiceAxisMax(dataMax))
+  currentMainChartMax = chartSeries.max
+
+  replaceChart('main', 'mainChart', {
+    type: 'bar',
+    height: 300,
+    colors: [chartTheme.primary],
+    data: {
+      labels: getTimeLabels(),
+      datasets: [{
         name: '浏览量',
-        color: chartTheme.primary,
-        data: mainData.value.view[`${timeRange.value}Data`]
-      },
-      visit: {
-        name: '访问量',
-        color: chartTheme.accent,
-        data: mainData.value.visit[`${timeRange.value}Data`]
-      },
-      comment: {
-        name: '评论数',
-        color: chartTheme.violet,
-        data: mainData.value.comment[`${timeRange.value}Data`]
-      }
+        values: chartSeries.scaled
+      }]
+    },
+    axisOptions: {
+      xAxisMode: 'tick',
+      yAxisMode: 'span',
+      xIsSeries: 1,
+      shortenYAxisNumbers: 1
+    },
+    barOptions: {
+      spaceRatio: timeRange.value === 'month' ? 0.35 : 0.5
+    },
+    tooltipOptions: {
+      formatTooltipY: value => formatMetric(chartSeries.getOriginalValue(value))
     }
-    return typeConfigs[dataType.value]
-  }
-
-  const currentConfig = getCurrentTypeConfig()
-
-  mainChartRef.value.setOption({
-    color: [currentConfig.color],
-    title: { 
-      ...chartTitle,
-      text: `${currentConfig.name}统计`,
-      left: 'center'
-    },
-    tooltip: { 
-      ...chartTooltip,
-      trigger: 'axis',
-      formatter: `{b}<br/>${currentConfig.name}：{c}`
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '10%',
-      containLabel: true
-    },
-    toolbox: {
-      right: 8,
-      feature: {
-        saveAsImage: {}
-      },
-      iconStyle: {
-        borderColor: chartTheme.muted
-      },
-      emphasis: {
-        iconStyle: {
-          borderColor: chartTheme.primary
-        }
-      }
-    },
-    xAxis: {
-      type: 'category',
-      data: getTimeLabels(),
-      axisLabel: {
-        ...axisLabel,
-        rotate: timeRange.value === 'month' ? 45 : 0,
-        interval: timeRange.value === 'month' ? 'auto' : 0 // 防止标签重叠
-      },
-      axisLine,
-      axisTick: { lineStyle: { color: chartTheme.line } }
-    },
-    yAxis: { 
-      type: 'value',
-      name: currentConfig.name,
-      nameTextStyle: {
-        color: chartTheme.muted
-      },
-      axisLabel,
-      axisLine,
-      splitLine
-    },
-    series: [
-      {
-        name: currentConfig.name,
-        type: 'bar',
-        data: currentConfig.data,
-        itemStyle: {
-          color: currentConfig.color,
-          borderRadius: [6, 6, 0, 0]
-        },
-        emphasis: {
-          focus: 'series',
-          label: {
-            show: true,
-            formatter: '{c}',
-            position: 'top'
-          }
-        }
-      }
-    ]
   })
+
+  queueYAxisRestore()
 }
 
 const heatmapData = ref([])
@@ -465,333 +437,54 @@ const getHeatmapYear = () => {
 
 // 文章统计图表 - 热力图
 const initArticleChart = () => {
-  const articleChart = echarts.init(document.getElementById('articleChart'))
   const heatmapYear = getHeatmapYear()
-  
-  const getYearlyData = (year) => {
-    // 创建一个 Map 来存储日期和文章数量的对应关系
-    const articleMap = new Map()
-    
-    // 处理实际数据
-    heatmapData.value.forEach(item => {
+  const dataPoints = Object.fromEntries(
+    heatmapData.value.map(item => {
       const date = new Date(item.date)
-      const dateStr = echarts.time.format(+date, '{yyyy}-{MM}-{dd}', false)
-      articleMap.set(dateStr, item.count)
+      const dateKey = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0')
+      ].join('-')
+
+      return [dateKey, item.count]
     })
-    
-    // 生成完整的年度数据
-    const date = +echarts.time.parse(year + '-01-01')
-    const end = +echarts.time.parse((+year + 1) + '-01-01')
-    const dayTime = 3600 * 24 * 1000
-    const data = []
-    
-    // 遍历整年的每一天
-    for (let time = date; time < end; time += dayTime) {
-      const dateStr = echarts.time.format(time, '{yyyy}-{MM}-{dd}', false)
-      data.push([
-        dateStr,
-        articleMap.get(dateStr) || 0  // 如果该日期没有数据则返回0
-      ])
-    }
-    
-    return data
-  }
+  )
 
-  articleChart.setOption({
-    color: chartTheme.palette,
-    title: {
-      ...chartTitle,
-      top: 30,
-      left: 'center',
-      text: '文章发布'
-    },
-    tooltip: {
-      ...chartTooltip,
-      formatter: function(params) {
-        const value = params.value[1]
-        const date = new Date(params.value[0])
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-        // 获取日期的后缀
-        const getDaySuffix = (day) => {
-          if (day > 3 && day < 21) return 'th'
-          switch (day % 10) {
-            case 1: return 'st'
-            case 2: return 'nd'
-            case 3: return 'rd'
-            default: return 'th'
-          }
-        }
-
-        const month = months[date.getMonth()]
-        const day = date.getDate()
-        const suffix = getDaySuffix(day)
-
-        return value === 1 || value === 0
-          ? `${value} article written on ${month} ${day}${suffix}`
-          : `${value} articles written on ${month} ${day}${suffix}`
-      }
-    },
-    visualMap: {
-      min: 0,
-      max: 10,
-      type: 'piecewise',
-      orient: 'horizontal',
-      left: 'center',
-      top: 75,
-      pieces: [
-        { gte: 4, color: chartTheme.primary },
-        { value: 3, color: '#5476ff' },
-        { value: 2, color: chartTheme.accent },
-        { value: 1, color: '#9be7e7' },
-        { value: 0, color: '#e6edf5' }
-      ],
-      textStyle: {
-        color: chartTheme.muted
-      }
-    },
-    calendar: {
-      top: 140,
-      left: 30,
-      right: 30,
-      cellSize: ['auto', 16],
-      range: String(heatmapYear),
-      splitLine: false,
-      itemStyle: {
-        borderWidth: 3,
-        borderColor: chartTheme.surface,
-        borderRadius: 3
-      },
-      yearLabel: { show: false }
-    },
-    series: {
-      type: 'heatmap',
-      coordinateSystem: 'calendar',
-      itemStyle: {
-        borderRadius: 3
-      },
-      data: getYearlyData(heatmapYear)
-    },
-    // 添加文章总数显示
-    graphic: {
-      elements: [
-        {
-          type: 'text',
-          right: 32,
-          bottom: 160,
-          style: {
-            text: `total: ${articleCount.value}`,
-            font: '14px IBM Plex Sans, sans-serif',
-            fill: chartTheme.text
-          }
-        }
-      ]
+  replaceChart('article', 'articleChart', {
+    type: 'heatmap',
+    height: 190,
+    radius: 3,
+    discreteDomains: 1,
+    countLabel: '篇文章',
+    colors: ['#f7f2fa', '#eaddff', '#d0bcff', '#9a82db', chartTheme.primary],
+    data: {
+      start: new Date(heatmapYear, 0, 1),
+      end: new Date(heatmapYear, 11, 31),
+      dataPoints
     }
   })
-}
 
-const getMetricSeries = () => {
-  const view = topData.value.view.data
-  const visit = topData.value.visit.data
-  const comment = topData.value.comment.data
-
-  return dateLabels.map((label, index) => ({
-    label,
-    view: view[index] || 0,
-    visit: visit[index] || 0,
-    comment: comment[index] || 0
-  }))
-}
-
-const initHeavyCharts = () => {
-  const metricSeries = getMetricSeries()
-  const viewData = metricSeries.map(item => item.view)
-  const visitData = metricSeries.map(item => item.visit)
-  const commentData = metricSeries.map(item => item.comment)
-  const maxValue = Math.max(...viewData, ...visitData, ...commentData, 10)
-  const total = topData.value.view.total + topData.value.visit.total + topData.value.comment.total
-
-  echarts.init(document.getElementById('trafficTrendChart')).setOption({
-    color: chartTheme.palette,
-    title: { ...chartTitle, text: '首屏多指标趋势', left: 'center' },
-    tooltip: { ...chartTooltip, trigger: 'axis' },
-    legend: { top: 32, textStyle: { color: chartTheme.muted } },
-    grid: { top: 72, left: 42, right: 24, bottom: 36 },
-    xAxis: { type: 'category', data: dateLabels.map(day => weekDayMap[day]), axisLabel, axisLine, axisTick: { lineStyle: { color: chartTheme.line } } },
-    yAxis: { type: 'value', axisLabel, axisLine, splitLine },
-    series: [
-      { name: '浏览量', type: 'line', smooth: true, areaStyle: { opacity: 0.1 }, lineStyle: { width: 2 }, data: viewData },
-      { name: '访问量', type: 'line', smooth: true, areaStyle: { opacity: 0.1 }, lineStyle: { width: 2 }, data: visitData },
-      { name: '评论数', type: 'line', smooth: true, areaStyle: { opacity: 0.1 }, lineStyle: { width: 2 }, data: commentData }
-    ]
-  })
-
-  echarts.init(document.getElementById('contentRadarChart')).setOption({
-    color: [chartTheme.primary],
-    title: { ...chartTitle, text: '内容运营雷达', left: 'center' },
-    tooltip: chartTooltip,
-    radar: {
-      radius: '62%',
-      axisName: {
-        color: chartTheme.muted
-      },
-      splitLine,
-      splitArea: {
-        areaStyle: {
-          color: ['rgba(36, 84, 255, 0.03)', 'rgba(0, 139, 139, 0.035)']
-        }
-      },
-      axisLine,
-      indicator: [
-        { name: '浏览', max: maxValue },
-        { name: '访问', max: maxValue },
-        { name: '评论', max: maxValue },
-        { name: '文章', max: Math.max(articleCount.value, 10) },
-        { name: '字数', max: Math.max(total, 10) }
-      ]
-    },
-    series: [{
-      type: 'radar',
-      areaStyle: { opacity: 0.14 },
-      lineStyle: { width: 2 },
-      data: [{
-        value: [
-          topData.value.view.total,
-          topData.value.visit.total,
-          topData.value.comment.total,
-          articleCount.value,
-          total
-        ],
-        name: '博客后台'
-      }]
-    }]
-  })
-
-  echarts.init(document.getElementById('trafficPieChart')).setOption({
-    color: chartTheme.palette,
-    title: { ...chartTitle, text: '访问构成', left: 'center' },
-    tooltip: { ...chartTooltip, trigger: 'item' },
-    series: [{
-      type: 'pie',
-      radius: ['38%', '68%'],
-      itemStyle: {
-        borderRadius: 8,
-        borderColor: chartTheme.surface,
-        borderWidth: 3
-      },
-      data: [
-        { name: '浏览量', value: topData.value.view.total },
-        { name: '访问量', value: topData.value.visit.total },
-        { name: '评论数', value: topData.value.comment.total },
-        { name: '文章数', value: articleCount.value }
-      ],
-      label: { formatter: '{b}\n{d}%', color: chartTheme.muted }
-    }]
-  })
-
-  echarts.init(document.getElementById('scatterChart')).setOption({
-    color: [chartTheme.accent],
-    title: { ...chartTitle, text: '访问与评论散点', left: 'center' },
-    tooltip: chartTooltip,
-    grid: { top: 56, left: 42, right: 24, bottom: 36 },
-    xAxis: { name: '访问量', nameTextStyle: { color: chartTheme.muted }, axisLabel, axisLine, splitLine },
-    yAxis: { name: '评论数', nameTextStyle: { color: chartTheme.muted }, axisLabel, axisLine, splitLine },
-    series: [{
-      type: 'scatter',
-      itemStyle: {
-        color: chartTheme.accent,
-        borderColor: '#f8fafc',
-        borderWidth: 2
-      },
-      symbolSize: value => Math.max(10, value[2] / 2 + 8),
-      data: metricSeries.map(item => [item.visit, item.comment, item.view])
-    }]
-  })
-
-  echarts.init(document.getElementById('funnelChart')).setOption({
-    color: chartTheme.palette,
-    title: { ...chartTitle, text: '内容转化漏斗', left: 'center' },
-    tooltip: { ...chartTooltip, trigger: 'item' },
-    series: [{
-      type: 'funnel',
-      top: 52,
-      bottom: 24,
-      itemStyle: {
-        borderColor: chartTheme.surface,
-        borderWidth: 2,
-        borderRadius: 6
-      },
-      label: {
-        color: chartTheme.text
-      },
-      data: [
-        { name: '访问', value: topData.value.visit.total },
-        { name: '浏览', value: topData.value.view.total },
-        { name: '评论', value: topData.value.comment.total },
-        { name: '文章', value: articleCount.value }
-      ]
-    }]
-  })
-
-  echarts.init(document.getElementById('gaugeChart')).setOption({
-    color: [chartTheme.primary],
-    title: { ...chartTitle, text: '后台活跃度', left: 'center' },
-    series: [{
-      type: 'gauge',
-      axisLine: {
-        lineStyle: {
-          width: 12,
-          color: [[1, '#dbe6f2']]
-        }
-      },
-      progress: {
-        show: true,
-        width: 12,
-        itemStyle: {
-          color: chartTheme.primary,
-          borderRadius: 8
-        }
-      },
-      pointer: {
-        itemStyle: {
-          color: chartTheme.text
-        }
-      },
-      axisLabel: {
-        color: chartTheme.muted
-      },
-      axisTick: {
-        lineStyle: {
-          color: chartTheme.line
-        }
-      },
-      splitLine: {
-        lineStyle: {
-          color: chartTheme.line
-        }
-      },
-      detail: { formatter: '{value}%', color: chartTheme.text, fontWeight: 700 },
-      data: [{ value: Math.min(100, Math.round(total / 10)), name: '活跃' }]
-    }]
-  })
+  queueArticleChartFit()
 }
 
 </script>
 
 <template>
-<main class="grid gap-4 p-4">
+<main class="dashboard-page">
     <!-- 顶部卡片 -->
-    <section class="grid grid-cols-3 gap-4 max-xl:grid-cols-1">
+    <section class="metric-grid" aria-label="核心指标">
       <!-- 浏览量卡片 -->
-      <article class="glass-panel min-h-40 p-[18px_18px_14px]">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-[13px] font-bold text-admin-muted">总浏览量</h3>
-            <p class="mt-1.5 font-mono text-[28px] font-extrabold leading-none text-admin-ink">{{ topData.view.total }}</p>
+      <article class="material-card metric-card metric-card--primary">
+        <div class="metric-header">
+          <div class="metric-icon"><MaterialIcon :path="mdiEyeOutline" /></div>
+          <div class="metric-copy">
+            <h3>总浏览量</h3>
+            <p>{{ formatMetric(topData.view.total) }}</p>
           </div>
           <div
-            class="glass-chip min-h-7 px-2.5 font-mono text-xs font-extrabold"
-            :class="topData.view.rate >= 0 ? 'bg-cyan-50/60 text-admin-accent' : 'bg-red-50/60 text-[var(--admin-danger)]'"
+            class="metric-rate"
+            :class="topData.view.rate >= 0 ? 'metric-rate--positive' : 'metric-rate--negative'"
           >
             <span>{{ topData.view.rate >= 0 ? '↑' : '↓' }}{{ Math.abs(topData.view.rate) }}%</span>
           </div>
@@ -800,82 +493,70 @@ const initHeavyCharts = () => {
       </article>
 
       <!-- 访问量卡片 -->
-      <article class="glass-panel min-h-40 p-[18px_18px_14px]">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-[13px] font-bold text-admin-muted">总访问量</h3>
-            <p class="mt-1.5 font-mono text-[28px] font-extrabold leading-none text-admin-ink">{{ topData.visit.total }}</p>
+      <article class="material-card metric-card metric-card--tertiary">
+        <div class="metric-header">
+          <div class="metric-icon"><MaterialIcon :path="mdiAccountGroupOutline" /></div>
+          <div class="metric-copy">
+            <h3>总访问量</h3>
+            <p>{{ formatMetric(topData.visit.total) }}</p>
           </div>
+          <span class="metric-period">近 7 日</span>
         </div>
         <div id="visitChart" class="mini-chart"></div>
       </article>
 
       <!-- 评论数卡片 -->
-      <article class="glass-panel min-h-40 p-[18px_18px_14px]">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-[13px] font-bold text-admin-muted">总评论数</h3>
-            <p class="mt-1.5 font-mono text-[28px] font-extrabold leading-none text-admin-ink">{{ topData.comment.total }}</p>
+      <article class="material-card metric-card metric-card--secondary">
+        <div class="metric-header">
+          <div class="metric-icon"><MaterialIcon :path="mdiCommentTextMultipleOutline" /></div>
+          <div class="metric-copy">
+            <h3>总评论数</h3>
+            <p>{{ formatMetric(topData.comment.total) }}</p>
           </div>
+          <span class="metric-period">近 7 日</span>
         </div>
         <div id="commentChart" class="mini-chart"></div>
       </article>
     </section>
 
     <!-- 主图表 -->
-    <section class="glass-panel p-[18px]">
-      <div class="mb-3 flex items-center justify-between gap-4">
-        <el-radio-group v-model="dataType">
-          <el-radio-button 
-            v-for="type in dataTypes" 
-            :key="type.value" 
-            :value="type.value"
-          >
-            {{ type.label }}
-          </el-radio-button>
-        </el-radio-group>
+    <section class="material-card chart-card">
+      <div class="section-header">
+        <div>
+          <h2 class="chart-heading">浏览量趋势</h2>
+        </div>
 
-        <el-radio-group v-model="timeRange">
-          <el-radio-button 
-            v-for="range in timeRanges" 
-            :key="range.value" 
-            :value="range.value"
+        <div
+          class="range-switch"
+          :class="`range-switch--${timeRange}`"
+          role="group"
+          aria-label="统计时间范围"
+        >
+          <button
+            v-for="range in timeRanges"
+            :key="range.value"
+            type="button"
+            :class="{ 'is-active': timeRange === range.value }"
+            :aria-pressed="timeRange === range.value"
+            @click="timeRange = range.value"
           >
             {{ range.label }}
-          </el-radio-button>
-        </el-radio-group>
+          </button>
+        </div>
       </div>
       <div id="mainChart" class="chart chart--main"></div>
     </section>
 
      <!-- 底部图表 -->
-    <section>
-      <!-- 热力图表 -->
-      <article class="glass-panel p-[18px]">
+    <section class="material-card chart-card article-card">
+        <div class="section-header">
+          <div>
+            <h2 class="chart-heading">文章发布</h2>
+            <p class="chart-caption">{{ getHeatmapYear() }} 年发布活跃度</p>
+          </div>
+          <span class="article-total">{{ formatMetric(articleCount) }} 篇</span>
+        </div>
         <div id="articleChart" class="chart chart--heatmap"></div>
-      </article>
-    </section>
-
-    <!-- 故意放入更多首屏 ECharts，用于制造 FCP 优化前的重负载基线 -->
-    <section class="grid grid-cols-2 gap-4 max-xl:grid-cols-1">
-      <article class="glass-panel p-[18px]">
-        <div id="trafficTrendChart" class="chart chart--large"></div>
-      </article>
-      <article class="glass-panel p-[18px]">
-        <div id="contentRadarChart" class="chart chart--large"></div>
-      </article>
-      <article class="glass-panel p-[18px]">
-        <div id="trafficPieChart" class="chart chart--large"></div>
-      </article>
-      <article class="glass-panel p-[18px]">
-        <div id="scatterChart" class="chart chart--large"></div>
-      </article>
-      <article class="glass-panel p-[18px]">
-        <div id="funnelChart" class="chart chart--large"></div>
-      </article>
-      <article class="glass-panel p-[18px]">
-        <div id="gaugeChart" class="chart chart--large"></div>
-      </article>
     </section>
 
   </main>
@@ -883,44 +564,333 @@ const initHeavyCharts = () => {
 
 <style scoped>
 .mini-chart {
-  width: 100%;
-  height: 64px;
-  margin-top: 12px;
+  width: calc(100% + 120px);
+  height: 120px;
+  margin-top: 8px;
+  margin-left: -70px;
+  overflow: visible;
 }
 
 .chart {
   width: 100%;
 }
 
-.chart--main,
-.chart--large {
-  height: 320px;
+.chart--main {
+  min-height: 300px;
 }
 
 .chart--heatmap {
-  height: 260px;
+  min-height: 190px;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
-:deep(.el-radio-button__inner) {
-  border-color: rgba(255, 255, 255, 0.32);
+.chart-heading {
+  margin: 0;
+  color: var(--admin-text);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.chart-caption {
+  margin: 4px 0 0;
   color: var(--admin-text-muted);
-  font-weight: 750;
-  background: rgba(255, 255, 255, 0.34);
-  backdrop-filter: blur(12px);
+  font-size: 12px;
 }
 
-:deep(.el-radio-button:first-child .el-radio-button__inner) {
-  border-radius: var(--admin-radius-sm) 0 0 var(--admin-radius-sm);
+.article-total {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--admin-on-primary-soft);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--admin-primary-soft);
 }
 
-:deep(.el-radio-button:last-child .el-radio-button__inner) {
-  border-radius: 0 var(--admin-radius-sm) var(--admin-radius-sm) 0;
+.metric-rate {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  border-color: var(--admin-primary);
-  background: var(--admin-primary);
-  box-shadow: -1px 0 0 0 var(--admin-primary);
+.metric-rate--positive {
+  color: #1c4d22;
+  background: #d3e8d0;
+}
+
+.metric-rate--negative {
+  color: #93000a;
+  background: var(--admin-danger-soft);
+}
+
+:deep(.chart-container) {
+  font-family: inherit;
+}
+
+:deep(.chart-container .title),
+:deep(.chart-container .sub-title) {
+  display: none;
+}
+
+:deep(.chart-container .chart-label) {
+  fill: #625f69;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+:deep(.chart-container .line-vertical),
+:deep(.chart-container .line-horizontal) {
+  stroke: #e7e0ec;
+}
+
+:deep(.chart-container .graph-svg-tip) {
+  border: 0;
+  border-radius: 8px;
+  background: rgba(15, 23, 36, 0.94);
+  box-shadow: 0 18px 46px rgba(15, 23, 36, 0.18);
+}
+
+:deep(.graph-svg-tip .svg-pointer) {
+  border-top-color: rgba(33, 31, 38, 0.96);
+}
+
+.mini-chart :deep(.x.axis),
+.mini-chart :deep(.y.axis),
+.mini-chart :deep(.chart-label),
+.mini-chart :deep(.line-vertical),
+.mini-chart :deep(.line-horizontal) {
+  opacity: 0;
+}
+
+.mini-chart :deep(.dataset-path) {
+  stroke-width: 2.5px;
+}
+
+.mini-chart :deep(.bar) {
+  rx: 4px;
+  ry: 4px;
+}
+
+.chart--main :deep(.bar) {
+  rx: 6px;
+  ry: 6px;
+}
+
+.chart--main :deep(.x.axis text),
+.chart--main :deep(.y.axis text) {
+  font-size: 12px;
+}
+
+.chart--main :deep(.y.axis > g:not(:last-child)) {
+  display: none;
+}
+
+.chart--main :deep(.y.axis > g:last-child:not([data-axis-ready])) {
+  display: none;
+}
+
+.chart--heatmap :deep(.chart-container) {
+  min-width: 0;
+}
+
+.chart--heatmap :deep(.subdomain-name),
+.chart--heatmap :deep(.domain-name) {
+  fill: var(--admin-text-muted);
+  font-family: inherit;
+}
+
+.chart--heatmap :deep(.chart-legend text) {
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.dashboard-page {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.section-header,
+.metric-header {
+  display: flex;
+  align-items: center;
+}
+
+.section-header,
+.metric-header {
+  justify-content: space-between;
+}
+
+.material-card {
+  border: 1px solid #e7e0ec;
+  border-radius: var(--admin-radius);
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.metric-card {
+  position: relative;
+  min-width: 0;
+  padding: 18px 18px 12px;
+  overflow: visible;
+}
+
+.metric-card:hover {
+  z-index: 2;
+}
+
+.metric-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 50%;
+  font-size: 21px;
+}
+
+.metric-card--primary .metric-icon {
+  color: var(--admin-on-primary-soft);
+  background: var(--admin-primary-soft);
+}
+
+.metric-card--tertiary .metric-icon {
+  color: #0d1f0f;
+  background: #d3e8d0;
+}
+
+.metric-card--secondary .metric-icon {
+  color: #31111d;
+  background: #ffd8e4;
+}
+
+.metric-copy {
+  min-width: 0;
+  margin-right: auto;
+  padding-left: 12px;
+}
+
+.metric-copy h3 {
+  margin: 0;
+  color: var(--admin-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.metric-copy p {
+  margin: 3px 0 0;
+  color: var(--admin-text);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.metric-period {
+  color: var(--admin-text-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chart-card {
+  padding: 20px;
+}
+
+.article-card {
+  margin-top: 16px;
+}
+
+.section-header {
+  gap: 20px;
+  min-height: 44px;
+  margin-bottom: 12px;
+}
+
+.range-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  padding: 4px;
+  border: 1px solid #e7e0ec;
+  border-radius: 999px;
+  background: var(--admin-surface-muted);
+  isolation: isolate;
+}
+
+.range-switch::before {
+  position: absolute;
+  inset: 4px auto 4px 4px;
+  z-index: -1;
+  width: 64px;
+  content: "";
+  border-radius: 999px;
+  background: var(--admin-primary-soft);
+  transition: transform 260ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.range-switch--month::before {
+  transform: translateX(64px);
+}
+
+.range-switch--year::before {
+  transform: translateX(128px);
+}
+
+.range-switch button {
+  position: relative;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--admin-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  background: transparent;
+  cursor: pointer;
+  transition: color 180ms ease;
+}
+
+.range-switch button.is-active {
+  color: var(--admin-on-primary-soft);
+}
+
+.range-switch button:focus-visible {
+  outline: 2px solid var(--admin-primary);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .range-switch::before {
+    transition: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart--heatmap {
+    overflow-x: auto;
+  }
+
+  .chart--heatmap :deep(.chart-container) {
+    min-width: 760px;
+  }
 }
 
 </style>

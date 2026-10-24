@@ -195,15 +195,15 @@ async function deleteComment() {
     <!-- 评论操作按钮 -->
     <el-table-column fixed="right" label="评论管理" width="80">
       <template #default="scope">
-        <el-button type="primary" size="small" @click="handleManage(scope.$index, scope.row)">
+        <MaterialButton type="primary" size="small" @click="handleManage(scope.$index, scope.row)">
           管理
-        </el-button>
+        </MaterialButton>
       </template>
     </el-table-column>
   </el-table>
 
   <!-- 评论回复弹窗 -->
-  <el-dialog
+  <MaterialDialog
     v-model="replyDialogVisible"
     title="评论回复"
     width="50%">
@@ -213,12 +213,12 @@ async function deleteComment() {
       <el-divider></el-divider>
     </div>
     <template #footer>
-      <el-button @click="replyDialogVisible = false">关闭</el-button>
+      <MaterialButton @click="replyDialogVisible = false">关闭</MaterialButton>
     </template>
-  </el-dialog>
+  </MaterialDialog>
 
   <!-- 评论审核弹框 -->
-  <el-dialog v-model="reviewDialogVisible" title="评论审核" width="40%">
+  <MaterialDialog v-model="reviewDialogVisible" title="评论审核" width="40%">
     <div v-if="currentReview">
       <p><strong>用户：</strong> {{ currentReview.username }}</p>
       <p><strong>邮箱：</strong> {{ currentReview.email }}</p>
@@ -226,15 +226,15 @@ async function deleteComment() {
       <p><strong>评论时间：</strong> {{ getFormatDateToMinutes(currentReview.createTime) }}</p>
       <el-divider></el-divider>
       <div class="text-right">
-        <el-button type="success" @click="reviewPassed">通过审核</el-button>
-        <el-button type="warning" @click="reviewNotPassed">不通过</el-button>
-        <el-button type="danger" @click="deleteComment">删除</el-button>
+        <MaterialButton type="success" @click="reviewPassed">通过审核</MaterialButton>
+        <MaterialButton type="warning" @click="reviewNotPassed">不通过</MaterialButton>
+        <MaterialButton type="danger" @click="deleteComment">删除</MaterialButton>
       </div>
     </div>
     <template #footer>
-      <el-button @click="reviewDialogVisible = false">关闭</el-button>
+      <MaterialButton @click="reviewDialogVisible = false">关闭</MaterialButton>
     </template>
-  </el-dialog>
+  </MaterialDialog>
 
 
 </template>

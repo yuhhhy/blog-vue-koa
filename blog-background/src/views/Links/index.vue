@@ -114,41 +114,41 @@ async function handleConfirm() {
     </el-table-column>
     <el-table-column fixed="right" label="管理" width="180">
       <template #default="scope">
-        <el-button type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
+        <MaterialButton type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
           删除
-        </el-button>
-        <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">
+        </MaterialButton>
+        <MaterialButton type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">
           编辑
-        </el-button>
+        </MaterialButton>
       </template>
     </el-table-column>
   </el-table>
 
   <!-- 编辑/新增表单 -->
-  <el-dialog v-model="dialogFormVisible" :title="form.id ? '编辑友链' : '新增友链'" width="500">
+  <MaterialDialog v-model="dialogFormVisible" :title="form.id ? '编辑友链' : '新增友链'" width="500">
     <el-form :model="form">
       <el-form-item label="名称" label-width="80px">
-        <el-input v-model="form.name" />
+        <MaterialInput v-model="form.name" />
       </el-form-item>
       <el-form-item label="描述" label-width="80px">
-        <el-input v-model="form.description" />
+        <MaterialInput v-model="form.description" />
       </el-form-item>
       <el-form-item label="网址" label-width="80px">
-        <el-input v-model="form.site" />
+        <MaterialInput v-model="form.site" />
       </el-form-item>
       <el-form-item label="头像" label-width="80px">
-        <el-input v-model="form.avatar" />
+        <MaterialInput v-model="form.avatar" />
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleConfirm">
+        <MaterialButton @click="dialogFormVisible = false">取消</MaterialButton>
+        <MaterialButton type="primary" @click="handleConfirm">
           确认
-        </el-button>
+        </MaterialButton>
       </div>
     </template>
-  </el-dialog>
+  </MaterialDialog>
 </template>
 
 <style scoped>

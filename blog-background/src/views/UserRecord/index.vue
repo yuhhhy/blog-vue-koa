@@ -90,9 +90,9 @@ const handleDelete = async (index, row) => {
     </el-table-column>
     <el-table-column fixed="right" label="管理">
       <template #default="scope">
-        <el-button type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
+        <MaterialButton type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
           删除
-        </el-button>
+        </MaterialButton>
       </template>
     </el-table-column>
   </el-table>

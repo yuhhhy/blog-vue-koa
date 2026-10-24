@@ -1,4 +1,6 @@
 <script setup>
+import MaterialIcon from '@/components/MaterialIcon.vue'
+
  defineProps({
     item: {
         type: Object,
@@ -15,7 +17,7 @@
      <router-link :to="item.link">
         <el-menu-item :index="index">
             <el-icon v-if="item.icon" class="menu-icon">
-                <component :is="item.icon" />
+                <MaterialIcon :path="item.icon" />
             </el-icon>
             {{ item.title }}
         </el-menu-item>
@@ -24,6 +26,9 @@
 
 <style scoped>
 .menu-icon {
-    margin-right: 10px;
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+    font-size: 22px;
 }
 </style>

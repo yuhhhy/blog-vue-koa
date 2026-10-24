@@ -96,38 +96,38 @@ function handleConfirm() {
     </el-table-column>
     <el-table-column fixed="right" label="管理">
       <template #default="scope">
-        <el-button type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
+        <MaterialButton type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
           删除
-        </el-button>
-        <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">
+        </MaterialButton>
+        <MaterialButton type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">
           编辑
-        </el-button>
+        </MaterialButton>
       </template>
     </el-table-column>
   </el-table>
 
   <!-- 更改表单 -->
-  <el-dialog v-model="dialogFormVisible" title="更改用户信息" width="500">
+  <MaterialDialog v-model="dialogFormVisible" title="更改用户信息" width="500">
     <el-form :model="form">
       <el-form-item label="用户名" label-width="80px">
-        <el-input v-model="form.username" />
+        <MaterialInput v-model="form.username" />
       </el-form-item>
       <el-form-item label="密码" label-width="80px">
-        <el-input v-model="form.password" />
+        <MaterialInput v-model="form.password" />
       </el-form-item>
       <el-form-item label="邮箱" label-width="80px">
-        <el-input v-model="form.email" />
+        <MaterialInput v-model="form.email" />
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleConfirm">
+        <MaterialButton @click="dialogFormVisible = false">取消</MaterialButton>
+        <MaterialButton type="primary" @click="handleConfirm">
           确认
-        </el-button>
+        </MaterialButton>
       </div>
     </template>
-  </el-dialog>
+  </MaterialDialog>
 </template>
 
 <style>

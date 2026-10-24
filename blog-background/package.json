@@ -8,10 +8,10 @@
     "analyze": "vite build --mode analyze"
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^2.3.1",
+    "@mdi/js": "^7.4.47",
     "axios": "^1.8.4",
-    "echarts": "^5.6.0",
     "element-plus": "^2.9.7",
+    "frappe-charts": "^1.6.2",
     "less": "^4.3.0",
     "pinia": "^3.0.2",
     "spark-md5": "^3.0.2",

@@ -134,12 +134,12 @@ onMounted(fetchMdList);
                     name="file"
                     accept=".md"
                 >
-                    <el-button type="primary">上传 .md 文件</el-button>
+                    <MaterialButton type="primary">上传 .md 文件</MaterialButton>
                 </el-upload>
             </div>
         </template>
 
-        <el-input
+        <MaterialInput
             v-model="searchQuery"
             placeholder="搜索文件名"
             clearable
@@ -161,8 +161,8 @@ onMounted(fetchMdList);
             </el-table-column>
             <el-table-column label="操作" width="180" fixed="right">
                 <template #default="{ row }">
-                    <el-button size="small" @click="handleDownload(row)">下载</el-button>
-                    <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+                    <MaterialButton size="small" @click="handleDownload(row)">下载</MaterialButton>
+                    <MaterialButton size="small" type="danger" @click="handleDelete(row)">删除</MaterialButton>
                 </template>
             </el-table-column>
         </el-table>

@@ -6,7 +6,12 @@ import request from "@/utils/request.js"
  */
 
 // 获取网站数据
-export function apiGetWebsiteData(timeRange = 'all') {
+export async function apiGetWebsiteData(timeRange = 'all') {
+    if (import.meta.env.DEV) {
+        const { getMockWebsiteData } = await import('@/mocks/websiteData.js')
+        return getMockWebsiteData(timeRange)
+    }
+
     return request({
         url: '/website',
         method: 'GET',
@@ -39,4 +44,4 @@ export function apiUpdateWebsiteArticle() {
         method: 'PUT',
         requireAuth: true
     })
-} 
+}

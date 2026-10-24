@@ -2,18 +2,19 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-    CopyDocument,
-    Delete,
-    Document,
-    Download,
-    Files,
-    Headset,
-    Refresh,
-    UploadFilled,
-    VideoCamera,
-    VideoPause,
-    VideoPlay,
-} from '@element-plus/icons-vue'
+    mdiCloudUploadOutline,
+    mdiContentCopy,
+    mdiDeleteOutline,
+    mdiDownload,
+    mdiFileDocumentOutline,
+    mdiFileMultipleOutline,
+    mdiHeadphones,
+    mdiPause,
+    mdiPlay,
+    mdiRefresh,
+    mdiVideoOutline
+} from '@mdi/js'
+import MaterialIcon from '@/components/MaterialIcon.vue'
 import {
     apiDeleteLargeFile,
     apiGetLargeFileList,
@@ -509,10 +510,10 @@ const formatDate = (dateString) => {
 }
 
 const getTypeIcon = (type) => {
-    if (type === 'video') return VideoCamera
-    if (type === 'audio') return Headset
-    if (type === 'doc') return Document
-    return Files
+    if (type === 'video') return mdiVideoOutline
+    if (type === 'audio') return mdiHeadphones
+    if (type === 'doc') return mdiFileDocumentOutline
+    return mdiFileMultipleOutline
 }
 
 onMounted(fetchLargeFiles)
@@ -530,7 +531,10 @@ onBeforeUnmount(() => {
             <template #header>
                 <div class="flex justify-between items-center">
                     <span>大文件上传</span>
-                    <el-button :icon="Refresh" @click="fetchLargeFiles">刷新列表</el-button>
+                    <MaterialButton @click="fetchLargeFiles">
+                        <MaterialIcon class="button-icon" :path="mdiRefresh" />
+                        刷新列表
+                    </MaterialButton>
                 </div>
             </template>
 
@@ -541,7 +545,7 @@ onBeforeUnmount(() => {
                 :accept="uploadAccept"
                 :on-change="handleFileSelected"
             >
-                <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+                <MaterialIcon class="el-icon--upload" :path="mdiCloudUploadOutline" />
                 <div class="el-upload__text">选择视频、音频、文档、压缩包或数据文件</div>
             </el-upload>
 
@@ -556,21 +560,21 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
                     <div class="upload-actions">
-                        <el-button
+                        <MaterialButton
                             v-if="canPause"
-                            :icon="VideoPause"
                             @click="pauseUpload"
                         >
+                            <MaterialIcon class="button-icon" :path="mdiPause" />
                             暂停
-                        </el-button>
-                        <el-button
+                        </MaterialButton>
+                        <MaterialButton
                             type="primary"
-                            :icon="uploadStatus === 'paused' ? VideoPlay : UploadFilled"
                             :disabled="!canUpload"
                             @click="startUpload"
                         >
+                            <MaterialIcon class="button-icon" :path="uploadStatus === 'paused' ? mdiPlay : mdiCloudUploadOutline" />
                             {{ uploadStatus === 'paused' ? '继续' : '开始上传' }}
-                        </el-button>
+                        </MaterialButton>
                     </div>
                 </div>
                 <el-progress :percentage="Number(progress.toFixed(1))" :status="uploadStatus === 'error' ? 'exception' : undefined" />
@@ -607,7 +611,7 @@ onBeforeUnmount(() => {
                     <template #default="{ row }">
                         <el-tag>
                             <el-icon class="type-icon">
-                                <component :is="getTypeIcon(row.type)" />
+                                <MaterialIcon :path="getTypeIcon(row.type)" />
                             </el-icon>
                             {{ typeLabels[row.type] }}
                         </el-tag>
@@ -622,9 +626,18 @@ onBeforeUnmount(() => {
                 </el-table-column>
                 <el-table-column label="操作" width="260" fixed="right">
                     <template #default="{ row }">
-                        <el-button size="small" :icon="CopyDocument" @click="handleCopyUrl(row)">复制</el-button>
-                        <el-button size="small" :icon="Download" @click="handleDownload(row)">下载</el-button>
-                        <el-button size="small" type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
+                        <MaterialButton size="small" @click="handleCopyUrl(row)">
+                            <MaterialIcon class="button-icon" :path="mdiContentCopy" />
+                            复制
+                        </MaterialButton>
+                        <MaterialButton size="small" @click="handleDownload(row)">
+                            <MaterialIcon class="button-icon" :path="mdiDownload" />
+                            下载
+                        </MaterialButton>
+                        <MaterialButton size="small" type="danger" @click="handleDelete(row)">
+                            <MaterialIcon class="button-icon" :path="mdiDeleteOutline" />
+                            删除
+                        </MaterialButton>
                     </template>
                 </el-table-column>
             </el-table>
