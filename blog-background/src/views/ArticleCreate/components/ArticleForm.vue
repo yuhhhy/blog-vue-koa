@@ -124,7 +124,7 @@ const uploadError = (file) => {
       style="min-width: 500px;"
       class="pl-5"
     >
-      <el-input v-model="form.title" placeholder="请输入标题"></el-input>
+      <MaterialInput v-model="form.title" placeholder="请输入标题"></MaterialInput>
     </el-form-item>
     <!-- 作者 -->
     <el-form-item 
@@ -133,7 +133,7 @@ const uploadError = (file) => {
       style="min-width: 500px;"
       class="pl-5"
     >
-      <el-input v-model="form.author" placeholder="作者名称"></el-input>
+      <MaterialInput v-model="form.author" placeholder="作者名称"></MaterialInput>
     </el-form-item>
     <!-- 标签 -->
     <el-form-item
@@ -151,7 +151,7 @@ const uploadError = (file) => {
       class="pl-5"
     >
       <el-popover placement="top" width="173">
-        <template #reference><el-button>上传文章封面</el-button></template>
+        <template #reference><MaterialButton>上传文章封面</MaterialButton></template>
         <el-radio-group v-model="coverUploadMode" size="small" class="mb-3">
           <el-radio-button label="keep">保留原格式</el-radio-button>
           <el-radio-button label="avif">转为 AVIF</el-radio-button>
@@ -172,18 +172,18 @@ const uploadError = (file) => {
       </el-popover>
     </el-form-item>
 
-    <el-button 
+    <MaterialButton
       type="warning"
       class="-mt-4 ml-52"
       @click="clearForm">
       清空
-    </el-button>
-    <el-button 
+    </MaterialButton>
+    <MaterialButton
       type="primary"
       class="-mt-4 ml-52"
       @click="handleSubmit">
       提交
-    </el-button>
+    </MaterialButton>
   </el-form>
 </template>
 

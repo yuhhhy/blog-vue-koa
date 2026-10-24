@@ -3,6 +3,7 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from "./../stores/userStore"
 import cfg from "./../config/index.js"
 import router from "./../router"
+import { setupDevelopmentMocks } from "./../mocks/index.js"
 const userStore = useUserStore()
 
 // 读取配置文件中的baseApi地址
@@ -12,6 +13,10 @@ const request = axios.create({
     baseURL: baseApi,
     timeout: 8000
 })
+
+if (import.meta.env.DEV) {
+    setupDevelopmentMocks(request)
+}
 
 // 请求统一拦截
 request.interceptors.request.use(

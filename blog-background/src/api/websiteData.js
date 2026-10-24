@@ -39,4 +39,4 @@ export function apiUpdateWebsiteArticle() {
         method: 'PUT',
         requireAuth: true
     })
-} 
+}

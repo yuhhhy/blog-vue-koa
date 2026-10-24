@@ -9,7 +9,7 @@ import cfg from '@/config/index.js'
 const baseApi = cfg.baseApi
 
 const vditorEl = ref()
-const timer = ref(null)
+const editorReady = ref(false)
 const emit = defineEmits(['vblur'])
 const props = defineProps(['content'])
 const articleStore = useArticleStore()
@@ -117,22 +117,10 @@ const unbindPasteListener = () => {
     pasteHandler = null
 }
 
-// 编辑界面判断是否切换编辑的文章
-if (props.content) {
-    const overlayDisplay = ref('none')
-    const checkOverlay = () => {
-        const overlay = document.querySelector('.el-overlay')
-        if (overlay) {
-            overlayDisplay.value = window.getComputedStyle(overlay).display
-        }
-    }
-    watch(overlayDisplay, (newValue) => {
-        if (newValue !== 'none') {
-            vditorEl.value.setValue(props.content)
-        }
-    })
-    timer.value = setInterval(checkOverlay, 100)
-}
+watch(() => props.content, content => {
+    if (!editorReady.value || !content || vditorEl.value?.getValue?.() === content) return
+    vditorEl.value.setValue(content)
+})
 
 onMounted(() => {
     vditorEl.value = new Vditor('vditorEl', {
@@ -149,6 +137,7 @@ onMounted(() => {
         },
         // 初始化
         after: () => {
+            editorReady.value = true
             // 如果是编辑文章界面
             if (props.content) {
                 vditorEl.value.setValue(props.content)
@@ -194,13 +183,8 @@ onMounted(() => {
     })
 })
 
-// 组件卸载时清理定时器
 onUnmounted(() => {
-    if (timer.value) {
-        clearInterval(timer.value)
-        timer.value = null
-    }
-
+    editorReady.value = false
     unbindPasteListener()
 })
 </script>

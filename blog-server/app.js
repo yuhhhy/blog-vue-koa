@@ -8,6 +8,7 @@ import { authMiddleware } from './middlewares/auth.js'
 import envConfig from './config/env.js'
 import logger from './config/logger.js'
 import dotenv from 'dotenv'
+import { refreshRSS } from './services/RSSService.js'
 
 // 加载环境变量配置（.ENV 文件）
 dotenv.config()
@@ -29,7 +30,10 @@ app.on('error', (error, ctx) => {
 })
 
 // 连接数据库
-connectDB()
+connectDB().then(async (connected) => {
+    if (!connected) return
+    await refreshRSS('server startup')
+})
 
 // 全局错误处理中间件
 app.use(async (ctx, next) => {

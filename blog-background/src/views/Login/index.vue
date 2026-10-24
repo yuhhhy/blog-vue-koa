@@ -1,9 +1,11 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElInput, ElButton, ElForm, ElFormItem, ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { apiUserLogin } from '@/api/user.js'
 import { useUserStore } from '@/stores/userStore.js'
+import MaterialIcon from '@/components/MaterialIcon.vue'
+import { mdiAccountOutline, mdiLockOutline } from '@mdi/js'
 
 const router = useRouter()
 const fromRef = ref(null)
@@ -62,22 +64,24 @@ const onLogin = () => {
 
       <el-form :model="form" :rules="rules" ref="fromRef" class="login-form">
         <el-form-item prop="username">
-          <el-input 
+          <MaterialInput
             v-model="form.username"
             placeholder="用户名"
-            prefix-icon="User"
-          />
+          >
+            <template #prefix><MaterialIcon :path="mdiAccountOutline" /></template>
+          </MaterialInput>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input 
+          <MaterialInput
             v-model="form.password" 
             placeholder="密码"
             type="password"
             show-password
-            prefix-icon="Lock"
-          />
+          >
+            <template #prefix><MaterialIcon :path="mdiLockOutline" /></template>
+          </MaterialInput>
         </el-form-item>
-        <el-button class="login-submit" type="primary" @click="onLogin">登录</el-button>
+        <MaterialButton class="login-submit" type="primary" @click="onLogin">登录</MaterialButton>
       </el-form>
     </section>
   </main>
@@ -183,7 +187,7 @@ h1 {
 }
 
 :deep(.el-input__wrapper) {
-  min-height: 40px;
+  min-height: 48px;
   background: rgba(255, 255, 252, 0.92);
 }
 

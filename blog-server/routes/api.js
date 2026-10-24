@@ -22,6 +22,12 @@ const largeChunkUpload = multer({
     },
 })
 
+// 部署健康检查：只确认 Node 进程和路由能正常响应。
+router.get('/health', (ctx) => {
+    ctx.status = 200
+    ctx.body = { status: 'ok' }
+})
+
 /**
  * Blog API
  */

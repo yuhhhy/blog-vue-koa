@@ -4,7 +4,8 @@ import { apiGetBlogList, apiDeleteBlog, apiUpdateBlog } from '@/api/blog.js'
 import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } from '@/api/blogContent.js'
 import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount } from '@/api/websiteData.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Download } from '@element-plus/icons-vue'
+import MaterialIcon from '@/components/MaterialIcon.vue'
+import { mdiDownload } from '@mdi/js'
 import { getFormatDate } from '@/utils/date.js'
 import countWord from '@/utils/wordCount.js'
 import Vditor from '@/views/ArticleCreate/components/Vditor.vue'
@@ -221,9 +222,10 @@ async function UpdateBlog(id) {
 
 <template>
   <div class="article-list-toolbar">
-    <el-button type="primary" :icon="Download" :loading="exporting" @click="handleExportAll">
+    <MaterialButton type="primary" :loading="exporting" @click="handleExportAll">
+      <MaterialIcon class="button-icon" :path="mdiDownload" />
       导出全部 Markdown
-    </el-button>
+    </MaterialButton>
   </div>
 
   <el-table :data="tableData" stripe max-height="700px">
@@ -269,30 +271,30 @@ async function UpdateBlog(id) {
     </el-table-column>
     <el-table-column fixed="right" label="管理">
       <template #default="scope">
-        <el-button type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
+        <MaterialButton type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
           删除
-        </el-button>
-        <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">
+        </MaterialButton>
+        <MaterialButton type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">
           编辑
-        </el-button>
+        </MaterialButton>
       </template>
     </el-table-column>
   </el-table>
 
   <!-- 更改表单 -->
-  <el-dialog v-model="dialogFormVisible" title="更改博客信息" width="800">
+  <MaterialDialog v-model="dialogFormVisible" title="更改博客信息" width="800">
     <el-form :model="form">
       <el-form-item label="作者" label-width="80px">
-        <el-input v-model="form.author" />
+        <MaterialInput v-model="form.author" />
       </el-form-item>
       <el-form-item label="标题" label-width="80px">
-        <el-input v-model="form.title" />
+        <MaterialInput v-model="form.title" />
       </el-form-item>
       <el-form-item label="封面" label-width="80px">
         <div class="cover-edit">
-          <el-input v-model="form.coverImage" placeholder="例如：dev-covers/vite.jpg">
+          <MaterialInput v-model="form.coverImage" placeholder="例如：dev-covers/vite.jpg">
             <template #prepend>/images/</template>
-          </el-input>
+          </MaterialInput>
           <div class="cover-preview">
             <el-image
               v-if="coverPreviewUrl"
@@ -319,13 +321,13 @@ async function UpdateBlog(id) {
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleConfirm">
+        <MaterialButton @click="dialogFormVisible = false">取消</MaterialButton>
+        <MaterialButton type="primary" @click="handleConfirm">
           确认
-        </el-button>
+        </MaterialButton>
       </div>
     </template>
-  </el-dialog>
+  </MaterialDialog>
 </template>
 
 <style>

@@ -5,15 +5,9 @@ import { ElMessage } from 'element-plus'
 const routes = [
   {
     path: "/",
-    name: "Home",
-    redirect: "/welcome",
-    component: () => import("../views/Home.vue"),
+    redirect: "/dashboard",
+    component: () => import("../views/Layout/index.vue"),
     children: [
-      {
-        path: "welcome",
-        name: "Welcome",
-        component: () => import("../views/Welcome/index.vue"),
-      },
       {
         path: "dashboard",
         name: "DataDashboard",
@@ -129,7 +123,7 @@ router.beforeEach((to, from) => {
     // 检查是否需要admin权限
     if (to.meta.requiresAdmin && userStore.userData.role !== 'admin') {
         ElMessage.warning('没有访问权限！')
-        return { path: from.path || '/' } // 回到之前的页面或首页
+        return { path: from.path || '/' } // 回到之前的页面
     }
 })
 

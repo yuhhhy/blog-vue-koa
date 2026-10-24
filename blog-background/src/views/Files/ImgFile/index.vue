@@ -241,13 +241,13 @@ watch([searchQuery, filteredImages], () => {
                         name="file"
                         accept="image/*"
                     >
-                        <el-button type="primary">上传图片</el-button>
+                        <MaterialButton type="primary">上传图片</MaterialButton>
                     </el-upload>
                 </div>
             </div>
         </template>
 
-        <el-input
+        <MaterialInput
             v-model="searchQuery"
             placeholder="搜索图片名称"
             clearable
@@ -301,26 +301,26 @@ watch([searchQuery, filteredImages], () => {
             </el-table-column>
             <el-table-column label="操作" width="360" fixed="right">
                 <template #default="{ row }">
-                    <el-button size="small" @click="handleDownload(row)">下载</el-button>
-                    <el-button
+                    <MaterialButton size="small" @click="handleDownload(row)">下载</MaterialButton>
+                    <MaterialButton
                         size="small"
                         type="success"
                         :loading="isGenerating(row.name)"
                         @click="handleGenerateVariants(row)"
                     >
                         生成缩略图
-                    </el-button>
+                    </MaterialButton>
                     <el-upload
                         class="inline-upload"
                         :show-file-list="false"
                         :http-request="(options) => handleReupload(row, options)"
                         accept="image/*"
                     >
-                        <el-button size="small" type="warning" :loading="isReuploading(row.name)">
+                        <MaterialButton size="small" type="warning" :loading="isReuploading(row.name)">
                             重传
-                        </el-button>
+                        </MaterialButton>
                     </el-upload>
-                    <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+                    <MaterialButton size="small" type="danger" @click="handleDelete(row)">删除</MaterialButton>
                 </template>
             </el-table-column>
         </el-table>

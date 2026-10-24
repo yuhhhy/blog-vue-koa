@@ -22,7 +22,7 @@ const backendProxy = {
   "/feed": {
     target: backendTarget,
     changeOrigin: true,
-    rewrite: (path) => path.replace(/^\/feed/, "/feed.xml"),
+    rewrite: (path) => path === "/feed" ? "/feed.xml" : path,
   },
 }
 
