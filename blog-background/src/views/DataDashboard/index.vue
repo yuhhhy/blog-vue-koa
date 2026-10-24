@@ -655,8 +655,7 @@ const initArticleChart = () => {
     <section class="material-card chart-card article-card">
         <div class="section-header">
           <div>
-            <h2 class="chart-heading">文章发布</h2>
-            <p class="chart-caption">{{ getHeatmapYear() }} 年发布活跃度</p>
+            <h2 class="chart-heading">文章发布热力图 · {{ getHeatmapYear() }}</h2>
           </div>
           <span class="article-total">{{ formatMetric(articleCount) }} 篇</span>
         </div>
@@ -747,12 +746,6 @@ const initArticleChart = () => {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0;
-}
-
-.chart-caption {
-  margin: 4px 0 0;
-  color: var(--admin-text-muted);
-  font-size: 12px;
 }
 
 .article-total {
