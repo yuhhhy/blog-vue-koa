@@ -20,14 +20,18 @@ async function prepareRelease() {
   await copy('blog-background/dist', 'admin/dist')
 
   for (const directory of ['config', 'controllers', 'middlewares', 'models', 'routes', 'utils']) {
-    await copy(`blog-server/${directory}`, `server/${directory}`)
+    await copy(`blog-server/${directory}`, `workspace/blog-server/${directory}`)
   }
 
-  for (const file of ['app.js', 'package.json', 'package-lock.json']) {
-    await copy(`blog-server/${file}`, `server/${file}`)
+  for (const file of ['app.js', 'package.json']) {
+    await copy(`blog-server/${file}`, `workspace/blog-server/${file}`)
   }
 
-  const packagePath = path.join(releaseDir, 'server/package.json')
+  for (const file of ['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml']) {
+    await copy(file, `workspace/${file}`)
+  }
+
+  const packagePath = path.join(releaseDir, 'workspace/blog-server/package.json')
   const packageJson = JSON.parse(await fs.readFile(packagePath, 'utf8'))
   delete packageJson.scripts?.seed
   await fs.writeFile(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`)

@@ -19,7 +19,7 @@
 
 ## 项目预览
 在线地址: 
-http://yuhhhy.cn
+https://yuhhhy.cn
 
 ### 首页
 ![home](assets/images/doc_md-1.jpg)
@@ -56,7 +56,7 @@ blog-vue-koa/
 │   │   ├─ assets/              // 前端静态资源
 │   │   ├─ components/          // Vue组件
 │   │   ├─ config/              // 环境配置
-│   │   ├─ Layout/              // 页面基础布局
+│   │   ├─ js/                  // JavaScript 模块
 │   │   ├─ router/              // 路由
 │   │   ├─ stores/              // Pinia
 │   │   ├─ style/               // 基础样式
@@ -65,7 +65,6 @@ blog-vue-koa/
 │   │   ├─ App.vue              // 根组件
 │   │   └─ main.js              // 初始化Vue实例的入口文件
 │   ├─ index.html               // 项目入口文件
-│   ├─ package-lock.json
 │   ├─ package.json             // 项目依赖
 │   ├─ ...                      // 其他配置文件
 │   └─ vite.config.js           // vite配置文件
@@ -74,6 +73,8 @@ blog-vue-koa/
 │   │   ├─ api/                 // 前端api接口
 │   │   ├─ assets/              // 前端静态资源
 │   │   ├─ components/          // Vue组件
+│   │   ├─ composables/         // 组合式函数
+│   │   ├─ config/              // 环境配置
 │   │   ├─ router/              // 前端路由
 │   │   ├─ stores/              // Pinia
 │   │   ├─ utils/               // 工具函数
@@ -81,24 +82,28 @@ blog-vue-koa/
 │   │   ├─ App.vue              // 根组件
 │   │   └─ main.js              // 初始化Vue实例的入口文件
 │   ├─ index.html               // 项目入口文件
-│   ├─ package-lock.json
 │   ├─ package.json             // 项目依赖
 │   └─ vite.config.js           // vite配置文件
 ├─ blog-server/             // Koa 后端项目
-│   │   ├─ config/              // 配置文件
-│   │   ├─ controllers/         // 控制器
-│   │   ├─ middlewares/         // 中间件
-│   │   ├─ models/              // 数据模型
-│   │   ├─ routes/              // 路由定义
-│   │   ├─ app.js               // 应用主入口文件
-│   │   ├─ package-lock.json
-│   |   └─ package.json         // 项目依赖
-├─ assets/                 // 项目文档资源
+│   ├─ config/              // 配置文件
+│   ├─ controllers/         // 控制器
+│   ├─ middlewares/         // 中间件
+│   ├─ models/              // 数据模型
+│   ├─ routes/              // 路由定义
+│   ├─ scripts/             // 后端脚本
+│   ├─ utils/               // 工具函数
+│   ├─ app.js               // 应用主入口文件
+│   └─ package.json         // 项目依赖
+├─ assets/                    // 项目文档资源
 │   └─ images/              // README 图片
+├─ scripts/                   // CI/CD 发布脚本
+│   ├─ deploy-release.sh
+│   └─ prepare-release.js
 ├─ .gitignore                   // git忽略文件
 ├─ LICENSE                      // 开源协议
-├─ package-lock.json            // 锁定版本
 ├─ package.json                 // 统一管理脚本
+├─ pnpm-lock.yaml              // 锁定版本
+├─ pnpm-workspace.yaml         // pnpm workspace 配置
 └─  README.md                   // 项目说明文档
 ```
 
@@ -116,21 +121,14 @@ https://www.mongodb.com/try/download/community
 - 安装Nodejs
 https://nodejs.org/
 
-- 安装项目依赖
+- 启用 pnpm 并安装项目依赖
 ```
 cd blog-vue-koa
-npm run install-all
+corepack enable
+pnpm install
 ```
 
 3. 启动项目
 ```bash
-npm run start
-```
-
-4. 访问项目
-```bash
-# 前端
-http://localhost:8080/
-# 后台
-http://localhost:8096/
+pnpm start-all
 ```

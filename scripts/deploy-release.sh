@@ -8,6 +8,7 @@ readonly INCOMING_DIR="${DEPLOY_ROOT}/.incoming-${RELEASE_SHA}"
 readonly BACKUP_DIR="${DEPLOY_ROOT}/.rollback-${RELEASE_SHA}-$(date +%s)"
 readonly LOCK_FILE="/var/lock/blog-deploy.lock"
 readonly COMPONENTS=(frontend admin server)
+readonly PNPM_VERSION="11.7.0"
 
 if [[ ! "${RELEASE_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
   echo "Invalid release SHA: ${RELEASE_SHA}" >&2
@@ -20,7 +21,7 @@ if ! flock -n 9; then
   exit 1
 fi
 
-for component in "${COMPONENTS[@]}"; do
+for component in frontend admin workspace; do
   if [[ ! -d "${INCOMING_DIR}/${component}" ]]; then
     echo "Missing release component: ${component}" >&2
     exit 1
@@ -29,7 +30,18 @@ done
 
 test -f "${INCOMING_DIR}/frontend/dist/index.html"
 test -f "${INCOMING_DIR}/admin/dist/index.html"
-test -f "${INCOMING_DIR}/server/package.json"
+test -f "${INCOMING_DIR}/workspace/pnpm-lock.yaml"
+test -f "${INCOMING_DIR}/workspace/blog-server/package.json"
+
+echo "Installing production dependencies with pnpm ${PNPM_VERSION}..."
+(
+  cd "${INCOMING_DIR}/workspace"
+  test "$(corepack pnpm --version)" = "${PNPM_VERSION}"
+  corepack pnpm install --frozen-lockfile --filter backend --prod
+  corepack pnpm --filter backend deploy --prod "${INCOMING_DIR}/server"
+)
+
+rm -rf "${INCOMING_DIR}/workspace"
 
 # 沿用服务器现有的环境文件，密钥不进入构建产物。
 if [[ -f "${DEPLOY_ROOT}/server/.env" ]]; then
@@ -41,12 +53,7 @@ fi
 
 mkdir -p "${INCOMING_DIR}/server/logs"
 
-echo "Installing production dependencies..."
-(
-  cd "${INCOMING_DIR}/server"
-  npm ci --omit=dev --no-audit --fund=false
-  node --check app.js
-)
+node --check "${INCOMING_DIR}/server/app.js"
 
 echo "Validating Caddy configuration..."
 (
