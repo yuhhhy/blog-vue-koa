@@ -93,12 +93,14 @@ jobs:
       - name: Configure SSH
         run: |
           set -Eeuo pipefail
+          echo "Preparing SSH credentials and verifying the production host..."
           install -d -m 700 ~/.ssh
           printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
           known_hosts_file="$(mktemp)"
           for attempt in 1 2 3; do
+            echo "Host key scan attempt ${attempt}/3..."
             if ssh-keyscan -T 15 -p "${REMOTE_PORT}" -t ed25519 "${REMOTE_HOST}" > "${known_hosts_file}" 2>/dev/null; then
               break
             fi
@@ -112,6 +114,7 @@ jobs:
             exit 1
           fi
           mv "${known_hosts_file}" ~/.ssh/known_hosts
+          echo "SSH host fingerprint verified."
 
       - name: Transfer release with retry
         run: |
@@ -126,21 +129,26 @@ jobs:
           )
           rsync_ssh="ssh -i ${HOME}/.ssh/deploy_key -p ${REMOTE_PORT} -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20"
 
+          echo "Preparing the incoming release directory on the server..."
           ssh "${ssh_options[@]}" "${REMOTE_USER}@${REMOTE_HOST}" \
             "rm -rf '${remote_dir}' && mkdir -p '${remote_dir}' && \
              cp -al /var/www/frontend '${remote_dir}/frontend' && \
              cp -al /var/www/admin '${remote_dir}/admin'"
+          echo "Incoming release directory is ready."
 
           transferred=false
           for attempt in 1 2 3; do
-            if rsync --archive --compress --delete --partial \
+            echo "Starting release transfer (attempt ${attempt}/3)..."
+            if rsync --archive --compress --delete --partial --human-readable \
+              --info=progress2,stats2 \
               --timeout=120 \
               -e "${rsync_ssh}" \
               release/ "${REMOTE_USER}@${REMOTE_HOST}:${remote_dir}/"; then
               transferred=true
+              echo "Release transfer completed successfully."
               break
             fi
-            echo "Transfer attempt ${attempt} failed."
+            echo "::warning::Release transfer attempt ${attempt}/3 failed."
             sleep $((attempt * 5))
           done
 
@@ -152,6 +160,7 @@ jobs:
       - name: Activate release
         run: |
           set -Eeuo pipefail
+          echo "Starting remote release activation..."
           ssh -i ~/.ssh/deploy_key \
             -p "${REMOTE_PORT}" \
             -o BatchMode=yes \
@@ -159,6 +168,7 @@ jobs:
             -o ConnectTimeout=20 \
             "${REMOTE_USER}@${REMOTE_HOST}" \
             "bash '/var/www/.incoming-${GITHUB_SHA}/deploy-release.sh' '${GITHUB_SHA}'"
+          echo "Remote release activation completed."
 
       - name: Remove SSH key
         if: always()
