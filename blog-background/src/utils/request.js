@@ -62,6 +62,9 @@ request.interceptors.response.use(
 
         // 超出 2xx 范围的状态码都会触发该函数
         const { response } = error
+        if (error.config?.suppressError && ![400, 401, 403].includes(response?.status)) {
+            return Promise.reject(error)
+        }
         if (response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
             switch (response.status) {

@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename)
 const envConfig = {
     development: {
         currentEnv: 'development',
+        allowAnyLogin: true,
         port: 3000,
         allowOrigins: [
             'http://localhost:8080',
@@ -20,6 +21,7 @@ const envConfig = {
     },
     production: {
         currentEnv: 'production',
+        allowAnyLogin: false,
         port: 3000,
         allowOrigins: [
             'https://yuhhhy.cn',

@@ -1,14 +1,16 @@
 <script setup>
 import { computed, reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { apiGetBlogList, apiDeleteBlog, apiUpdateBlog } from '@/api/blog.js'
 import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } from '@/api/blogContent.js'
+import { apiDeleteArticleDraft, apiGetArticleDrafts } from '@/api/articleDraft.js'
 import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount } from '@/api/websiteData.js'
 import { ElMessage } from 'element-plus'
 import MaterialIcon from '@/components/MaterialIcon.vue'
 import { mdiDownload, mdiFileDocumentOutline } from '@mdi/js'
 import { getFormatDate } from '@/utils/date.js'
 import countWord from '@/utils/wordCount.js'
-import MilkdownEditor from '@/views/ArticleCreate/components/MilkdownEditor.vue'
+import VditorEditor from '@/views/ArticleCreate/components/VditorEditor.vue'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
@@ -21,8 +23,11 @@ import AdminListSort from '@/components/admin/AdminListSort.vue'
 import AdminPage from '@/components/admin/AdminPage.vue'
 import MaterialTagField from '@/components/material/MaterialTagField.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
+import { useArticleStore } from '@/stores/articleStore.js'
 
 const tableData = ref([])
+const router = useRouter()
+const articleStore = useArticleStore()
 const dialogFormVisible = ref(false)
 const deleteDialogVisible = ref(false)
 const pendingDelete = ref(null)
@@ -70,7 +75,7 @@ const buildCoverImageUrl = (filename) => {
 
 const coverPreviewUrl = computed(() => buildCoverImageUrl(form.coverImage))
 const getArticleTime = (article) => {
-  const value = new Date(article.createTime).getTime()
+  const value = new Date(article.sortTime || article.updatedAt || article.createTime).getTime()
   return Number.isFinite(value) ? value : 0
 }
 const sortedArticles = computed(() => {
@@ -92,15 +97,30 @@ function blurHandler(content) {
 
 // 获取数据
 async function getBlogs() {
-  const res = await apiGetBlogList()
-  const resContent = await apiGetBlogContentList()
-  for (let i = 0; i < res.length; i++){
-    res[i].createTime = getFormatDate(res[i].createTime)
-    resContent[i].createTime = getFormatDate(resContent[i].createTime)
-  }
-  tableData.value = res.map((item, index) => {
-    return { ...item, ...resContent[index] }
+  const [articles, contents, drafts] = await Promise.all([
+    apiGetBlogList(),
+    apiGetBlogContentList(),
+    apiGetArticleDrafts(),
+  ])
+  const contentMap = new Map(contents.map(content => [content.id, content]))
+  const publishedRows = articles.map((article) => {
+    const content = contentMap.get(article.id) || {}
+    return {
+      ...article,
+      ...content,
+      status: 'published',
+      sortTime: article.createTime,
+      createTime: getFormatDate(article.createTime),
+    }
   })
+  const draftRows = drafts.map(draft => ({
+    ...draft,
+    title: draft.title || '未命名草稿',
+    status: 'draft',
+    sortTime: draft.updatedAt,
+    createTime: getFormatDate(draft.updatedAt),
+  }))
+  tableData.value = [...publishedRows, ...draftRows]
 }
 
 const formatExportDate = (value) => {
@@ -121,7 +141,7 @@ const createArticleMarkdown = (article) => {
     '---',
     `title: "${escapeYamlValue(article.title)}"`,
     `author: "${escapeYamlValue(article.author)}"`,
-    `date: "${formatExportDate(article.createTime)}"`,
+    `date: "${formatExportDate(article.sortTime || article.createTime)}"`,
     `updated: "${formatExportDate(article.updateTime)}"`,
     `cover: "${escapeYamlValue(article.coverImage)}"`,
     `tags: [${tags.map((tag) => `"${escapeYamlValue(tag)}"`).join(', ')}]`,
@@ -132,14 +152,15 @@ const createArticleMarkdown = (article) => {
 }
 
 const handleExportAll = async () => {
-  if (!tableData.value?.length) {
+  const publishedArticles = tableData.value.filter(article => article.status === 'published')
+  if (!publishedArticles.length) {
     ElMessage.warning('暂无文章可导出')
     return
   }
 
   exporting.value = true
   try {
-    const markdown = tableData.value.map(createArticleMarkdown).join('\n\n<!-- article-separator -->\n\n')
+    const markdown = publishedArticles.map(createArticleMarkdown).join('\n\n<!-- article-separator -->\n\n')
     const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -152,7 +173,7 @@ const handleExportAll = async () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
 
-    ElMessage.success(`已导出 ${tableData.value.length} 篇文章`)
+    ElMessage.success(`已导出 ${publishedArticles.length} 篇文章`)
   } catch (error) {
     ElMessage.error('导出文章失败，请重试')
   } finally {
@@ -168,16 +189,26 @@ function handleDelete(row) {
 
 async function confirmDelete() {
   if (!pendingDelete.value || deleting.value) return
+  const deletingItem = pendingDelete.value
   deleting.value = true
   try {
-    await apiDeleteBlog(pendingDelete.value.id)
-    await apiDeleteBlogContent(pendingDelete.value.id)
-    const index = tableData.value.findIndex(item => item.id === pendingDelete.value.id)
+    if (deletingItem.status === 'draft') {
+      await apiDeleteArticleDraft(deletingItem.id)
+      if (articleStore.cloudDraft?.id === deletingItem.id) articleStore.clearArticleDraft()
+    } else {
+      await apiDeleteBlog(deletingItem.id)
+      await apiDeleteBlogContent(deletingItem.id)
+    }
+    const index = tableData.value.findIndex(item => item.id === deletingItem.id)
     if (index >= 0) tableData.value.splice(index, 1)
-    await Promise.all([apiUpdateWebsiteLastUpdate(), apiUpdateWebsiteTotalWordCount()])
+    if (deletingItem.status === 'published') {
+      await Promise.all([apiUpdateWebsiteLastUpdate(), apiUpdateWebsiteTotalWordCount()])
+    }
     deleteDialogVisible.value = false
     pendingDelete.value = null
-    ElMessage.success('文章已删除')
+    ElMessage.success(deletingItem.status === 'draft' ? '草稿已删除' : '文章已删除')
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || '删除失败，请重试')
   } finally {
     deleting.value = false
   }
@@ -185,6 +216,10 @@ async function confirmDelete() {
 
 // 编辑文章信息前填入默认表单
 function handleEdit(row) {
+  if (row.status === 'draft') {
+    router.push({ path: '/article/create', query: { draft: row.id } })
+    return
+  }
   Object.keys(formErrors).forEach(key => { formErrors[key] = '' })
   dialogFormVisible.value = true
   form.id = row.id
@@ -270,7 +305,10 @@ async function UpdateBlog(id) {
         </AdminButton>
       </template>
       <div class="list-toolbar">
-        <span>{{ sortedArticles.length }} 篇文章</span>
+        <span>
+          {{ tableData.filter(item => item.status === 'published').length }} 篇文章 ·
+          {{ tableData.filter(item => item.status === 'draft').length }} 篇草稿
+        </span>
         <AdminListSort v-model="sortBy" :options="sortOptions" />
       </div>
       <AdminList :items="sortedArticles" item-key="id" empty-text="暂无文章">
@@ -283,10 +321,14 @@ async function UpdateBlog(id) {
               <MaterialIcon v-else class="article-cover-placeholder" :path="mdiFileDocumentOutline" />
             </template>
             <template #overline>
+              <AdminListLabel :tone="item.status === 'draft' ? 'warning' : 'success'">
+                {{ item.status === 'draft' ? '草稿' : '已发布' }}
+              </AdminListLabel>
               <AdminListLabel v-for="tag in item.tags || []" :key="tag">{{ tag }}</AdminListLabel>
             </template>
             <template #trailing>
-              <span>{{ item.wordCount || 0 }} 字<br>{{ item.viewCount || 0 }} 次浏览 · {{ item.likeCount || 0 }} 赞</span>
+              <span v-if="item.status === 'draft'">{{ item.wordCount || 0 }} 字<br>更新于 {{ item.createTime }}</span>
+              <span v-else>{{ item.wordCount || 0 }} 字<br>{{ item.viewCount || 0 }} 次浏览 · {{ item.likeCount || 0 }} 赞</span>
             </template>
             <template #actions><AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" /></template>
           </AdminListItem>
@@ -329,7 +371,7 @@ async function UpdateBlog(id) {
       <MaterialTagField v-model="form.tags" label="标签" required :error-message="formErrors.tags" @update:model-value="formErrors.tags = ''" />
     </div>
     <!-- 文本编辑器 -->
-    <MilkdownEditor :content="form.content" @vblur="blurHandler" />
+    <VditorEditor :content="form.content" :persist-draft="false" @vblur="blurHandler" />
 
     <template #actions>
       <AdminButton variant="text" @click="dialogFormVisible = false">取消</AdminButton>
@@ -339,8 +381,10 @@ async function UpdateBlog(id) {
 
   <AdminConfirmDialog
     v-model="deleteDialogVisible"
-    title="删除文章"
-    :message="`确定删除“${pendingDelete?.title || ''}”吗？文章正文也会一并删除，此操作无法撤销。`"
+    :title="pendingDelete?.status === 'draft' ? '删除草稿' : '删除文章'"
+    :message="pendingDelete?.status === 'draft'
+      ? `确定删除草稿“${pendingDelete?.title || ''}”吗？此操作无法撤销。`
+      : `确定删除“${pendingDelete?.title || ''}”吗？文章正文也会一并删除，此操作无法撤销。`"
     confirm-text="删除"
     danger
     :loading="deleting"
@@ -363,6 +407,8 @@ async function UpdateBlog(id) {
 
 .article-edit-form {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 16px;
   margin-bottom: 20px;
 }
