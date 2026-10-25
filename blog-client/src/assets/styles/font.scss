@@ -1,4 +1,12 @@
 @font-face {
+    font-family: "Noto Serif SC";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 400;
+    src: url("@fontsource/noto-serif-sc/files/noto-serif-sc-chinese-simplified-400-normal.woff2") format("woff2");
+}
+
+@font-face {
     font-family: "JetBrains Mono Nerd";
     font-style: normal;
     font-display: swap;

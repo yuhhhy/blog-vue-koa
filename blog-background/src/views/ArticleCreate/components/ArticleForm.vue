@@ -1,13 +1,13 @@
 <script setup>
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
 import { useArticleStore } from '@/stores/articleStore.js'
 import { useRouter } from 'vue-router'
+import { mdiImageOutline } from '@mdi/js'
 import cfg from '@/config/index.js'
-import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
-import AdminFileButton from '@/components/admin/AdminFileButton.vue'
+import MaterialIcon from '@/components/MaterialIcon.vue'
 import MaterialTagField from '@/components/material/MaterialTagField.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
 const baseApi = cfg.baseApi
@@ -15,8 +15,9 @@ const baseApi = cfg.baseApi
 const props = defineProps({
   submitting: { type: Boolean, default: false }
 })
-const emit = defineEmits(['articleSubmit', 'draftChange', 'newDraft'])
+const emit = defineEmits(['articleSubmit', 'draftChange'])
 const articleStore = useArticleStore()
+const coverInput = ref(null)
 const savedForm = articleStore.createArticleForm || {}
 const form = reactive({
     title: savedForm.title || '',
@@ -80,6 +81,7 @@ const uploadHeaders = computed(() => ({
   Authorization: `Bearer ${userStore.userData?.token}`,
   'require-auth': 'true'
 }))
+const coverPreviewUrl = computed(() => form.coverImg || '')
 
 // 图片上传前验证是否登录
 const beforeUpload = () => {
@@ -122,45 +124,57 @@ const uploadCover = async ([file]) => {
     uploadError(error)
   }
 }
+
+const handleCoverChange = (event) => {
+  const files = Array.from(event.target.files || [])
+  if (files.length) uploadCover(files)
+  event.target.value = ''
+}
 </script>
 
 <template>
   <AdminCard title="文章信息" class="article-form-card">
-    <form class="article-form" novalidate @submit.prevent="handleSubmit">
-      <MaterialTextField
-        v-model="form.title"
-        label="文章标题"
-        required
-        :error-message="errors.title"
-        @update:model-value="errors.title = ''"
-      />
-      <MaterialTextField
-        v-model="form.author"
-        label="作者"
-        required
-        :error-message="errors.author"
-        @update:model-value="errors.author = ''"
-      />
-      <MaterialTagField
-        v-model="form.tags"
-        class="tags-field"
-        label="文章标签"
-        required
-        :error-message="errors.tags"
-        @update:model-value="errors.tags = ''"
-      />
-      <div class="cover-row">
-        <div><div class="cover-label">文章封面</div><div class="cover-hint">支持 JPG、PNG 或 WebP，上传后自动转为 AVIF</div></div>
-        <AdminFileButton accept="image/*" label="上传封面" @select="uploadCover" />
-        <v-chip v-if="form.coverImgUploaded" color="success" rounded="pill">已上传</v-chip>
+    <form id="article-info-form" class="article-form" novalidate @submit.prevent="handleSubmit">
+      <div class="cover-field">
+        <input
+          ref="coverInput"
+          class="cover-input"
+          type="file"
+          accept="image/*"
+          aria-label="上传文章封面"
+          @change="handleCoverChange"
+        >
+        <button class="cover-preview" type="button" aria-label="上传文章封面" @click="coverInput?.click()">
+          <img v-if="coverPreviewUrl" :src="coverPreviewUrl" alt="文章封面预览">
+          <div v-else class="cover-preview__empty">
+            <MaterialIcon :path="mdiImageOutline" />
+            <span>点击上传封面</span>
+          </div>
+        </button>
       </div>
-      <div class="article-form__actions">
-        <AdminButton type="button" variant="text" :disabled="submitting" @click="emit('newDraft')">
-          新建草稿
-        </AdminButton>
-        <AdminButton tone="primary" type="submit" :disabled="submitting">
-          {{ submitting ? '提交中…' : '提交文章' }}
-        </AdminButton>
+      <div class="article-fields">
+        <MaterialTextField
+          v-model="form.title"
+          label="文章标题"
+          required
+          :error-message="errors.title"
+          @update:model-value="errors.title = ''"
+        />
+        <MaterialTagField
+          v-model="form.tags"
+          class="tags-field"
+          label="文章标签"
+          required
+          :error-message="errors.tags"
+          @update:model-value="errors.tags = ''"
+        />
+        <MaterialTextField
+          v-model="form.author"
+          label="作者"
+          required
+          :error-message="errors.author"
+          @update:model-value="errors.author = ''"
+        />
       </div>
     </form>
   </AdminCard>
@@ -168,18 +182,18 @@ const uploadCover = async ([file]) => {
 
 <style scoped>
 .article-form-card { margin-bottom: 4px; }
-.article-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.tags-field, .cover-row, .article-form__actions { grid-column: 1 / -1; }
-.cover-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 0; border-radius: var(--admin-radius); background: var(--admin-surface-muted); }
-.cover-row > :first-child { margin-right: auto; }
-.cover-label { color: var(--admin-text); font-size: 14px; font-weight: 700; }
-.cover-hint { margin-top: 3px; color: var(--admin-text-muted); font-size: 12px; }
-.article-form__actions { display: flex; justify-content: flex-end; gap: 10px; }
+.article-form { display: grid; grid-template-columns: minmax(280px, 420px) minmax(0, 1fr); align-items: stretch; gap: 24px; }
+.cover-field { min-width: 0; }
+.cover-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+.cover-preview { display: grid; width: 100%; height: 100%; min-height: 224px; padding: 0; overflow: hidden; border: 0; aspect-ratio: 16 / 9; place-items: center; border-radius: var(--admin-radius); color: var(--admin-text-muted); background: var(--admin-surface-muted); cursor: pointer; }
+.cover-preview img { width: 100%; height: 100%; object-fit: cover; }
+.cover-preview__empty { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--admin-text-muted); font-size: 13px; }
+.cover-preview__empty :deep(.material-icon) { width: 28px; height: 28px; }
+.cover-preview:hover { background: var(--admin-surface-high); }
+.cover-preview:focus-visible { outline: 3px solid color-mix(in srgb, var(--md-sys-color-primary) 32%, transparent); outline-offset: 2px; }
+.article-fields { display: grid; min-width: 0; align-content: center; gap: 16px; }
 @media (max-width: 800px) {
-  .article-form { grid-template-columns: 1fr; }
-  .cover-row { align-items: stretch; flex-direction: column; padding: 14px; }
-  .cover-row > :first-child { margin-right: 0; }
-  .article-form__actions { justify-content: stretch; }
-  .article-form__actions :deep(.admin-button) { flex: 1; width: auto; }
+  .article-form { grid-template-columns: 1fr; gap: 16px; }
+  .cover-preview { min-height: 0; }
 }
 </style>

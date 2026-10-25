@@ -2,14 +2,9 @@
   "name": "blog-background",
   "type": "module",
   "scripts": {
-    "sync:vditor-assets": "node scripts/sync-vditor-assets.mjs",
-    "predev": "pnpm sync:vditor-assets",
     "dev": "vite",
-    "prebuild": "pnpm sync:vditor-assets",
     "build": "vite build",
-    "prepreview": "pnpm sync:vditor-assets",
     "preview": "vite preview",
-    "preanalyze": "pnpm sync:vditor-assets",
     "analyze": "vite build --mode analyze"
   },
   "dependencies": {
