@@ -124,7 +124,7 @@ watch(() => props.content, content => {
 
 onMounted(() => {
     vditorEl.value = new Vditor('vditorEl', {
-        height: '80%',
+        height: 420,
         width: '100%',
         // 存储
         blur(value) {

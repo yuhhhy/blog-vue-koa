@@ -1,34 +1,25 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { apiUserLogin } from '@/api/user.js'
 import { useUserStore } from '@/stores/userStore.js'
+import MaterialTextField from '@/components/material/MaterialTextField.vue'
 
 const router = useRouter()
-const fromRef = ref(null)
 const form = reactive({
   username: 'test1', // 用户名字段
   password: '123456'  // 密码字段
 })
-const rules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' }
-  ]
-}
+const errors = reactive({ username: '', password: '' })
 const userStore = useUserStore()
 
 
 const onLogin = () => {
-  // 点击登录时验证表单
-  fromRef.value.validate(valid => { 
-    if (!valid) {
-      ElMessage.error('请输入正确的用户名和密码')
-      return
-    } else {
+  errors.username = form.username.trim() ? '' : '请输入用户名'
+  errors.password = form.password ? '' : '请输入密码'
+  if (Object.values(errors).some(Boolean)) return
+
     // 调用登录 api
     apiUserLogin(form)
       .then(res => {
@@ -45,8 +36,6 @@ const onLogin = () => {
           ElMessage.error(res.message)
         }
       })
-    }
-  })
 }
 </script>
 
@@ -71,25 +60,28 @@ const onLogin = () => {
         <div class="login-card">
           <h2>欢迎回来</h2>
 
-          <el-form :model="form" :rules="rules" ref="fromRef" class="login-form" @submit.prevent="onLogin">
-            <el-form-item label="用户名" prop="username">
-              <MaterialInput
-                v-model="form.username"
-                autocomplete="username"
-                placeholder="请输入用户名"
-              />
-            </el-form-item>
-            <el-form-item label="密码" prop="password">
-              <MaterialInput
-                v-model="form.password"
-                autocomplete="current-password"
-                placeholder="请输入密码"
-                type="password"
-                show-password
-              />
-            </el-form-item>
+          <form class="login-form" novalidate @submit.prevent="onLogin">
+            <MaterialTextField
+              v-model="form.username"
+              label="用户名"
+              autocomplete="username"
+              required
+              :error-message="errors.username"
+              @update:model-value="errors.username = ''"
+            />
+            <MaterialTextField
+              v-model="form.password"
+              label="密码"
+              autocomplete="current-password"
+              type="password"
+              revealable
+              required
+              :clearable="false"
+              :error-message="errors.password"
+              @update:model-value="errors.password = ''"
+            />
             <MaterialButton class="login-submit" type="primary" native-type="submit">登录</MaterialButton>
-          </el-form>
+          </form>
         </div>
       </div>
     </section>
@@ -240,7 +232,7 @@ h2 {
 
 .login-form {
   display: grid;
-  gap: 4px;
+  gap: 20px;
 }
 
 .login-submit {
@@ -249,23 +241,6 @@ h2 {
   margin-top: 10px;
   border-color: var(--login-blue);
   background: var(--login-blue);
-}
-
-:deep(.el-input__wrapper) {
-  min-height: 52px;
-  border-radius: 16px;
-  background: #fffbfe;
-}
-
-:deep(.el-form-item) {
-  display: block;
-  margin-bottom: 20px;
-}
-
-:deep(.el-form-item__label) {
-  height: auto;
-  margin-bottom: 8px;
-  line-height: 1.4;
 }
 
 @media (max-width: 760px) {

@@ -4,9 +4,11 @@ import { apiGetUserList, apiDeleteUser, apiUpdateUser } from '@/api/user.js'
 import { ElMessageBox } from 'element-plus'
 import TableActionItem from '@/components/TableActionItem.vue'
 import TableActionMenu from '@/components/TableActionMenu.vue'
+import MaterialTextField from '@/components/material/MaterialTextField.vue'
 
 const tableData = ref([])
 const dialogFormVisible = ref(false)
+const formErrors = reactive({ username: '', password: '', email: '' })
 const form = reactive({
   userId: '',
   username: '',
@@ -41,6 +43,7 @@ function handleDelete(index, row) {
 }
 
 function handleEdit(index, row) {
+  Object.keys(formErrors).forEach(key => { formErrors[key] = '' })
   dialogFormVisible.value = true
   form.userId = row.userId
   form.username = row.username
@@ -49,13 +52,10 @@ function handleEdit(index, row) {
 }
 
 function handleConfirm() {
-  if (!form.username || !form.password || !form.email) {
-    ElMessageBox.alert('请填写完整信息', '提示', {
-      confirmButtonText: '确定',
-      type: 'warning'
-    })
-    return
-  }
+  formErrors.username = form.username.trim() ? '' : '请输入用户名'
+  formErrors.password = form.password ? '' : '请输入密码'
+  formErrors.email = form.email.trim() ? '' : '请输入邮箱地址'
+  if (Object.values(formErrors).some(Boolean)) return
   apiUpdateUser(form).then((res) => {
     ElMessageBox.alert('修改成功', '提示', {
       confirmButtonText: '确定',
@@ -108,17 +108,11 @@ function handleConfirm() {
 
   <!-- 更改表单 -->
   <MaterialDialog v-model="dialogFormVisible" title="更改用户信息" width="500">
-    <el-form :model="form">
-      <el-form-item label="用户名" label-width="80px">
-        <MaterialInput v-model="form.username" />
-      </el-form-item>
-      <el-form-item label="密码" label-width="80px">
-        <MaterialInput v-model="form.password" />
-      </el-form-item>
-      <el-form-item label="邮箱" label-width="80px">
-        <MaterialInput v-model="form.email" />
-      </el-form-item>
-    </el-form>
+    <div class="user-edit-form">
+      <MaterialTextField v-model="form.username" label="用户名" required :error-message="formErrors.username" @update:model-value="formErrors.username = ''" />
+      <MaterialTextField v-model="form.password" label="密码" type="password" revealable required :clearable="false" :error-message="formErrors.password" @update:model-value="formErrors.password = ''" />
+      <MaterialTextField v-model="form.email" label="邮箱" type="email" required :error-message="formErrors.email" @update:model-value="formErrors.email = ''" />
+    </div>
     <template #footer>
       <div class="dialog-footer">
         <MaterialButton @click="dialogFormVisible = false">取消</MaterialButton>
@@ -137,4 +131,5 @@ function handleConfirm() {
 tr.el-table__row.el-table__row--striped {
   height: 60px;
 }
+.user-edit-form { display: grid; gap: 16px; }
 </style>

@@ -11,10 +11,13 @@ import { mdiDownload } from '@mdi/js'
 import { getFormatDate } from '@/utils/date.js'
 import countWord from '@/utils/wordCount.js'
 import Vditor from '@/views/ArticleCreate/components/Vditor.vue'
+import MaterialTagField from '@/components/material/MaterialTagField.vue'
+import MaterialTextField from '@/components/material/MaterialTextField.vue'
 
 const tableData = ref()
 const dialogFormVisible = ref(false)
 const exporting = ref(false)
+const formErrors = reactive({ author: '', title: '', coverImage: '', tags: '' })
 const form = reactive({
   id: '',
   author: '',
@@ -150,6 +153,7 @@ function handleDelete(index, row) {
 
 // 编辑文章信息前填入默认表单
 function handleEdit(index, row) {
+  Object.keys(formErrors).forEach(key => { formErrors[key] = '' })
   dialogFormVisible.value = true
   form.id = row.id
   form.author = row.author
@@ -161,9 +165,13 @@ function handleEdit(index, row) {
 
 // 处理更改
 async function handleConfirm() {
-  // 确认信息完整
-  if (!form.author || !form.title || !form.coverImage || !form.tags || !form.content) {
-    ElMessageBox.alert('请填写完整信息', '提示', {
+  formErrors.author = form.author.trim() ? '' : '请输入作者'
+  formErrors.title = form.title.trim() ? '' : '请输入标题'
+  formErrors.coverImage = form.coverImage.trim() ? '' : '请输入封面路径'
+  formErrors.tags = form.tags.length ? '' : '请添加至少一个标签'
+  if (Object.values(formErrors).some(Boolean)) return
+  if (!form.content) {
+    ElMessageBox.alert('文章内容不能为空', '提示', {
       confirmButtonText: '确定',
       type: 'warning'
     })
@@ -283,18 +291,19 @@ async function UpdateBlog(id) {
 
   <!-- 更改表单 -->
   <MaterialDialog v-model="dialogFormVisible" title="更改博客信息" width="800">
-    <el-form :model="form">
-      <el-form-item label="作者" label-width="80px">
-        <MaterialInput v-model="form.author" />
-      </el-form-item>
-      <el-form-item label="标题" label-width="80px">
-        <MaterialInput v-model="form.title" />
-      </el-form-item>
-      <el-form-item label="封面" label-width="80px">
-        <div class="cover-edit">
-          <MaterialInput v-model="form.coverImage" placeholder="例如：dev-covers/vite.jpg">
-            <template #prepend>/images/</template>
-          </MaterialInput>
+    <div class="article-edit-form">
+      <MaterialTextField v-model="form.author" label="作者" required :error-message="formErrors.author" @update:model-value="formErrors.author = ''" />
+      <MaterialTextField v-model="form.title" label="标题" required :error-message="formErrors.title" @update:model-value="formErrors.title = ''" />
+      <div class="cover-edit">
+          <MaterialTextField
+            v-model="form.coverImage"
+            label="封面路径"
+            prefix="/images/"
+            placeholder="dev-covers/vite.jpg"
+            required
+            :error-message="formErrors.coverImage"
+            @update:model-value="formErrors.coverImage = ''"
+          />
           <div class="cover-preview">
             <el-image
               v-if="coverPreviewUrl"
@@ -310,12 +319,9 @@ async function UpdateBlog(id) {
             </el-image>
             <div v-else class="cover-preview-placeholder">暂无封面</div>
           </div>
-        </div>
-      </el-form-item>
-      <el-form-item label="标签" label-width="80px">
-        <el-input-tag v-model="form.tags" placeholder="按Enter键添加标签"/>
-      </el-form-item>
-    </el-form>
+      </div>
+      <MaterialTagField v-model="form.tags" label="标签" required :error-message="formErrors.tags" @update:model-value="formErrors.tags = ''" />
+    </div>
     <!-- 文本编辑器 -->
     <Vditor :content="form.content" @vblur="blurHandler"></Vditor>
 
@@ -346,6 +352,12 @@ tr.el-table__row.el-table__row--striped {
 
 .cover-edit {
   width: 100%;
+}
+
+.article-edit-form {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .cover-preview {

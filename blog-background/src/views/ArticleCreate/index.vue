@@ -2,10 +2,12 @@
 import Vditor from './components/Vditor.vue'
 import ArticleForm from './components/ArticleForm.vue'
 import countWords from '@/utils/wordCount.js'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { apiCreateBlog } from '@/api/blog.js'
 import { apiCreateBlogContent } from '@/api/blogContent.js'
 import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount, apiUpdateWebsiteArticle } from '@/api/websiteData.js'
+import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminPage from '@/components/admin/AdminPage.vue'
 
 // 提交数据
 let blog = {}
@@ -67,21 +69,20 @@ const createBlogAndBlogContent = async () => {
     // 更新网站总博客数
     apiUpdateWebsiteArticle()
     
-    ElMessageBox.alert('提交成功', '提示', {
-    confirmButtonText: '确定',
-    type: 'success'
-    })
+    ElMessage.success('文章提交成功')
 }
 
 </script>
 
 <template>
-    <div class="flex flex-col h-full">
-        <Vditor @vblur="blurHandler"/>
-        <ArticleForm @articleSubmit="submitHandler" class="flex-1"/>
-    </div>
+    <AdminPage class="article-create-page">
+        <AdminCard title="文章正文" class="editor-card"><Vditor @vblur="blurHandler" /></AdminCard>
+        <ArticleForm @articleSubmit="submitHandler" />
+    </AdminPage>
 </template>
 
 <style scoped>
- 
+.editor-card { overflow: hidden; }
+.editor-card :deep(.vditor) { border: 0; border-radius: var(--admin-radius); background: var(--md-sys-color-surface-container-low); }
+.editor-card :deep(.vditor-toolbar) { border-color: #e7e0ec; background: var(--admin-surface-muted); }
 </style>
