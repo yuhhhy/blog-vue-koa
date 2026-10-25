@@ -1,16 +1,23 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { apiGetVisitorList, apiDeleteVisitor } from '@/api/visitor.js'
-import TableActionItem from '@/components/TableActionItem.vue'
-import TableActionMenu from '@/components/TableActionMenu.vue'
+import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
+import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminList from '@/components/admin/AdminList.vue'
+import AdminListItem from '@/components/admin/AdminListItem.vue'
+import AdminListLabel from '@/components/admin/AdminListLabel.vue'
+import AdminPage from '@/components/admin/AdminPage.vue'
 
 const loading = ref(false)
 const visitorList = ref([])
+const total = ref(0)
 const queryParams = ref({
   page: 1,
   limit: 10
 })
+const pageCount = computed(() => Math.max(1, Math.ceil(total.value / queryParams.value.limit)))
+const rowActions = [{ key: 'delete', label: '删除', danger: true }]
 
 onMounted(() => {
     getList()
@@ -21,6 +28,7 @@ const getList = async () => {
   try {
     const res = await apiGetVisitorList(queryParams.value)
     visitorList.value = res.visitors
+    total.value = res.total || 0
     visitorList.value.forEach((item) => {
       item.visitTime = new Date(item.visitTime).toLocaleString()
     })
@@ -46,7 +54,7 @@ const handleCurrentChange = (val) => {
 }
 
 // 删除访客记录
-const handleDelete = async (index, row) => {
+const handleDelete = async (row) => {
   try {
     const res = await apiDeleteVisitor(row._id)
     getList()
@@ -55,65 +63,45 @@ const handleDelete = async (index, row) => {
     
   }
 }
+
+const handleRowAction = (action, row) => {
+  if (action === 'delete') handleDelete(row)
+}
 </script>
 
 <template>
-  <el-table :data="visitorList" v-loading="loading" stripe>
-    <el-table-column
-      prop="visitTime"
-      label="访问时间">
-    </el-table-column>
-    <el-table-column
-      prop="address"
-      label="访问来源">
-    </el-table-column>
-    <el-table-column
-      prop="viewNum"
-      label="访问次数"
-      width="100">
-    </el-table-column>
-    <el-table-column
-      prop="role"
-      label="访问权限"
-      width="120">
-    </el-table-column>
-    <el-table-column
-      prop="page"
-      label="访问页面"
-      width="120">
-    </el-table-column>
-    <el-table-column
-      prop="ip"
-      label="访问IP">
-    </el-table-column>
-    <el-table-column
-      prop="browser"
-      label="访问设备">
-    </el-table-column>
-    <el-table-column fixed="right" label="操作" width="88" align="center">
-      <template #default="scope">
-        <TableActionMenu>
-          <TableActionItem kind="delete" @click="handleDelete(scope.$index, scope.row)">删除</TableActionItem>
-        </TableActionMenu>
-      </template>
-    </el-table-column>
-  </el-table>
-
-  <!-- 分页器 -->
-  <div class="bg-white flex-1 flex flex-row-reverse p-7">
-    <el-pagination
-    background
-    layout="sizes, prev, pager, next"
-    :total="1000"
-    :page-sizes="[10, 20, 50, 100]"
-    v-model:current-page="queryParams.page"
-    v-model:page-size="queryParams.limit"
-    @size-change="handleSizeChange"
-    @current-change="handleCurrentChange"
-  />
-  </div>
+  <AdminPage>
+    <AdminCard title="访客记录">
+      <div class="list-count">共 {{ total }} 条记录</div>
+      <AdminList :items="visitorList" item-key="_id" :loading="loading" empty-text="暂无访客记录">
+        <template #item="{ item }">
+          <AdminListItem :headline="item.address || item.ip || '未知来源'">
+            <template #overline>
+              <AdminListLabel :tone="item.role === 'admin' ? 'success' : 'info'">{{ item.role || '访客' }}</AdminListLabel>
+              <AdminListLabel>{{ item.page || '未知页面' }}</AdminListLabel>
+            </template>
+            <template #supporting><span>{{ item.ip || '未知 IP' }} · {{ item.browser || '未知设备' }}</span></template>
+            <template #trailing><span>{{ item.visitTime }}<br>访问 {{ item.viewNum || 0 }} 次</span></template>
+            <template #actions><AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" /></template>
+          </AdminListItem>
+        </template>
+      </AdminList>
+      <div class="visitor-pagination">
+        <label class="page-size-control">每页
+          <select :value="queryParams.limit" @change="handleSizeChange(Number($event.target.value))">
+            <option v-for="size in [10, 20, 50, 100]" :key="size" :value="size">{{ size }}</option>
+          </select>
+        </label>
+        <v-pagination :model-value="queryParams.page" :length="pageCount" rounded="circle" @update:model-value="handleCurrentChange" />
+      </div>
+    </AdminCard>
+  </AdminPage>
 </template>
 
 <style scoped>
- 
+.list-count { margin: 0 0 8px 4px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.visitor-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 16px; }
+.page-size-control { display: inline-flex; align-items: center; gap: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.page-size-control select { height: 36px; padding: 0 28px 0 12px; border: 0; border-radius: var(--admin-radius); color: var(--admin-text); background: var(--admin-surface-muted); }
+@media (max-width: 760px) { .visitor-pagination { align-items: stretch; flex-direction: column; } }
 </style>

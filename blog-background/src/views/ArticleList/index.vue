@@ -5,18 +5,36 @@ import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } fro
 import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount } from '@/api/websiteData.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MaterialIcon from '@/components/MaterialIcon.vue'
-import TableActionItem from '@/components/TableActionItem.vue'
-import TableActionMenu from '@/components/TableActionMenu.vue'
-import { mdiDownload } from '@mdi/js'
+import { mdiDownload, mdiFileDocumentOutline } from '@mdi/js'
 import { getFormatDate } from '@/utils/date.js'
 import countWord from '@/utils/wordCount.js'
 import Vditor from '@/views/ArticleCreate/components/Vditor.vue'
+import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
+import AdminButton from '@/components/admin/AdminButton.vue'
+import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminList from '@/components/admin/AdminList.vue'
+import AdminListItem from '@/components/admin/AdminListItem.vue'
+import AdminListLabel from '@/components/admin/AdminListLabel.vue'
+import AdminListSort from '@/components/admin/AdminListSort.vue'
+import AdminPage from '@/components/admin/AdminPage.vue'
 import MaterialTagField from '@/components/material/MaterialTagField.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
 
-const tableData = ref()
+const tableData = ref([])
 const dialogFormVisible = ref(false)
 const exporting = ref(false)
+const sortBy = ref('created-desc')
+const sortOptions = [
+  { label: '最近创建', value: 'created-desc' },
+  { label: '最早创建', value: 'created-asc' },
+  { label: '标题 A–Z', value: 'title-asc' },
+  { label: '字数从多到少', value: 'words-desc' },
+  { label: '浏览量从高到低', value: 'views-desc' }
+]
+const rowActions = [
+  { key: 'edit', label: '编辑' },
+  { key: 'delete', label: '删除', danger: true }
+]
 const formErrors = reactive({ author: '', title: '', coverImage: '', tags: '' })
 const form = reactive({
   id: '',
@@ -46,6 +64,18 @@ const buildCoverImageUrl = (filename) => {
 }
 
 const coverPreviewUrl = computed(() => buildCoverImageUrl(form.coverImage))
+const getArticleTime = (article) => {
+  const value = new Date(article.createTime).getTime()
+  return Number.isFinite(value) ? value : 0
+}
+const sortedArticles = computed(() => {
+  const articles = [...tableData.value]
+  if (sortBy.value === 'created-asc') return articles.sort((a, b) => getArticleTime(a) - getArticleTime(b))
+  if (sortBy.value === 'title-asc') return articles.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'))
+  if (sortBy.value === 'words-desc') return articles.sort((a, b) => (b.wordCount || 0) - (a.wordCount || 0))
+  if (sortBy.value === 'views-desc') return articles.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
+  return articles.sort((a, b) => getArticleTime(b) - getArticleTime(a))
+})
 
 onMounted(() => {
   getBlogs()
@@ -126,7 +156,7 @@ const handleExportAll = async () => {
 }
 
 // 处理删除
-function handleDelete(index, row) {
+function handleDelete(row) {
   ElMessageBox.confirm('确定删除吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -137,7 +167,8 @@ function handleDelete(index, row) {
       await apiDeleteBlog(row.id)
       await apiDeleteBlogContent(row.id)
       // 更新视图
-      tableData.value.splice(index, 1)
+      const index = tableData.value.findIndex(item => item.id === row.id)
+      if (index >= 0) tableData.value.splice(index, 1)
       // 更新网站更新时间
       apiUpdateWebsiteLastUpdate()
       // 更新网站总字数
@@ -152,7 +183,7 @@ function handleDelete(index, row) {
 }
 
 // 编辑文章信息前填入默认表单
-function handleEdit(index, row) {
+function handleEdit(row) {
   Object.keys(formErrors).forEach(key => { formErrors[key] = '' })
   dialogFormVisible.value = true
   form.id = row.id
@@ -161,6 +192,11 @@ function handleEdit(index, row) {
   form.coverImage = normalizeCoverFilename(row.coverImage)
   form.tags = row.tags
   form.content = row.content
+}
+
+const handleRowAction = (action, row) => {
+  if (action === 'edit') handleEdit(row)
+  if (action === 'delete') handleDelete(row)
 }
 
 // 处理更改
@@ -231,63 +267,38 @@ async function UpdateBlog(id) {
 </script>
 
 <template>
-  <div class="article-list-toolbar">
-    <MaterialButton type="primary" :loading="exporting" @click="handleExportAll">
-      <MaterialIcon class="button-icon" :path="mdiDownload" />
-      导出全部 Markdown
-    </MaterialButton>
-  </div>
-
-  <el-table :data="tableData" stripe max-height="700px">
-    <el-table-column
-      prop="createTime"
-      label="创建日期"
-      width="120">
-    </el-table-column>
-    <el-table-column
-      prop="title"
-      label="标题"
-      width="420">
-    </el-table-column>
-    <el-table-column
-      prop="tags"
-      label="标签"
-      width="240">
-      <template #default="scope">
-        <el-tag
-          v-for="tag in scope.row.tags"
-          :key="tag"
-          type="primary"
-          disable-transitions
-          class="mr-2"
-          >{{ tag }}</el-tag
-        >
+  <AdminPage>
+    <AdminCard title="文章列表">
+      <template #actions>
+        <AdminButton tone="primary" :icon="mdiDownload" :disabled="exporting" @click="handleExportAll">
+          {{ exporting ? '正在导出' : '导出全部 Markdown' }}
+        </AdminButton>
       </template>
-    </el-table-column>
-    <el-table-column
-      prop="wordCount"
-      label="字数"
-      width="110">
-    </el-table-column>
-    <el-table-column
-      prop="viewCount"
-      label="浏览量"
-      width="110">
-    </el-table-column>
-    <el-table-column
-      prop="likeCount"
-      label="点赞量"
-      width="90">
-    </el-table-column>
-    <el-table-column fixed="right" label="操作" width="88" align="center">
-      <template #default="scope">
-        <TableActionMenu>
-          <TableActionItem kind="edit" @click="handleEdit(scope.$index, scope.row)">编辑</TableActionItem>
-          <TableActionItem kind="delete" @click="handleDelete(scope.$index, scope.row)">删除</TableActionItem>
-        </TableActionMenu>
-      </template>
-    </el-table-column>
-  </el-table>
+      <div class="list-toolbar">
+        <span>{{ sortedArticles.length }} 篇文章</span>
+        <AdminListSort v-model="sortBy" :options="sortOptions" />
+      </div>
+      <AdminList :items="sortedArticles" item-key="id" empty-text="暂无文章">
+        <template #item="{ item }">
+          <AdminListItem class="article-list-item" :headline="item.title" :supporting-text="`${item.author || '未知作者'} · ${item.createTime || '未知日期'}`">
+            <template #leading>
+              <el-image v-if="buildCoverImageUrl(item.coverImage)" class="article-cover" :src="buildCoverImageUrl(item.coverImage)" :preview-src-list="[buildCoverImageUrl(item.coverImage)]" preview-teleported fit="cover">
+                <template #error><MaterialIcon class="article-cover-placeholder" :path="mdiFileDocumentOutline" /></template>
+              </el-image>
+              <MaterialIcon v-else class="article-cover-placeholder" :path="mdiFileDocumentOutline" />
+            </template>
+            <template #overline>
+              <AdminListLabel v-for="tag in item.tags || []" :key="tag">{{ tag }}</AdminListLabel>
+            </template>
+            <template #trailing>
+              <span>{{ item.wordCount || 0 }} 字<br>{{ item.viewCount || 0 }} 次浏览 · {{ item.likeCount || 0 }} 赞</span>
+            </template>
+            <template #actions><AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" /></template>
+          </AdminListItem>
+        </template>
+      </AdminList>
+    </AdminCard>
+  </AdminPage>
 
   <!-- 更改表单 -->
   <MaterialDialog v-model="dialogFormVisible" title="更改博客信息" width="800">
@@ -336,19 +347,14 @@ async function UpdateBlog(id) {
   </MaterialDialog>
 </template>
 
-<style>
-tr.el-table__row {
-  height: 60px;
-}
-tr.el-table__row.el-table__row--striped {
-  height: 60px;
-}
-
-.article-list-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
-}
+<style scoped>
+.list-toolbar { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.article-list-item { min-height: 104px; }
+.article-list-item :deep(.admin-list-item__leading), .article-cover { width: 80px; height: 80px; }
+.article-list-item :deep(.admin-list-item__leading) { border-radius: 8px; }
+.article-cover { cursor: zoom-in; }
+.article-cover :deep(.el-image__error) { color: var(--md-sys-color-on-secondary-container); background: transparent; }
+.article-cover-placeholder { width: 30px; height: 30px; }
 
 .cover-edit {
   width: 100%;
@@ -383,5 +389,11 @@ tr.el-table__row.el-table__row--striped {
   justify-content: center;
   color: var(--el-text-color-secondary);
   font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .list-toolbar { align-items: flex-start; flex-direction: column; }
+  .article-list-item { min-height: 96px; }
+  .article-list-item :deep(.admin-list-item__leading), .article-cover { width: 72px; height: 72px; }
 }
 </style>

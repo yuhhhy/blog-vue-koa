@@ -33,6 +33,11 @@ defineProps({
   background: var(--admin-warning-soft);
 }
 
+.admin-list-label--danger {
+  color: var(--admin-on-danger-container);
+  background: var(--admin-danger-soft);
+}
+
 .admin-list-label--info {
   color: var(--admin-on-info-container);
   background: var(--admin-info-container);

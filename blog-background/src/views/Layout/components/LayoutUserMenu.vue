@@ -72,7 +72,7 @@ function handleLogin() {
       :show-arrow="false"
     >
       <template #reference>
-        <button class="user-trigger" type="button">
+        <button class="user-trigger" type="button" :aria-label="userStore.userData.username">
           <span class="avatar-wrap">
             <img class="trigger-avatar" :src="avatarUrl" alt="">
             <span v-if="notificationStore.totalNotifications" class="notification-dot"></span>
@@ -125,7 +125,7 @@ function handleLogin() {
       </div>
     </el-popover>
 
-    <button v-else class="user-trigger" type="button" @click="handleLogin">
+    <button v-else class="user-trigger" type="button" aria-label="登录" @click="handleLogin">
       <span class="login-icon"><MaterialIcon :path="mdiAccountCircleOutline" /></span>
       <strong class="trigger-username">登录</strong>
     </button>
@@ -360,5 +360,15 @@ function handleLogin() {
   border-radius: var(--admin-radius);
   background: var(--admin-surface);
   box-shadow: 0 3px 8px rgba(29, 27, 32, 0.16), 0 1px 3px rgba(29, 27, 32, 0.12);
+}
+
+@media (max-width: 720px) {
+  .user-trigger {
+    width: 48px;
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .trigger-username { display: none; }
 }
 </style>

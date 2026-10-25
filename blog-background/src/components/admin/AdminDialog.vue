@@ -17,5 +17,5 @@ const model = defineModel({ type: Boolean, default: false })
 .admin-dialog__header { padding: 24px 24px 8px; }
 h2 { margin: 0; font-size: 22px; font-weight: 650; }
 .admin-dialog__body { display: grid; gap: 12px; padding: 16px 24px; }
-.admin-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 24px 24px; }
+.admin-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 8px 24px 24px; }
 </style>

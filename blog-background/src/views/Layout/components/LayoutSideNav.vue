@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import SideNavItem from '@/components/SideNavItem/index.vue'
 import { useUserStore } from '@/stores/userStore'
@@ -23,6 +23,22 @@ import {
 
 const userStore = useUserStore()
 const route = useRoute()
+const isNarrow = ref(false)
+let narrowMediaQuery
+
+const updateNarrowState = (event) => {
+    isNarrow.value = event.matches
+}
+
+onMounted(() => {
+    narrowMediaQuery = window.matchMedia('(max-width: 720px)')
+    isNarrow.value = narrowMediaQuery.matches
+    narrowMediaQuery.addEventListener('change', updateNarrowState)
+})
+
+onBeforeUnmount(() => {
+    narrowMediaQuery?.removeEventListener('change', updateNarrowState)
+})
 
 const siderNavItems = [
     {
@@ -134,7 +150,7 @@ const visibleSiderNavItems = computed(() => filterNavItems(siderNavItems))
 <template>
     <aside class="layout-sidenav">
         <div class="sidenav-scroll">
-            <el-menu class="admin-menu" :default-active="route.path">
+            <el-menu class="admin-menu" :default-active="route.path" :collapse="isNarrow" :collapse-transition="false">
                 <SideNavItem
                     v-for="(item, index) in visibleSiderNavItems"
                     :key="item.link || item.title"
@@ -237,5 +253,24 @@ const visibleSiderNavItems = computed(() => filterNavItems(siderNavItems))
     color: var(--md-sys-color-on-surface-variant);
     font-size: 18px;
     font-weight: 800;
+}
+
+@media (max-width: 720px) {
+    .layout-sidenav {
+        width: 80px;
+        padding-inline: 8px;
+    }
+
+    .admin-menu { width: 64px; }
+
+    :deep(.el-menu--collapse .el-menu-item),
+    :deep(.el-menu--collapse .el-sub-menu__title) {
+        width: 48px;
+        justify-content: center;
+        padding: 0 !important;
+    }
+
+    :deep(.el-menu--collapse .el-icon) { margin: 0 !important; }
+    :deep(.el-menu--collapse > a .el-menu-item > span) { display: none; }
 }
 </style>

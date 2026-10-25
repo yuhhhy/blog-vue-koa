@@ -17,4 +17,8 @@
     overflow: auto;
     background: var(--admin-bg);
 }
+
+@media (max-width: 720px) {
+    .admin-content { margin-left: 80px; }
+}
 </style>

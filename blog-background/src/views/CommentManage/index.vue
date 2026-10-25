@@ -3,10 +3,17 @@ import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { apiGetAllComments, apiReviewComment, apiDeleteComment } from '@/api/comment.js'
 import { getFormatDateToMinutes } from '@/utils/date.js'
-import TableActionItem from '@/components/TableActionItem.vue'
-import TableActionMenu from '@/components/TableActionMenu.vue'
+import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
+import AdminButton from '@/components/admin/AdminButton.vue'
+import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminDialog from '@/components/admin/AdminDialog.vue'
+import AdminList from '@/components/admin/AdminList.vue'
+import AdminListItem from '@/components/admin/AdminListItem.vue'
+import AdminListLabel from '@/components/admin/AdminListLabel.vue'
+import AdminPage from '@/components/admin/AdminPage.vue'
 
 const comments = ref([])
+const rowActions = [{ key: 'details', label: '查看并管理' }]
 
 onMounted(() => {
   getComments()
@@ -20,14 +27,12 @@ async function getComments() {
 /**
  * 父级评论相关函数
  */
-// 赋予评论行className
-function tableRowClassName({ row }) {
-  return `row-${row.id}`
-}
 // 获取父级评论内容
 function getParentContent(parentId) {
   const parentComment = comments.value.find(comment => comment.id === parentId)
-  return `${parentComment.username}：${parentComment.content}`
+  return parentComment
+    ? `${parentComment.username}：${parentComment.content}`
+    : '父级评论不存在或未加载'
 }
 
 // 滚动到父级评论所在整行并高亮显示
@@ -56,7 +61,7 @@ function showReplies(replies) {
   // 预先构建一个 Map，以 id 为 key
   const commentMap = new Map(comments.value.map(item => [item.id, item]))
   // 然后直接拿 map 获取对应的回复评论
-  const replyComments = replies.map(id => commentMap.get(id))
+  const replyComments = replies.map(id => commentMap.get(id)).filter(Boolean)
 
   currentReplies.value = replyComments
   replyDialogVisible.value = true
@@ -69,10 +74,13 @@ function showReplies(replies) {
 const reviewDialogVisible = ref(false)
 const currentReview = ref(null)
 // 处理点击
-function handleManage(index, row) {
+function handleManage(row) {
   // 打开审核弹框，传入当前评论
   currentReview.value = row
   reviewDialogVisible.value = true
+}
+const handleRowAction = (action, row) => {
+  if (action === 'details') handleManage(row)
 }
 // 通过审核
 async function reviewPassed() {
@@ -98,156 +106,88 @@ async function deleteComment() {
 </script>
 
 <template>
-  <el-table 
-  :data="comments" 
-  row-key="id" 
-  :row-class-name="tableRowClassName"
-  max-height="743px"
-  >
-    <!-- 头像 -->
-    <el-table-column label="头像" width="100">
-      <template #default="scope">
-        <img
-          :src="scope.row.avatar"
-          alt="avatar"
-          style="width:40px;height:40px;border-radius:50%;object-fit:cover;"
-        />
-      </template>
-    </el-table-column>
-    <!-- 昵称 -->
-    <el-table-column width="120" prop="username">
-      <template #header>
-        <div class="text-blue-400">昵称</div>
-      </template>
-    </el-table-column>
-    <!-- 邮箱 -->
-    <el-table-column width="180" prop="email" label="邮箱">
-    </el-table-column>
-    <!-- 评论内容 -->
-    <el-table-column prop="content" label="评论内容">
-    </el-table-column>
-    <!-- 评论时间 -->
-    <el-table-column label="评论时间" width="150">
-      <template #default="scope">
-        {{ getFormatDateToMinutes(scope.row.createTime) }}
-      </template>
-    </el-table-column>
-    <!-- 父级评论 -->
-    <el-table-column width="80">
-      <template #header>
-        <div class="text-center">父级评论</div>
-      </template>
-      <template #default="scope">
-        <!-- 有父级评论 -->
-        <div v-if="scope.row.hasParent" class="text-center">
-          <el-tooltip :content="getParentContent(scope.row.parentId)" placement="top">
-            <a
-              href="javascript:void(0)"
-              @click="scrollToParent(scope.row.parentId)"
-              class="text-blue-500"
-            >
-              查看
-            </a>
-          </el-tooltip>
-        </div>
-        <!-- 没有父级评论 -->
-        <div v-else class="text-center">
-        /
-        </div>
-      </template>
-    </el-table-column>
-    <!-- 评论回复 -->
-    <el-table-column width="100">
-      <template #header>
-        <div class="text-center">评论回复</div>
-      </template>
-      <template #default="scope">
-        <div v-if="scope.row.replies && scope.row.replies.length > 0" class="text-center">
-          <a
-              href="javascript:void(0)"
-              @click="showReplies(scope.row.replies)"
-              class="text-blue-500"
-            >
-              查看
-            </a>
-        </div>
-        <div v-else class="text-center">
-          /
-        </div>
-      </template>
-    </el-table-column>
-    <!-- 评论状态 -->
-    <el-table-column width="80" label="评论状态">
-      <template #default="scope">
-        <!-- 未审核的评论在client端是默认展示的 -->
-        <el-tag
-          :type="scope.row.reviewed === true ? 'success' : 'warning'"
-          disable-transitions
-          >{{ scope.row.reviewed === true ? '已审' : '待审' }}</el-tag
-        >
-        <!-- 对于已经审核的评论，才展示是否通过 -->
-        <el-tag v-if="scope.row.reviewed === true"
-          :type="scope.row.reviewPassed === true ? 'success' : 'danger'"
-          disable-transitions
-          class="mt-2"
-          >{{ scope.row.reviewPassed === true ? '通过' : '未通过' }}</el-tag
-        >
-      </template>
-    </el-table-column>
-    <!-- 评论操作按钮 -->
-    <el-table-column fixed="right" label="操作" width="88" align="center">
-      <template #default="scope">
-        <TableActionMenu>
-          <TableActionItem kind="manage" @click="handleManage(scope.$index, scope.row)">查看并管理</TableActionItem>
-        </TableActionMenu>
-      </template>
-    </el-table-column>
-  </el-table>
+  <AdminPage>
+    <AdminCard title="评论管理">
+      <div class="list-count">{{ comments.length }} 条评论</div>
+      <AdminList :items="comments" item-key="id" empty-text="暂无评论">
+        <template #item="{ item }">
+          <AdminListItem
+            :class="['comment-list-item', `row-${item.id}`]"
+            :headline="item.username"
+            :supporting-text="item.content"
+          >
+            <template #leading><v-avatar :image="item.avatar" size="56" rounded="lg" /></template>
+            <template #overline>
+              <AdminListLabel :tone="item.reviewed ? 'success' : 'warning'">
+                {{ item.reviewed ? '已审核' : '待审核' }}
+              </AdminListLabel>
+              <AdminListLabel
+                v-if="item.reviewed"
+                :tone="item.reviewPassed ? 'success' : 'danger'"
+              >
+                {{ item.reviewPassed ? '通过' : '未通过' }}
+              </AdminListLabel>
+            </template>
+            <template #supporting>
+              <span class="comment-content">{{ item.content }}</span>
+              <span class="comment-email">{{ item.email }}</span>
+              <span v-if="item.hasParent || item.replies?.length" class="comment-links">
+                <el-tooltip v-if="item.hasParent" :content="getParentContent(item.parentId)" placement="top">
+                  <button type="button" @click="scrollToParent(item.parentId)">定位父评论</button>
+                </el-tooltip>
+                <button v-if="item.replies?.length" type="button" @click="showReplies(item.replies)">
+                  查看 {{ item.replies.length }} 条回复
+                </button>
+              </span>
+            </template>
+            <template #trailing>{{ getFormatDateToMinutes(item.createTime) }}</template>
+            <template #actions><AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" /></template>
+          </AdminListItem>
+        </template>
+      </AdminList>
+    </AdminCard>
+  </AdminPage>
 
-  <!-- 评论回复弹窗 -->
-  <MaterialDialog
+  <AdminDialog
     v-model="replyDialogVisible"
     title="评论回复"
-    width="50%">
-    <div v-for="(reply, index) in currentReplies" :key="index" class="mb-3">
-      <p><strong>{{ reply.username }}:</strong> {{ reply.content }}</p>
-      <p>{{ getFormatDateToMinutes(reply.createTime) }}</p>
-      <el-divider></el-divider>
-    </div>
-    <template #footer>
-      <MaterialButton @click="replyDialogVisible = false">关闭</MaterialButton>
-    </template>
-  </MaterialDialog>
+    max-width="720"
+  >
+    <AdminList :items="currentReplies" item-key="id" empty-text="暂无回复">
+      <template #item="{ item }">
+        <AdminListItem :headline="item.username" :supporting-text="item.content">
+          <template #leading><v-avatar :image="item.avatar" size="56" rounded="lg" /></template>
+          <template #trailing>{{ getFormatDateToMinutes(item.createTime) }}</template>
+        </AdminListItem>
+      </template>
+    </AdminList>
+    <template #actions><AdminButton variant="text" @click="replyDialogVisible = false">关闭</AdminButton></template>
+  </AdminDialog>
 
-  <!-- 评论审核弹框 -->
-  <MaterialDialog v-model="reviewDialogVisible" title="评论审核" width="40%">
+  <AdminDialog v-model="reviewDialogVisible" title="评论审核" max-width="600">
     <div v-if="currentReview">
-      <p><strong>用户：</strong> {{ currentReview.username }}</p>
-      <p><strong>邮箱：</strong> {{ currentReview.email }}</p>
-      <p><strong>评论内容：</strong> {{ currentReview.content }}</p>
-      <p><strong>评论时间：</strong> {{ getFormatDateToMinutes(currentReview.createTime) }}</p>
-      <el-divider></el-divider>
-      <div class="text-right">
-        <MaterialButton type="success" @click="reviewPassed">通过审核</MaterialButton>
-        <MaterialButton type="warning" @click="reviewNotPassed">不通过</MaterialButton>
-        <MaterialButton type="danger" @click="deleteComment">删除</MaterialButton>
-      </div>
+      <div class="review-meta">{{ currentReview.username }} · {{ currentReview.email }}</div>
+      <p class="review-content">{{ currentReview.content }}</p>
+      <div class="review-time">{{ getFormatDateToMinutes(currentReview.createTime) }}</div>
     </div>
-    <template #footer>
-      <MaterialButton @click="reviewDialogVisible = false">关闭</MaterialButton>
+    <template #actions>
+      <AdminButton variant="text" @click="reviewDialogVisible = false">关闭</AdminButton>
+      <AdminButton variant="danger-text" @click="deleteComment">删除</AdminButton>
+      <AdminButton variant="text" @click="reviewNotPassed">不通过</AdminButton>
+      <AdminButton tone="primary" @click="reviewPassed">通过审核</AdminButton>
     </template>
-  </MaterialDialog>
-
-
+  </AdminDialog>
 </template>
 
 <style scoped>
-</style>
-
-<style>
-/* 用于高亮显示父级评论 */
-.el-table .highlight {
-  transition: 0.5s ease;
-  --el-table-tr-bg-color: #fffae6;
-}
+.list-count { margin: 0 0 8px 4px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.comment-list-item { min-height: 128px; transition: background-color 300ms ease, box-shadow 300ms ease; }
+.comment-list-item :deep(.admin-list-item__supporting) { display: block; overflow: visible; -webkit-line-clamp: unset; }
+.comment-content, .comment-email, .comment-links { display: block; }
+.comment-email { color: var(--md-sys-color-primary); }
+.comment-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2px; }
+.comment-links button { padding: 0; border: 0; color: var(--md-sys-color-primary); background: transparent; cursor: pointer; font: inherit; font-weight: 650; }
+.comment-list-item.highlight { background: var(--admin-warning-soft); box-shadow: inset 3px 0 var(--admin-warning); }
+.review-meta, .review-time { color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.review-content { margin: 4px 0; color: var(--md-sys-color-on-surface); line-height: 1.7; white-space: pre-wrap; }
 </style>

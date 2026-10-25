@@ -14,7 +14,7 @@ import MaterialIcon from '@/components/MaterialIcon.vue'
 </script>
 
 <template>
- <el-sub-menu :index="index">
+ <el-sub-menu :index="index" :aria-label="item.title">
         <template #title>
             <el-icon v-if="item.icon" class="menu-icon">
                 <MaterialIcon :path="item.icon" />

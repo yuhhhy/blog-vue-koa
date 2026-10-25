@@ -142,7 +142,7 @@ async function handleConfirm() {
         <template #item="{ item }">
           <AdminListItem :headline="item.name" :supporting-text="item.description">
             <template #leading>
-              <v-avatar :image="item.avatar" size="56" rounded="circle" />
+              <v-avatar :image="item.avatar" size="56" rounded="lg" />
             </template>
             <template #supporting>
               <span>{{ item.description }}</span>

@@ -15,11 +15,11 @@ import MaterialIcon from '@/components/MaterialIcon.vue'
 
 <template>
      <router-link :to="item.link">
-        <el-menu-item :index="index">
+        <el-menu-item :index="index" :aria-label="item.title">
             <el-icon v-if="item.icon" class="menu-icon">
                 <MaterialIcon :path="item.icon" />
             </el-icon>
-            {{ item.title }}
+            <span>{{ item.title }}</span>
         </el-menu-item>
     </router-link>
 </template>
