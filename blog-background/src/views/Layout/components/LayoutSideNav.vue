@@ -17,7 +17,6 @@ import {
     mdiFileEditOutline,
     mdiFolderOutline,
     mdiImageMultipleOutline,
-    mdiLanguageMarkdownOutline,
     mdiLinkVariant,
     mdiMessageTextOutline
 } from '@mdi/js'
@@ -105,12 +104,6 @@ const siderNavItems = [
                 title: '大文件',
                 link: '/files/large',
                 icon: mdiCloudUploadOutline,
-                requiresAdmin: true
-            },
-            {
-                title: 'Markdown',
-                link: '/files/mdfile',
-                icon: mdiLanguageMarkdownOutline,
                 requiresAdmin: true
             }
         ]

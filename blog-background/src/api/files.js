@@ -50,24 +50,6 @@ export function apiGenerateImageVariants(filename) {
   });
 }
 
-// 获取 Markdown 文件列表
-export function apiGetMdList() {
-  return request({
-    url: '/files/mds',
-    method: 'GET',
-    requireAuth: true
-  });
-}
-
-// 删除 Markdown 文件
-export function apiDeleteMd(filename) {
-  return request({
-    url: `/files/mds/${filename}`,
-    method: "DELETE",
-    requireAuth: true,
-  });
-}
-
 export function apiGetLargeFileList() {
   return request({
     url: '/files/large',

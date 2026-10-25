@@ -78,14 +78,6 @@ const routes = [
         },
       },
       {
-        path: "files/mdfile",
-        name: "MdFile",
-        component: () => import("../views/Files/MdFile/index.vue"),
-        meta: {
-          requiresAdmin: true,
-        },
-      },
-      {
         path: "files/large",
         name: "LargeFile",
         component: () => import("../views/Files/LargeFile/index.vue"),

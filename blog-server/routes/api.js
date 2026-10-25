@@ -7,7 +7,7 @@ import { getAllComments, getComments, createComment, reviewComment, deleteCommen
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
 import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
-import { getImageFiles, deleteImageFile, reuploadImageFile, generateImageFileVariants, getMdFiles, deleteMdFile } from "../controllers/FilesController.js"
+import { getImageFiles, deleteImageFile, reuploadImageFile, generateImageFileVariants } from "../controllers/FilesController.js"
 import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus, initLargeUpload, mergeLargeFile, uploadLargeChunk, verifyLargeFile } from '../controllers/LargeFilesController.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { storage } from '../config/upload.js'
@@ -205,12 +205,6 @@ router.post('/files/images/:filename(.+)/variants', requireAdmin, generateImageF
 // 删除图片文件
 router.delete('/files/images/:filename(.+)', requireAdmin, deleteImageFile);
 
-// 获取 Markdown 文件列表
-router.get("/files/mds", requireAdmin, getMdFiles);
-
-// 删除 Markdown 文件
-router.delete("/files/mds/:filename", requireAdmin, deleteMdFile);
-
 // 获取大文件列表
 router.get('/files/large', requireAdmin, getLargeFiles);
 
@@ -245,12 +239,6 @@ router.post('/upload/image', requireAdmin, upload.single('file'), async (ctx) =>
     ctx.status = 200
     ctx.body = file
 })
-
-// 上传单个Markdown文件
-router.post("/upload/md", requireAdmin, upload.single('file'), async (ctx) => {
-    ctx.status = 200;
-    ctx.body = ctx.request.file;
-});
 
 // 查询大文件分片上传状态
 router.get('/upload/large/status', requireAdmin, getLargeUploadStatus);

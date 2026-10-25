@@ -28,7 +28,7 @@ const typeConfig = {
     doc: {
         dir: path.join(uploadRootDir, 'docs'),
         urlPrefix: '/uploads/docs',
-        extensions: ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.xls', '.xlsx', '.txt', '.csv'],
+        extensions: ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.xls', '.xlsx', '.txt', '.csv', '.md'],
         mimes: [
             'application/pdf',
             'application/msword',
@@ -40,6 +40,8 @@ const typeConfig = {
             'text/plain',
             'text/csv',
             'application/csv',
+            'text/markdown',
+            'text/x-markdown',
         ],
     },
     package: {
