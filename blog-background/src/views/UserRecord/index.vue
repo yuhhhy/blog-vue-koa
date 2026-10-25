@@ -103,5 +103,8 @@ const handleRowAction = (action, row) => {
 .visitor-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 16px; }
 .page-size-control { display: inline-flex; align-items: center; gap: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
 .page-size-control select { height: 36px; padding: 0 28px 0 12px; border: 0; border-radius: var(--admin-radius); color: var(--admin-text); background: var(--admin-surface-muted); }
-@media (max-width: 760px) { .visitor-pagination { align-items: stretch; flex-direction: column; } }
+@media (max-width: 760px) {
+  .visitor-pagination { align-items: stretch; flex-direction: column; }
+  .visitor-pagination :deep(.v-pagination__list) { flex-wrap: wrap; justify-content: center; }
+}
 </style>

@@ -1,12 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import { mdiMagnify } from '@mdi/js';
 import { apiDeleteImage, apiGenerateImageVariants, apiGetImageList, apiReuploadImage } from '@/api/files.js';
 import cfg from '@/config/index.js';
 import { useUserStore } from '@/stores/userStore';
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue';
 import AdminCard from '@/components/admin/AdminCard.vue';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog.vue';
 import AdminFileButton from '@/components/admin/AdminFileButton.vue';
 import AdminList from '@/components/admin/AdminList.vue';
 import AdminListItem from '@/components/admin/AdminListItem.vue';
@@ -26,6 +27,9 @@ const uploadHeaders = computed(() => ({
 
 const imageList = ref([]);
 const loading = ref(false);
+const deleteDialogVisible = ref(false);
+const pendingDelete = ref(null);
+const deleting = ref(false);
 const searchQuery = ref('');
 const currentPage = ref(1);
 const pageSize = ref(8);
@@ -191,15 +195,22 @@ const handleRowAction = (action, row) => {
 
 // 删除图片
 const handleDelete = (row) => {
-    ElMessageBox.confirm(`确定要删除图片 "${row.name}" 吗？`, '警告', {
-        confirmButtonText: '确定删除',
-        cancelButtonText: '取消',
-        type: 'warning',
-    }).then(async () => {
-        await apiDeleteImage(row.name);
-        fetchImageList();
+    pendingDelete.value = row;
+    deleteDialogVisible.value = true;
+};
+
+const confirmDelete = async () => {
+    if (!pendingDelete.value || deleting.value) return;
+    deleting.value = true;
+    try {
+        await apiDeleteImage(pendingDelete.value.name);
+        await fetchImageList();
+        deleteDialogVisible.value = false;
+        pendingDelete.value = null;
         ElMessage.success('图片删除成功');
-    }).catch(() => {});
+    } finally {
+        deleting.value = false;
+    }
 };
 
 // 下载图片
@@ -322,6 +333,15 @@ watch([searchQuery, filteredImages, sortBy], () => {
             </div>
         </AdminCard>
     </AdminPage>
+    <AdminConfirmDialog
+        v-model="deleteDialogVisible"
+        title="删除图片"
+        :message="`确定删除“${pendingDelete?.name || ''}”吗？相关缩略图也会一并删除，此操作无法撤销。`"
+        confirm-text="删除"
+        danger
+        :loading="deleting"
+        @confirm="confirmDelete"
+    />
 </template>
 
 <style scoped>
@@ -342,9 +362,11 @@ watch([searchQuery, filteredImages, sortBy], () => {
 @media (max-width: 760px) {
     .upload-toolbar { align-items: stretch; justify-content: flex-start; }
     .upload-toolbar__actions, .image-pagination { align-items: stretch; flex-direction: column; }
+    .upload-toolbar__actions > * { max-width: 100%; }
     .list-toolbar { align-items: flex-start; flex-direction: column; }
     .list-toolbar .table-search { width: 100%; }
     .image-list-item { min-height: 96px; }
     .image-list-item :deep(.admin-list-item__leading), .image-thumbnail { width: 72px; height: 72px; }
+    .image-pagination :deep(.v-pagination__list) { flex-wrap: wrap; justify-content: center; }
 }
 </style>

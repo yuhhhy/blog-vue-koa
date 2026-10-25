@@ -139,5 +139,11 @@ const uploadCover = async ([file]) => {
 .cover-label { color: var(--admin-text); font-size: 14px; font-weight: 700; }
 .cover-hint { margin-top: 3px; color: var(--admin-text-muted); font-size: 12px; }
 .article-form__actions { display: flex; justify-content: flex-end; gap: 10px; }
-@media (max-width: 800px) { .article-form { grid-template-columns: 1fr; } .cover-row { align-items: stretch; flex-direction: column; } }
+@media (max-width: 800px) {
+  .article-form { grid-template-columns: 1fr; }
+  .cover-row { align-items: stretch; flex-direction: column; padding: 14px; }
+  .cover-row > :first-child { margin-right: 0; }
+  .article-form__actions { justify-content: stretch; }
+  .article-form__actions :deep(.admin-button) { width: 100%; }
+}
 </style>

@@ -1086,6 +1086,10 @@ const initArticleChart = () => {
 }
 
 @media (max-width: 900px) {
+  .dashboard-page {
+    padding: 20px;
+  }
+
   .metric-grid {
     grid-template-columns: 1fr;
   }
@@ -1100,10 +1104,61 @@ const initArticleChart = () => {
 }
 
 @media (max-width: 620px) {
+  .dashboard-page {
+    padding: 16px;
+  }
+
+  .metric-grid,
+  .article-card {
+    margin-bottom: 12px;
+  }
+
+  .metric-card {
+    padding: 16px 16px 10px;
+  }
+
+  .chart-card {
+    padding: 16px;
+  }
+
+  .section-header,
   .article-card .section-header {
     align-items: flex-start;
     flex-direction: column;
     gap: 10px;
+  }
+
+  .range-switch {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .range-switch::before {
+    width: calc((100% - 8px) / 3);
+  }
+
+  .range-switch--month::before {
+    transform: translateX(100%);
+  }
+
+  .range-switch--year::before {
+    transform: translateX(200%);
+  }
+
+  .range-switch button {
+    padding-inline: 6px;
+  }
+
+  .article-stats {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .chart-loading--main,
+  .chart-loading--heatmap {
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
   }
 }
 
