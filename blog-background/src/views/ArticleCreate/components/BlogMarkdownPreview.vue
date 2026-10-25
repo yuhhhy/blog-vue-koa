@@ -93,7 +93,7 @@ watch(htmlContent, async () => {
     box-sizing: border-box;
     color: var(--preview-text);
     background: #fff;
-    font-family: "Source Serif 4", "Noto Serif SC", "Songti SC", SimSun, serif;
+    font-family: "Songti SC", SimSun, serif;
     font-size: 16px;
     line-height: 1.8;
 }

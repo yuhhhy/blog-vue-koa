@@ -180,16 +180,14 @@ watch(() => props.content, (content) => {
 onMounted(() => {
     currentMarkdown = resolveInitialContent()
     previewMarkdown.value = currentMarkdown
-    const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '')
 
     editor = new Vditor(editorRoot.value, {
         value: currentMarkdown,
         width: '100%',
-        height: 420,
+        height: '80vh',
         minHeight: 320,
         lang: 'zh_CN',
         mode: 'wysiwyg',
-        cdn: `${baseUrl}/vendor/vditor`,
         cache: { enable: false },
         toolbar: editorToolbar,
         toolbarConfig: { pin: true },

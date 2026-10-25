@@ -2,8 +2,10 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { mdiPlus, mdiUpload } from '@mdi/js'
 import VditorEditor from './components/VditorEditor.vue'
 import ArticleForm from './components/ArticleForm.vue'
+import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
 import AdminPage from '@/components/admin/AdminPage.vue'
 import { useArticleStore } from '@/stores/articleStore.js'
@@ -312,19 +314,30 @@ onBeforeUnmount(() => {
 
 <template>
     <AdminPage class="article-create-page">
-        <AdminCard title="文章正文" class="editor-card">
-            <VditorEditor ref="editorRef" :content="editorContent" @vblur="handleContentChange" />
-        </AdminCard>
         <ArticleForm
             ref="articleFormRef"
             :submitting="submitting"
             @draft-change="handleFormChange"
-            @new-draft="startNewDraft"
             @article-submit="submitHandler"
         />
+        <AdminCard title="文章正文" class="editor-card">
+            <VditorEditor ref="editorRef" :content="editorContent" @vblur="handleContentChange" />
+        </AdminCard>
+        <div class="article-create-actions">
+            <AdminButton type="button" :icon="mdiPlus" :disabled="submitting" @click="startNewDraft">
+                新建草稿
+            </AdminButton>
+            <AdminButton form="article-info-form" tone="primary" type="submit" :icon="mdiUpload" :disabled="submitting">
+                {{ submitting ? '提交中…' : '提交文章' }}
+            </AdminButton>
+        </div>
     </AdminPage>
 </template>
 
 <style scoped>
 .editor-card { overflow: visible; }
+.article-create-actions { display: flex; justify-content: flex-end; gap: 10px; }
+@media (max-width: 800px) {
+    .article-create-actions :deep(.admin-button) { flex: 1; }
+}
 </style>
