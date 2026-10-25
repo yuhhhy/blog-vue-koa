@@ -117,7 +117,7 @@ const siderNavItems = [
                 requiresAdmin: true
             },
             {
-                title: '大文件',
+                title: '文件上传',
                 link: '/files/large',
                 icon: mdiCloudUploadOutline,
                 requiresAdmin: true

@@ -167,7 +167,7 @@ const fetchLargeFiles = async () => {
         const res = await apiGetLargeFileList()
         fileList.value = res.data || []
     } catch (error) {
-        ElMessage.error('获取大文件列表失败')
+        ElMessage.error('获取文件列表失败')
     } finally {
         loading.value = false
     }
@@ -462,7 +462,7 @@ const startUpload = async () => {
         }
 
         uploadStatus.value = 'error'
-        ElMessage.error(error?.response?.data?.message || '大文件上传失败')
+        ElMessage.error(error?.response?.data?.message || '文件上传失败')
     } finally {
         uploadControllers.value.clear()
     }
@@ -547,7 +547,7 @@ onBeforeUnmount(() => {
 
 <template>
     <AdminPage class="large-file-page">
-        <AdminCard title="大文件上传">
+        <AdminCard title="文件上传（支持大文件）">
             <el-upload
                 class="large-file-upload"
                 drag
@@ -589,12 +589,14 @@ onBeforeUnmount(() => {
         </AdminCard>
 
         <AdminCard title="文件列表">
-            <template #actions><AdminSegmented v-model="selectedType" :options="typeOptions" label="文件类型筛选" appearance="pill" /></template>
             <div class="list-toolbar">
                 <span>{{ sortedFiles.length }} 个文件</span>
-                <AdminListSort v-model="sortBy" :options="sortOptions" />
+                <div class="list-toolbar__actions">
+                    <AdminSegmented v-model="selectedType" :options="typeOptions" label="文件类型筛选" appearance="pill" />
+                    <AdminListSort v-model="sortBy" :options="sortOptions" />
+                </div>
             </div>
-            <AdminList :items="sortedFiles" item-key="name" :loading="loading" empty-text="暂无大文件">
+            <AdminList :items="sortedFiles" item-key="name" :loading="loading" empty-text="暂无文件">
                 <template #item="{ item }">
                     <AdminListItem
                         :headline="item.name"
@@ -677,6 +679,7 @@ onBeforeUnmount(() => {
 }
 
 .list-toolbar { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.list-toolbar__actions { display: flex; min-width: 0; align-items: center; gap: 8px; }
 .file-type-icon { width: 28px; height: 28px; }
 
 @media (max-width: 768px) {
@@ -692,6 +695,11 @@ onBeforeUnmount(() => {
     .list-toolbar {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .list-toolbar__actions {
+        width: 100%;
+        flex-wrap: wrap;
     }
 
     .upload-actions {

@@ -299,17 +299,17 @@ async function UpdateBlog(id) {
 <template>
   <AdminPage>
     <AdminCard title="文章列表">
-      <template #actions>
-        <AdminButton tone="primary" :icon="mdiDownload" :disabled="exporting" @click="handleExportAll">
-          {{ exporting ? '正在导出' : '导出全部 Markdown' }}
-        </AdminButton>
-      </template>
       <div class="list-toolbar">
         <span>
           {{ tableData.filter(item => item.status === 'published').length }} 篇文章 ·
           {{ tableData.filter(item => item.status === 'draft').length }} 篇草稿
         </span>
-        <AdminListSort v-model="sortBy" :options="sortOptions" />
+        <div class="list-toolbar__actions">
+          <AdminButton tone="primary" :icon="mdiDownload" :disabled="exporting" @click="handleExportAll">
+            {{ exporting ? '正在导出' : '导出全部 Markdown' }}
+          </AdminButton>
+          <AdminListSort v-model="sortBy" :options="sortOptions" />
+        </div>
       </div>
       <AdminList :items="sortedArticles" item-key="id" empty-text="暂无文章">
         <template #item="{ item }">
@@ -394,6 +394,7 @@ async function UpdateBlog(id) {
 
 <style scoped>
 .list-toolbar { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.list-toolbar__actions { display: flex; align-items: center; gap: 8px; }
 .article-list-item { min-height: 104px; }
 .article-list-item :deep(.admin-list-item__leading), .article-cover { width: 80px; height: 80px; }
 .article-list-item :deep(.admin-list-item__leading) { border-radius: 8px; }
@@ -440,6 +441,7 @@ async function UpdateBlog(id) {
 
 @media (max-width: 760px) {
   .list-toolbar { align-items: flex-start; flex-direction: column; }
+  .list-toolbar__actions { width: 100%; flex-wrap: wrap; }
   .article-list-item { min-height: 96px; }
   .article-list-item :deep(.admin-list-item__leading), .article-cover { width: 72px; height: 72px; }
   .cover-preview { width: 100%; max-width: 240px; }

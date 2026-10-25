@@ -29,6 +29,11 @@ const getList = async () => {
     const res = await apiGetVisitorList(queryParams.value)
     visitorList.value = res.visitors
     total.value = res.total || 0
+    if (queryParams.value.page > pageCount.value) {
+      queryParams.value.page = pageCount.value
+      await getList()
+      return
+    }
     visitorList.value.forEach((item) => {
       item.visitTime = new Date(item.visitTime).toLocaleString()
     })
@@ -38,13 +43,6 @@ const getList = async () => {
   } finally {
     loading.value = false
   }
-}
-
-// 处理每页条数变化
-const handleSizeChange = (val) => {
-  queryParams.value.limit = val
-  queryParams.value.page = 1
-  getList()
 }
 
 // 处理页码变化
@@ -57,7 +55,10 @@ const handleCurrentChange = (val) => {
 const handleDelete = async (row) => {
   try {
     const res = await apiDeleteVisitor(row._id)
-    getList()
+    if (visitorList.value.length === 1 && queryParams.value.page > 1) {
+      queryParams.value.page -= 1
+    }
+    await getList()
     ElMessage.success(res.message)
   } catch (error) {
     
@@ -73,7 +74,15 @@ const handleRowAction = (action, row) => {
   <AdminPage>
     <AdminCard title="访客记录">
       <div class="list-count">共 {{ total }} 条记录</div>
-      <AdminList :items="visitorList" item-key="_id" :loading="loading" empty-text="暂无访客记录">
+      <AdminList
+        :items="visitorList"
+        item-key="_id"
+        :loading="loading"
+        :page="queryParams.page"
+        :total="total"
+        empty-text="暂无访客记录"
+        @update:page="handleCurrentChange"
+      >
         <template #item="{ item }">
           <AdminListItem :headline="item.address || item.ip || '未知来源'">
             <template #overline>
@@ -86,25 +95,10 @@ const handleRowAction = (action, row) => {
           </AdminListItem>
         </template>
       </AdminList>
-      <div class="visitor-pagination">
-        <label class="page-size-control">每页
-          <select :value="queryParams.limit" @change="handleSizeChange(Number($event.target.value))">
-            <option v-for="size in [10, 20, 50, 100]" :key="size" :value="size">{{ size }}</option>
-          </select>
-        </label>
-        <v-pagination :model-value="queryParams.page" :length="pageCount" rounded="circle" @update:model-value="handleCurrentChange" />
-      </div>
     </AdminCard>
   </AdminPage>
 </template>
 
 <style scoped>
 .list-count { margin: 0 0 8px 4px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
-.visitor-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 16px; }
-.page-size-control { display: inline-flex; align-items: center; gap: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
-.page-size-control select { height: 36px; padding: 0 28px 0 12px; border: 0; border-radius: var(--admin-radius); color: var(--admin-text); background: var(--admin-surface-muted); }
-@media (max-width: 760px) {
-  .visitor-pagination { align-items: stretch; flex-direction: column; }
-  .visitor-pagination :deep(.v-pagination__list) { flex-wrap: wrap; justify-content: center; }
-}
 </style>

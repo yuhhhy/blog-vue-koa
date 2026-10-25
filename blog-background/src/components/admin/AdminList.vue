@@ -1,9 +1,42 @@
 <script setup>
-defineProps({
+import { computed, ref, watch } from 'vue'
+import AdminPagination from '@/components/admin/AdminPagination.vue'
+
+const props = defineProps({
   items: { type: Array, default: () => [] },
   itemKey: { type: [String, Function], default: 'id' },
   loading: { type: Boolean, default: false },
-  emptyText: { type: String, default: '暂无内容' }
+  emptyText: { type: String, default: '暂无内容' },
+  page: { type: Number, default: null },
+  pageSize: { type: Number, default: 10 },
+  total: { type: Number, default: null },
+  itemLabel: { type: String, default: '条记录' }
+})
+
+const emit = defineEmits(['update:page'])
+const internalPage = ref(1)
+const isServerPaginated = computed(() => props.total !== null)
+const totalItems = computed(() => isServerPaginated.value ? props.total : props.items.length)
+const currentPage = computed(() => props.page ?? internalPage.value)
+const pageCount = computed(() => Math.max(1, Math.ceil(totalItems.value / props.pageSize)))
+const visibleItems = computed(() => {
+  if (isServerPaginated.value) return props.items
+  const start = (currentPage.value - 1) * props.pageSize
+  return props.items.slice(start, start + props.pageSize)
+})
+
+const changePage = (page) => {
+  if (props.page === null) internalPage.value = page
+  else emit('update:page', page)
+}
+
+watch(() => props.items, () => {
+  if (!isServerPaginated.value) internalPage.value = 1
+})
+
+watch([totalItems, () => props.pageSize], () => {
+  if (currentPage.value <= pageCount.value) return
+  changePage(pageCount.value)
 })
 
 const resolveKey = (item, index, itemKey) => {
@@ -22,8 +55,8 @@ const resolveKey = (item, index, itemKey) => {
       height="3"
     />
 
-    <ul v-if="items.length" class="admin-list__items" role="list">
-      <li v-for="(item, index) in items" :key="resolveKey(item, index, itemKey)">
+    <ul v-if="visibleItems.length" class="admin-list__items" role="list">
+      <li v-for="(item, index) in visibleItems" :key="resolveKey(item, index, itemKey)">
         <slot name="item" :item="item" :index="index" />
       </li>
     </ul>
@@ -31,6 +64,15 @@ const resolveKey = (item, index, itemKey) => {
     <div v-else-if="!loading" class="admin-list__empty" role="status">
       <slot name="empty">{{ emptyText }}</slot>
     </div>
+
+    <AdminPagination
+      :model-value="currentPage"
+      :page-size="pageSize"
+      :total="totalItems"
+      :item-label="itemLabel"
+      :disabled="loading"
+      @update:model-value="changePage"
+    />
   </div>
 </template>
 
