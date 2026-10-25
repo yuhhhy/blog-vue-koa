@@ -1,36 +1,68 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
+import { useArticleStore } from '@/stores/articleStore.js'
 import { useRouter } from 'vue-router'
 import cfg from '@/config/index.js'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
 import AdminFileButton from '@/components/admin/AdminFileButton.vue'
-import AdminSegmented from '@/components/admin/AdminSegmented.vue'
 import MaterialTagField from '@/components/material/MaterialTagField.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
 const baseApi = cfg.baseApi
 
-const emit = defineEmits(['articleSubmit'])
-const form = reactive({
-    title: '',
-    author: '',
-    tags: [],
-    coverImgUploaded: false
+const props = defineProps({
+  submitting: { type: Boolean, default: false }
 })
-const coverUploadMode = ref('keep')
+const emit = defineEmits(['articleSubmit', 'draftChange', 'newDraft'])
+const articleStore = useArticleStore()
+const savedForm = articleStore.createArticleForm || {}
+const form = reactive({
+    title: savedForm.title || '',
+    author: savedForm.author || '',
+    tags: Array.isArray(savedForm.tags) ? [...savedForm.tags] : [],
+    coverImg: savedForm.coverImg || '',
+    coverImgUploaded: Boolean(savedForm.coverImg)
+})
 const errors = reactive({ title: '', author: '', tags: '' })
-const coverUploadData = computed(() => ({
-  convertToAvif: coverUploadMode.value === 'avif' ? 'true' : 'false'
-}))
-const uploadOptions = [
-  { label: '保留原格式', value: 'keep' },
-  { label: '转为 AVIF', value: 'avif' }
-]
+
+watch(form, (formValue) => {
+  const draftForm = {
+    title: formValue.title,
+    author: formValue.author,
+    tags: [...formValue.tags],
+    coverImg: formValue.coverImg || '',
+    coverImgUploaded: Boolean(formValue.coverImg),
+  }
+  articleStore.setCreateArticleForm(draftForm)
+  emit('draftChange', draftForm)
+}, { deep: true })
+
+const loadForm = (draft = {}) => {
+  form.title = draft.title || ''
+  form.author = draft.author || ''
+  form.tags = Array.isArray(draft.tags) ? [...draft.tags] : []
+  form.coverImg = draft.coverImage || draft.coverImg || ''
+  form.coverImgUploaded = Boolean(form.coverImg)
+}
+
+const resetForm = () => {
+  form.title = ''
+  form.author = ''
+  form.tags = []
+  form.coverImg = ''
+  form.coverImgUploaded = false
+  errors.title = ''
+  errors.author = ''
+  errors.tags = ''
+}
+
+defineExpose({ loadForm, resetForm })
 
 // 提交文章的全部信息
 const handleSubmit = () => {
+  if (props.submitting) return
   errors.title = form.title.trim() ? '' : '请添加文章标题'
   errors.author = form.author.trim() ? '' : '请输入作者名称'
   errors.tags = form.tags.length ? '' : '请添加至少一个标签'
@@ -81,7 +113,7 @@ const uploadCover = async ([file]) => {
   if (!file || beforeUpload() === false) return
   const body = new FormData()
   body.append('file', file)
-  body.append('convertToAvif', coverUploadData.value.convertToAvif)
+  body.append('convertToAvif', 'true')
   try {
     const response = await fetch(`${baseApi}/upload/image`, { method: 'POST', headers: uploadHeaders.value, body })
     if (!response.ok) throw new Error('upload failed')
@@ -118,13 +150,17 @@ const uploadCover = async ([file]) => {
         @update:model-value="errors.tags = ''"
       />
       <div class="cover-row">
-        <div><div class="cover-label">文章封面</div><div class="cover-hint">限制一张 JPG、PNG 或 WebP 图片</div></div>
-        <AdminSegmented v-model="coverUploadMode" :options="uploadOptions" label="封面上传格式" appearance="pill" />
+        <div><div class="cover-label">文章封面</div><div class="cover-hint">支持 JPG、PNG 或 WebP，上传后自动转为 AVIF</div></div>
         <AdminFileButton accept="image/*" label="上传封面" @select="uploadCover" />
         <v-chip v-if="form.coverImgUploaded" color="success" rounded="pill">已上传</v-chip>
       </div>
       <div class="article-form__actions">
-        <AdminButton tone="primary" type="submit">提交文章</AdminButton>
+        <AdminButton type="button" variant="text" :disabled="submitting" @click="emit('newDraft')">
+          新建草稿
+        </AdminButton>
+        <AdminButton tone="primary" type="submit" :disabled="submitting">
+          {{ submitting ? '提交中…' : '提交文章' }}
+        </AdminButton>
       </div>
     </form>
   </AdminCard>
@@ -144,6 +180,6 @@ const uploadCover = async ([file]) => {
   .cover-row { align-items: stretch; flex-direction: column; padding: 14px; }
   .cover-row > :first-child { margin-right: 0; }
   .article-form__actions { justify-content: stretch; }
-  .article-form__actions :deep(.admin-button) { width: 100%; }
+  .article-form__actions :deep(.admin-button) { flex: 1; width: auto; }
 }
 </style>

@@ -41,6 +41,7 @@ compose.yaml
 
 # public文件夹
 /public/
+/blog-background/public/vendor/vditor/
 
 # 本地任务与调试记录
 /docs/

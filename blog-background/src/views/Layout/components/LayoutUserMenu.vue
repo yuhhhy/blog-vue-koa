@@ -4,9 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   mdiAccountOutline,
   mdiAccountCircleOutline,
-  mdiBellOutline,
   mdiCommentProcessingOutline,
-  mdiLinkVariant,
   mdiLogoutVariant,
   mdiShieldAccountOutline
 } from '@mdi/js'
@@ -100,20 +98,6 @@ function handleLogin() {
               <span class="popover-link__label">待审评论</span>
               <span v-if="notificationStore.pendingCommentsCount" class="notice-count">
                 {{ notificationStore.pendingCommentsCount }}
-              </span>
-            </RouterLink>
-            <RouterLink v-if="isAdmin" to="/links" class="popover-link">
-              <MaterialIcon class="popover-link__icon" :path="mdiLinkVariant" />
-              <span class="popover-link__label">友链申请</span>
-              <span v-if="notificationStore.pendingLinksCount" class="notice-count">
-                {{ notificationStore.pendingLinksCount }}
-              </span>
-            </RouterLink>
-            <RouterLink to="/" class="popover-link">
-              <MaterialIcon class="popover-link__icon" :path="mdiBellOutline" />
-              <span class="popover-link__label">系统通知</span>
-              <span v-if="notificationStore.unreadSystemCount" class="notice-count">
-                {{ notificationStore.unreadSystemCount }}
               </span>
             </RouterLink>
           </div>

@@ -134,10 +134,12 @@ async function handleConfirm() {
 <template>
   <AdminPage>
     <AdminCard title="友链列表">
-      <template #actions><AdminButton tone="primary" :icon="mdiPlus" @click="handleAddLink">新增友链</AdminButton></template>
       <div class="list-toolbar">
         <span>{{ sortedLinks.length }} 个友链</span>
-        <AdminListSort v-model="sortBy" :options="sortOptions" />
+        <div class="list-toolbar__actions">
+          <AdminButton tone="primary" :icon="mdiPlus" @click="handleAddLink">新增友链</AdminButton>
+          <AdminListSort v-model="sortBy" :options="sortOptions" />
+        </div>
       </div>
       <AdminList :items="sortedLinks" item-key="id" empty-text="暂无友链">
         <template #item="{ item }">
@@ -161,8 +163,8 @@ async function handleConfirm() {
   <AdminDialog v-model="dialogFormVisible" :title="form.id ? '编辑友链' : '新增友链'" description="填写友链展示信息和访问地址" max-width="560">
     <MaterialTextField v-model="form.name" label="名称" required :error-message="formErrors.name" @update:model-value="formErrors.name = ''" />
     <MaterialTextField v-model="form.description" label="描述" required :error-message="formErrors.description" @update:model-value="formErrors.description = ''" />
-    <MaterialTextField v-model="form.site" label="网址" required supporting-text="请输入包含 https:// 的完整地址" :error-message="formErrors.site" @update:model-value="formErrors.site = ''" />
-    <MaterialTextField v-model="form.avatar" label="头像地址" required supporting-text="请输入可公开访问的图片地址" :error-message="formErrors.avatar" @update:model-value="formErrors.avatar = ''" />
+    <MaterialTextField v-model="form.site" label="网址" required :error-message="formErrors.site" @update:model-value="formErrors.site = ''" />
+    <MaterialTextField v-model="form.avatar" label="头像地址" required :error-message="formErrors.avatar" @update:model-value="formErrors.avatar = ''" />
     <template #actions>
       <AdminButton variant="text" @click="dialogFormVisible = false">取消</AdminButton>
       <AdminButton tone="primary" @click="handleConfirm">{{ form.id ? '保存更改' : '添加友链' }}</AdminButton>
@@ -195,6 +197,8 @@ async function handleConfirm() {
   font-size: 13px;
 }
 
+.list-toolbar__actions { display: flex; align-items: center; gap: 8px; }
+
 .link-address {
   display: block;
   width: fit-content;
@@ -209,5 +213,6 @@ async function handleConfirm() {
 
 @media (max-width: 760px) {
   .list-toolbar { align-items: flex-start; flex-direction: column; }
+  .list-toolbar__actions { width: 100%; flex-wrap: wrap; }
 }
 </style>

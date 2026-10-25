@@ -75,7 +75,7 @@ const model = defineModel({ type: Boolean, default: false })
 .admin-dialog__close:focus-visible { outline: 3px solid color-mix(in srgb, var(--md-sys-color-primary) 32%, transparent); outline-offset: 2px; }
 .admin-dialog__close :deep(svg) { width: 22px; height: 22px; }
 
-.admin-dialog__body { display: grid; gap: 16px; padding: 16px 24px !important; color: var(--md-sys-color-on-surface-variant); line-height: 1.5; }
+.admin-dialog__body { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; overflow-x: hidden; gap: 16px; padding: 16px 24px !important; color: var(--md-sys-color-on-surface-variant); line-height: 1.5; }
 .admin-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; min-height: 64px; padding: 8px 24px 24px !important; }
 
 @media (max-width: 600px) {

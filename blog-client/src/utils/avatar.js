@@ -20,7 +20,7 @@ async function sha256Hex(text) {
 // 生成头像url
 export async function getAvatar(email) {
     if (!email) {
-        return '/src/assets/images/user_default.png'
+        return '/images/user_default.png'
     }
     
     // 1. 尝试获取QQ头像（QQ邮箱优先级更高，通常更准确）
@@ -38,7 +38,7 @@ export async function getAvatar(email) {
     try {
         const hash = await sha256Hex(email.trim().toLowerCase())
         if (!hash) {
-            return '/src/assets/images/user_default.png'
+            return '/images/user_default.png'
         }
 
         const gravatarUrls = [
@@ -63,5 +63,5 @@ export async function getAvatar(email) {
     }
     
     // 3. 如果以上都失败，返回默认头像
-    return '/src/assets/images/user_default.png'
+    return '/images/user_default.png'
 }

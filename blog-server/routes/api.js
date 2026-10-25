@@ -2,6 +2,7 @@ import Router from '@koa/router'
 import multer from '@koa/multer'
 import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
+import { createArticleDraft, deleteArticleDraft, getArticleDraft, getArticleDrafts, publishArticleDraft, updateArticleDraft } from '../controllers/ArticleDraftController.js'
 import { getWebsiteData, getWebsiteDataCount, updateWebsiteVisit, updateWebsiteView, updateWebsiteComment, updateWebsiteArticle, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
 import { getAllComments, getComments, createComment, reviewComment, deleteComment, updateComment, getPendingComments, sendEmailNotification } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
@@ -81,6 +82,16 @@ router.put('/blogcontent/view/:id', updateBlogViewCount)
 
 // 更新博客的点赞量
 router.put('/blogcontent/like/:id', updateBlogLikeCount)
+
+/**
+ * Article Draft API
+ */
+router.get('/drafts', requireAdmin, getArticleDrafts)
+router.post('/drafts', requireAdmin, createArticleDraft)
+router.get('/drafts/:id', requireAdmin, getArticleDraft)
+router.put('/drafts/:id', requireAdmin, updateArticleDraft)
+router.delete('/drafts/:id', requireAdmin, deleteArticleDraft)
+router.post('/drafts/:id/publish', requireAdmin, publishArticleDraft)
 
 
 /**

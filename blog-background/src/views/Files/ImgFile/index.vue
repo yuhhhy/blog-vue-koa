@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { mdiMagnify } from '@mdi/js';
 import { apiDeleteImage, apiGenerateImageVariants, apiGetImageList, apiReuploadImage } from '@/api/files.js';
@@ -14,7 +14,6 @@ import AdminListItem from '@/components/admin/AdminListItem.vue';
 import AdminListLabel from '@/components/admin/AdminListLabel.vue';
 import AdminListSort from '@/components/admin/AdminListSort.vue';
 import AdminPage from '@/components/admin/AdminPage.vue';
-import AdminSegmented from '@/components/admin/AdminSegmented.vue';
 import MaterialTextField from '@/components/material/MaterialTextField.vue';
 
 const baseApi = cfg.baseApi;
@@ -31,9 +30,6 @@ const deleteDialogVisible = ref(false);
 const pendingDelete = ref(null);
 const deleting = ref(false);
 const searchQuery = ref('');
-const currentPage = ref(1);
-const pageSize = ref(8);
-const uploadMode = ref('keep');
 const generatingImages = ref(new Set());
 const reuploadingImages = ref(new Set());
 const sortBy = ref('upload-desc');
@@ -45,20 +41,12 @@ const sortOptions = [
     { label: '文件从大到小', value: 'size-desc' },
     { label: '文件从小到大', value: 'size-asc' },
 ];
-const uploadOptions = [
-    { label: '保留原格式', value: 'keep' },
-    { label: '转为 AVIF', value: 'avif' },
-];
 const rowActions = [
     { key: 'download', label: '下载' },
     { key: 'generate', label: '生成缩略图' },
     { key: 'reupload', label: '重传' },
     { key: 'delete', label: '删除', danger: true },
 ];
-
-const uploadData = computed(() => ({
-    convertToAvif: uploadMode.value === 'avif' ? 'true' : 'false'
-}));
 
 const setLoadingName = (state, name, loading) => {
     const nextState = new Set(state.value);
@@ -95,11 +83,6 @@ const sortedImages = computed(() => {
     return images.sort((a, b) => getImageTime(b) - getImageTime(a));
 });
 
-const pagedImages = computed(() => {
-    const start = (currentPage.value - 1) * pageSize.value;
-    return sortedImages.value.slice(start, start + pageSize.value);
-});
-
 const previewImageUrls = computed(() => sortedImages.value.map(image => image.url));
 
 const getPreviewIndex = (image) => sortedImages.value.findIndex(item => item.name === image.name);
@@ -132,7 +115,7 @@ const uploadImages = async (files) => {
     for (const file of files) {
         const body = new FormData();
         body.append('file', file);
-        body.append('convertToAvif', uploadData.value.convertToAvif);
+        body.append('convertToAvif', 'true');
         try {
             const response = await fetch(`${baseApi}/upload/image`, { method: 'POST', headers: uploadHeaders.value, body });
             if (!response.ok) throw new Error('upload failed');
@@ -224,15 +207,6 @@ const handleDownload = (row) => {
     document.body.removeChild(link);
 };
 
-const handleSizeChange = (size) => {
-    pageSize.value = size;
-    currentPage.value = 1;
-};
-
-const handleCurrentChange = (page) => {
-    currentPage.value = page;
-};
-
 const formatSize = (size) => {
     if (!size || size === 0) return '0 B';
     const k = 1024;
@@ -270,30 +244,20 @@ onMounted(() => {
     fetchImageList();
 });
 
-watch([searchQuery, filteredImages, sortBy], () => {
-    const maxPage = Math.max(1, Math.ceil(filteredImages.value.length / pageSize.value));
-    if (currentPage.value > maxPage) {
-        currentPage.value = 1;
-    }
-});
-
 </script>
 
 <template>
     <AdminPage>
         <AdminCard title="图片列表">
-            <div class="upload-toolbar" aria-label="图片上传">
-                <div class="upload-toolbar__actions">
-                    <AdminSegmented v-model="uploadMode" :options="uploadOptions" label="图片上传格式" appearance="pill" />
-                    <AdminFileButton accept="image/*" multiple label="上传图片" @select="uploadImages" />
-                </div>
-            </div>
             <div class="list-toolbar">
                 <MaterialTextField v-model="searchQuery" type="search" label="搜索图片名称" :leading-icon="mdiMagnify" class="table-search" />
-                <AdminListSort v-model="sortBy" :options="sortOptions" />
+                <div class="list-toolbar__actions">
+                    <AdminFileButton accept="image/*" multiple label="上传图片" @select="uploadImages" />
+                    <AdminListSort v-model="sortBy" :options="sortOptions" />
+                </div>
             </div>
             <div class="list-count">{{ filteredImages.length }} 张图片</div>
-            <AdminList :items="pagedImages" item-key="name" :loading="loading" empty-text="暂无图片，或无法连接到服务器">
+            <AdminList :items="sortedImages" item-key="name" :loading="loading" item-label="张图片" empty-text="暂无图片，或无法连接到服务器">
                 <template #item="{ item }">
                     <AdminListItem class="image-list-item" :headline="item.name" :supporting-text="`${formatSize(item.size)} · ${formatDate(item.uploadDate)}`">
                         <template #leading>
@@ -323,14 +287,6 @@ watch([searchQuery, filteredImages, sortBy], () => {
                     </AdminListItem>
                 </template>
             </AdminList>
-            <div class="image-pagination">
-                <label class="page-size-control">每页
-                    <select :value="pageSize" @change="handleSizeChange(Number($event.target.value))">
-                        <option v-for="size in [8, 12, 20, 40]" :key="size" :value="size">{{ size }}</option>
-                    </select>
-                </label>
-                <v-pagination :model-value="currentPage" :length="Math.max(1, Math.ceil(filteredImages.length / pageSize))" rounded="circle" @update:model-value="handleCurrentChange" />
-            </div>
         </AdminCard>
     </AdminPage>
     <AdminConfirmDialog
@@ -345,28 +301,21 @@ watch([searchQuery, filteredImages, sortBy], () => {
 </template>
 
 <style scoped>
-.upload-toolbar { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 28px; }
-.upload-toolbar__actions { display: flex; align-items: center; gap: 8px; }
-.list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+.list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.list-toolbar__actions { display: flex; align-items: center; gap: 8px; }
 .table-search { max-width: 360px; }
 .table-search :deep(.material-field__control), .table-search :deep(.material-field__body) { min-height: 48px; }
 .table-search :deep(.material-field__input) { height: 48px; padding-top: 6px; font-size: 15px; }
-.list-count { margin: 0 0 8px 4px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.list-count { margin: 0 0 12px 4px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
 .image-list-item { min-height: 104px; }
 .image-list-item :deep(.admin-list-item__leading), .image-thumbnail { width: 80px; height: 80px; }
 .image-list-item :deep(.admin-list-item__leading) { border-radius: 8px; }
 .image-thumbnail { cursor: zoom-in; }
-.image-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 16px; }
-.page-size-control { display: inline-flex; align-items: center; gap: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
-.page-size-control select { height: 36px; padding: 0 28px 0 12px; border: 0; border-radius: var(--admin-radius); color: var(--admin-text); background: var(--admin-surface-muted); }
 @media (max-width: 760px) {
-    .upload-toolbar { align-items: stretch; justify-content: flex-start; }
-    .upload-toolbar__actions, .image-pagination { align-items: stretch; flex-direction: column; }
-    .upload-toolbar__actions > * { max-width: 100%; }
     .list-toolbar { align-items: flex-start; flex-direction: column; }
     .list-toolbar .table-search { width: 100%; }
+    .list-toolbar__actions { width: 100%; flex-wrap: wrap; }
     .image-list-item { min-height: 96px; }
     .image-list-item :deep(.admin-list-item__leading), .image-thumbnail { width: 72px; height: 72px; }
-    .image-pagination :deep(.v-pagination__list) { flex-wrap: wrap; justify-content: center; }
 }
 </style>
