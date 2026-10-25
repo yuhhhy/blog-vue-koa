@@ -3,6 +3,8 @@ import { ref, onMounted, reactive } from 'vue'
 import { getLinks, createLink, updateLink, deleteLink } from '@/api/links.js'
 import { ElMessageBox } from 'element-plus'
 import { getTimestampToSeconds } from '@/utils/date.js'
+import TableActionItem from '@/components/TableActionItem.vue'
+import TableActionMenu from '@/components/TableActionMenu.vue'
 
 const tableData = ref([])
 const dialogFormVisible = ref(false)
@@ -112,14 +114,12 @@ async function handleConfirm() {
         <a :href="scope.row.site" target="_blank" class="text-blue-400">{{ scope.row.site }}</a>
       </template>
     </el-table-column>
-    <el-table-column fixed="right" label="管理" width="180">
+    <el-table-column fixed="right" label="操作" width="88" align="center">
       <template #default="scope">
-        <MaterialButton type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
-          删除
-        </MaterialButton>
-        <MaterialButton type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">
-          编辑
-        </MaterialButton>
+        <TableActionMenu>
+          <TableActionItem kind="edit" @click="handleEdit(scope.$index, scope.row)">编辑</TableActionItem>
+          <TableActionItem kind="delete" @click="handleDelete(scope.$index, scope.row)">删除</TableActionItem>
+        </TableActionMenu>
       </template>
     </el-table-column>
   </el-table>

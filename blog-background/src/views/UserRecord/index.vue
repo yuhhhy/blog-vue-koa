@@ -2,6 +2,8 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { apiGetVisitorList, apiDeleteVisitor } from '@/api/visitor.js'
+import TableActionItem from '@/components/TableActionItem.vue'
+import TableActionMenu from '@/components/TableActionMenu.vue'
 
 const loading = ref(false)
 const visitorList = ref([])
@@ -88,11 +90,11 @@ const handleDelete = async (index, row) => {
       prop="browser"
       label="访问设备">
     </el-table-column>
-    <el-table-column fixed="right" label="管理">
+    <el-table-column fixed="right" label="操作" width="88" align="center">
       <template #default="scope">
-        <MaterialButton type="danger" size="small" @click="handleDelete(scope.$index, scope.row)">
-          删除
-        </MaterialButton>
+        <TableActionMenu>
+          <TableActionItem kind="delete" @click="handleDelete(scope.$index, scope.row)">删除</TableActionItem>
+        </TableActionMenu>
       </template>
     </el-table-column>
   </el-table>

@@ -3,6 +3,8 @@ import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { apiGetPendingComments, apiReviewComment, apiDeleteComment } from '@/api/comment.js'
 import { getFormatDateToMinutes } from '@/utils/date.js'
+import TableActionItem from '@/components/TableActionItem.vue'
+import TableActionMenu from '@/components/TableActionMenu.vue'
 
 const pendingComments = ref([])
 
@@ -88,11 +90,11 @@ async function deleteComment() {
             </template>
         </el-table-column>
         <!-- 评论操作按钮 -->
-        <el-table-column fixed="right" label="评论管理" width="120">
+        <el-table-column fixed="right" label="操作" width="88" align="center">
             <template #default="scope">
-                <MaterialButton type="primary" size="small" @click="handleManage(scope.$index, scope.row)">
-                    管理
-                </MaterialButton>
+                <TableActionMenu>
+                    <TableActionItem kind="manage" @click="handleManage(scope.$index, scope.row)">查看并审核</TableActionItem>
+                </TableActionMenu>
             </template>
         </el-table-column>
     </el-table>

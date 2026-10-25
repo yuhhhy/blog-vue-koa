@@ -4,6 +4,8 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { apiDeleteImage, apiGenerateImageVariants, apiGetImageList, apiReuploadImage } from '@/api/files.js';
 import cfg from '@/config/index.js';
 import { useUserStore } from '@/stores/userStore';
+import TableActionItem from '@/components/TableActionItem.vue';
+import TableActionMenu from '@/components/TableActionMenu.vue';
 
 const baseApi = cfg.baseApi;
 const userStore = useUserStore();
@@ -299,28 +301,25 @@ watch([searchQuery, filteredImages], () => {
                     {{ formatDate(row.uploadDate) }}
                 </template>
             </el-table-column>
-            <el-table-column label="操作" width="360" fixed="right">
+            <el-table-column label="操作" width="88" fixed="right" align="center">
                 <template #default="{ row }">
-                    <MaterialButton size="small" @click="handleDownload(row)">下载</MaterialButton>
-                    <MaterialButton
-                        size="small"
-                        type="success"
-                        :loading="isGenerating(row.name)"
-                        @click="handleGenerateVariants(row)"
-                    >
-                        生成缩略图
-                    </MaterialButton>
-                    <el-upload
-                        class="inline-upload"
-                        :show-file-list="false"
-                        :http-request="(options) => handleReupload(row, options)"
-                        accept="image/*"
-                    >
-                        <MaterialButton size="small" type="warning" :loading="isReuploading(row.name)">
-                            重传
-                        </MaterialButton>
-                    </el-upload>
-                    <MaterialButton size="small" type="danger" @click="handleDelete(row)">删除</MaterialButton>
+                    <TableActionMenu>
+                        <TableActionItem kind="download" @click="handleDownload(row)">下载</TableActionItem>
+                        <TableActionItem
+                            kind="generate"
+                            :loading="isGenerating(row.name)"
+                            @click="handleGenerateVariants(row)"
+                        >生成缩略图</TableActionItem>
+                        <el-upload
+                            class="inline-upload"
+                            :show-file-list="false"
+                            :http-request="(options) => handleReupload(row, options)"
+                            accept="image/*"
+                        >
+                            <TableActionItem kind="reupload" :loading="isReuploading(row.name)">重传</TableActionItem>
+                        </el-upload>
+                        <TableActionItem kind="delete" @click="handleDelete(row)">删除</TableActionItem>
+                    </TableActionMenu>
                 </template>
             </el-table-column>
         </el-table>

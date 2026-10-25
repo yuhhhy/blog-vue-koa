@@ -4,6 +4,8 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { apiGetMdList, apiDeleteMd } from '@/api/files.js';
 import cfg from '@/config/index.js';
 import { useUserStore } from '@/stores/userStore';
+import TableActionItem from '@/components/TableActionItem.vue';
+import TableActionMenu from '@/components/TableActionMenu.vue';
 
 const baseApi = cfg.baseApi;
 const userStore = useUserStore();
@@ -159,10 +161,12 @@ onMounted(fetchMdList);
             <el-table-column prop="uploadTime" label="上传时间" width="180" sortable="custom">
                 <template #default="{ row }">{{ formatDate(row.uploadDate) }}</template>
             </el-table-column>
-            <el-table-column label="操作" width="180" fixed="right">
+            <el-table-column label="操作" width="88" fixed="right" align="center">
                 <template #default="{ row }">
-                    <MaterialButton size="small" @click="handleDownload(row)">下载</MaterialButton>
-                    <MaterialButton size="small" type="danger" @click="handleDelete(row)">删除</MaterialButton>
+                    <TableActionMenu>
+                        <TableActionItem kind="download" @click="handleDownload(row)">下载</TableActionItem>
+                        <TableActionItem kind="delete" @click="handleDelete(row)">删除</TableActionItem>
+                    </TableActionMenu>
                 </template>
             </el-table-column>
         </el-table>

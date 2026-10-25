@@ -12,9 +12,6 @@ const routes = [
         path: "dashboard",
         name: "DataDashboard",
         component: () => import("../views/DataDashboard/index.vue"),
-        meta: {
-          requiresAdmin: true,
-        },
       },
       {
         path: "article/list",

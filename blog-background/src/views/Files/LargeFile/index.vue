@@ -3,9 +3,6 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
     mdiCloudUploadOutline,
-    mdiContentCopy,
-    mdiDeleteOutline,
-    mdiDownload,
     mdiFileDocumentOutline,
     mdiFileMultipleOutline,
     mdiHeadphones,
@@ -15,6 +12,8 @@ import {
     mdiVideoOutline
 } from '@mdi/js'
 import MaterialIcon from '@/components/MaterialIcon.vue'
+import TableActionItem from '@/components/TableActionItem.vue'
+import TableActionMenu from '@/components/TableActionMenu.vue'
 import {
     apiDeleteLargeFile,
     apiGetLargeFileList,
@@ -624,20 +623,13 @@ onBeforeUnmount(() => {
                 <el-table-column prop="uploadTime" label="上传时间" width="180" sortable="custom">
                     <template #default="{ row }">{{ formatDate(row.uploadDate) }}</template>
                 </el-table-column>
-                <el-table-column label="操作" width="260" fixed="right">
+                <el-table-column label="操作" width="88" fixed="right" align="center">
                     <template #default="{ row }">
-                        <MaterialButton size="small" @click="handleCopyUrl(row)">
-                            <MaterialIcon class="button-icon" :path="mdiContentCopy" />
-                            复制
-                        </MaterialButton>
-                        <MaterialButton size="small" @click="handleDownload(row)">
-                            <MaterialIcon class="button-icon" :path="mdiDownload" />
-                            下载
-                        </MaterialButton>
-                        <MaterialButton size="small" type="danger" @click="handleDelete(row)">
-                            <MaterialIcon class="button-icon" :path="mdiDeleteOutline" />
-                            删除
-                        </MaterialButton>
+                        <TableActionMenu>
+                            <TableActionItem kind="copy" @click="handleCopyUrl(row)">复制链接</TableActionItem>
+                            <TableActionItem kind="download" @click="handleDownload(row)">下载</TableActionItem>
+                            <TableActionItem kind="delete" @click="handleDelete(row)">删除</TableActionItem>
+                        </TableActionMenu>
                     </template>
                 </el-table-column>
             </el-table>

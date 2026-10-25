@@ -29,8 +29,7 @@ const siderNavItems = [
     {
         title: '数据大屏',
         link: '/dashboard',
-        icon: mdiChartBoxOutline,
-        requiresAdmin: true
+        icon: mdiChartBoxOutline
     },
     {
         title: '文章',

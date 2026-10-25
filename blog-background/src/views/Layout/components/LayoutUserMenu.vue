@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
+  mdiAccountOutline,
   mdiAccountCircleOutline,
   mdiBellOutline,
   mdiCommentProcessingOutline,
@@ -19,6 +20,7 @@ const notificationStore = useNotificationStore()
 const route = useRoute()
 const router = useRouter()
 const isAdmin = computed(() => userStore.userData.role === 'admin')
+const userRoleIcon = computed(() => isAdmin.value ? mdiShieldAccountOutline : mdiAccountOutline)
 let notificationTimer = null
 
 const userRoleText = computed(() => ({
@@ -50,8 +52,9 @@ async function fetchNotifications() {
   if (isAdmin.value) await notificationStore.refreshAllNotifications()
 }
 
-function handleLogout() {
+async function handleLogout() {
   userStore.clearUserData()
+  await router.replace({ name: 'Login' })
 }
 
 function handleLogin() {
@@ -85,7 +88,7 @@ function handleLogin() {
             <div class="popover-username">{{ userStore.userData.username }}</div>
             <div class="popover-email">{{ userStore.userData.email }}</div>
             <span class="role-label">
-              <MaterialIcon class="role-label__icon" :path="mdiShieldAccountOutline" />
+              <MaterialIcon class="role-label__icon" :path="userRoleIcon" />
               {{ userRoleText }}
             </span>
           </div>

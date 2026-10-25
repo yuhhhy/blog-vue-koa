@@ -278,6 +278,158 @@
     width: 10px;
 }
 
+/* Material 3 feedback surfaces: messages, notifications and confirmation dialogs. */
+.el-message {
+    min-width: 0;
+    max-width: min(520px, calc(100vw - 32px));
+    padding: 14px 18px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 16px;
+    color: var(--md-sys-color-on-surface);
+    background: var(--md-sys-color-surface-container-high);
+    box-shadow: var(--admin-shadow);
+}
+
+.el-message .el-message__content {
+    color: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.el-message .el-message__icon {
+    margin-right: 12px;
+    color: inherit;
+    font-size: 22px;
+}
+
+.el-message--success {
+    border-color: color-mix(in srgb, #386a20 24%, transparent);
+    color: var(--admin-on-success-container);
+    background: var(--admin-success-container);
+}
+
+.el-message--info {
+    border-color: color-mix(in srgb, #415f91 24%, transparent);
+    color: var(--admin-on-info-container);
+    background: var(--admin-info-container);
+}
+
+.el-message--warning {
+    border-color: color-mix(in srgb, var(--admin-warning) 24%, transparent);
+    color: var(--admin-on-warning-container);
+    background: var(--admin-warning-soft);
+}
+
+.el-message--error {
+    border-color: color-mix(in srgb, var(--admin-danger) 24%, transparent);
+    color: var(--admin-on-danger-container);
+    background: var(--admin-danger-soft);
+}
+
+.el-message .el-message__closeBtn {
+    color: currentColor;
+    opacity: 0.72;
+}
+
+.el-notification {
+    width: min(420px, calc(100vw - 32px));
+    padding: 20px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 20px;
+    background: var(--md-sys-color-surface-container-high);
+    box-shadow: var(--admin-shadow);
+}
+
+.el-notification__title {
+    color: var(--md-sys-color-on-surface);
+    font-size: 16px;
+    font-weight: 650;
+}
+
+.el-notification__content {
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.6;
+}
+
+.el-overlay-message-box {
+    background: rgba(29, 27, 32, 0.32);
+    backdrop-filter: blur(2px);
+}
+
+.el-message-box {
+    width: min(440px, calc(100vw - 32px));
+    padding: 24px;
+    overflow: hidden;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 28px;
+    background: var(--md-sys-color-surface-container-high);
+    box-shadow: 0 10px 32px rgba(29, 27, 32, 0.2);
+}
+
+.el-message-box__header {
+    padding: 0 40px 12px 0;
+}
+
+.el-message-box__title {
+    color: var(--md-sys-color-on-surface);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.el-message-box__headerbtn {
+    top: 16px;
+    right: 16px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.el-message-box__headerbtn:hover {
+    color: var(--md-sys-color-on-surface);
+    background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+.el-message-box__content {
+    padding: 8px 0 20px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.el-message-box__status {
+    font-size: 26px !important;
+}
+
+.el-message-box__status.el-message-box-icon--success {
+    color: #386a20;
+}
+
+.el-message-box__status.el-message-box-icon--warning {
+    color: var(--admin-warning);
+}
+
+.el-message-box__status.el-message-box-icon--error {
+    color: var(--admin-danger);
+}
+
+.el-message-box__status.el-message-box-icon--info {
+    color: #415f91;
+}
+
+.el-message-box__btns {
+    gap: 8px;
+    padding: 4px 0 0;
+}
+
+.el-message-box__btns .el-button {
+    margin-left: 0;
+}
+
 .el-scrollbar__bar.is-horizontal {
     height: 10px;
 }
