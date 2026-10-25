@@ -8,12 +8,18 @@ import {
     mdiHeadphones,
     mdiPause,
     mdiPlay,
-    mdiRefresh,
     mdiVideoOutline
 } from '@mdi/js'
 import MaterialIcon from '@/components/MaterialIcon.vue'
-import TableActionItem from '@/components/TableActionItem.vue'
-import TableActionMenu from '@/components/TableActionMenu.vue'
+import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
+import AdminButton from '@/components/admin/AdminButton.vue'
+import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminList from '@/components/admin/AdminList.vue'
+import AdminListItem from '@/components/admin/AdminListItem.vue'
+import AdminListLabel from '@/components/admin/AdminListLabel.vue'
+import AdminListSort from '@/components/admin/AdminListSort.vue'
+import AdminPage from '@/components/admin/AdminPage.vue'
+import AdminSegmented from '@/components/admin/AdminSegmented.vue'
 import {
     apiDeleteLargeFile,
     apiGetLargeFileList,
@@ -46,6 +52,7 @@ const allowedExtensions = [
     '.json',
     '.csv',
     '.txt',
+    '.md',
 ]
 const typeLabels = {
     video: '视频',
@@ -63,10 +70,7 @@ const loading = ref(false)
 const fileList = ref([])
 const selectedFile = ref(null)
 const selectedType = ref('all')
-const sortState = ref({
-    prop: 'uploadTime',
-    order: 'descending',
-})
+const sortBy = ref('upload-desc')
 const uploadStatus = ref('idle')
 const progress = ref(0)
 const speedText = ref('0 B/s')
@@ -77,6 +81,24 @@ const uploadedBytes = ref(0)
 const startTime = ref(0)
 const uploadControllers = ref(new Set())
 const hashWorker = ref(null)
+const typeOptions = [
+    { label: '全部', value: 'all' }, { label: '视频', value: 'video' },
+    { label: '音频', value: 'audio' }, { label: '文档', value: 'doc' },
+    { label: '压缩包', value: 'package' }, { label: '数据', value: 'data' },
+]
+const sortOptions = [
+    { label: '最近上传', value: 'upload-desc' },
+    { label: '最早上传', value: 'upload-asc' },
+    { label: '文件名 A–Z', value: 'name-asc' },
+    { label: '文件名 Z–A', value: 'name-desc' },
+    { label: '文件从大到小', value: 'size-desc' },
+    { label: '文件从小到大', value: 'size-asc' },
+]
+const rowActions = [
+    { key: 'copy', label: '复制链接' },
+    { key: 'download', label: '下载' },
+    { key: 'delete', label: '删除', danger: true },
+]
 
 const filteredFiles = computed(() => {
     if (selectedType.value === 'all') return fileList.value
@@ -90,23 +112,13 @@ const getFileTime = (file) => {
 
 const sortedFiles = computed(() => {
     const files = [...filteredFiles.value]
-    const { prop, order } = sortState.value
 
-    if (!prop || !order) return files
-
-    const direction = order === 'ascending' ? 1 : -1
-
-    return files.sort((a, b) => {
-        if (prop === 'name') {
-            return a.name.localeCompare(b.name) * direction
-        }
-
-        if (prop === 'size') {
-            return ((a.size ?? 0) - (b.size ?? 0)) * direction
-        }
-
-        return (getFileTime(a) - getFileTime(b)) * direction
-    })
+    if (sortBy.value === 'name-asc') return files.sort((a, b) => a.name.localeCompare(b.name))
+    if (sortBy.value === 'name-desc') return files.sort((a, b) => b.name.localeCompare(a.name))
+    if (sortBy.value === 'size-asc') return files.sort((a, b) => (a.size ?? 0) - (b.size ?? 0))
+    if (sortBy.value === 'size-desc') return files.sort((a, b) => (b.size ?? 0) - (a.size ?? 0))
+    if (sortBy.value === 'upload-asc') return files.sort((a, b) => getFileTime(a) - getFileTime(b))
+    return files.sort((a, b) => getFileTime(b) - getFileTime(a))
 })
 
 const uploadStatusText = computed(() => {
@@ -191,6 +203,11 @@ const handleFileSelected = (uploadFile) => {
     uploadedBytes.value = 0
     uploadStatus.value = 'idle'
     isPaused.value = false
+}
+const handleRowAction = (action, row) => {
+    if (action === 'copy') handleCopyUrl(row)
+    if (action === 'download') handleDownload(row)
+    if (action === 'delete') handleDelete(row)
 }
 
 const calculateHash = async (file) => {
@@ -483,13 +500,6 @@ const handleCopyUrl = async (row) => {
     ElMessage.success('访问地址已复制')
 }
 
-const handleSortChange = ({ prop, order }) => {
-    sortState.value = {
-        prop,
-        order,
-    }
-}
-
 const formatSize = (size) => {
     if (!size || size <= 0) return '0 B'
     const units = ['B', 'KB', 'MB', 'GB']
@@ -525,19 +535,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="large-file-page">
-        <el-card>
-            <template #header>
-                <div class="flex justify-between items-center">
-                    <span>大文件上传</span>
-                    <MaterialButton @click="fetchLargeFiles">
-                        <MaterialIcon class="button-icon" :path="mdiRefresh" />
-                        刷新列表
-                    </MaterialButton>
-                </div>
-            </template>
-
+    <AdminPage class="large-file-page">
+        <AdminCard title="大文件上传">
             <el-upload
+                class="large-file-upload"
                 drag
                 :auto-upload="false"
                 :show-file-list="false"
@@ -559,87 +560,72 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
                     <div class="upload-actions">
-                        <MaterialButton
+                        <AdminButton
                             v-if="canPause"
+                            :icon="mdiPause"
                             @click="pauseUpload"
-                        >
-                            <MaterialIcon class="button-icon" :path="mdiPause" />
-                            暂停
-                        </MaterialButton>
-                        <MaterialButton
-                            type="primary"
+                        >暂停</AdminButton>
+                        <AdminButton
+                            tone="primary"
+                            :icon="uploadStatus === 'paused' ? mdiPlay : mdiCloudUploadOutline"
                             :disabled="!canUpload"
                             @click="startUpload"
-                        >
-                            <MaterialIcon class="button-icon" :path="uploadStatus === 'paused' ? mdiPlay : mdiCloudUploadOutline" />
-                            {{ uploadStatus === 'paused' ? '继续' : '开始上传' }}
-                        </MaterialButton>
+                        >{{ uploadStatus === 'paused' ? '继续' : '开始上传' }}</AdminButton>
                     </div>
                 </div>
-                <el-progress :percentage="Number(progress.toFixed(1))" :status="uploadStatus === 'error' ? 'exception' : undefined" />
+                <v-progress-linear :model-value="Number(progress.toFixed(1))" :color="uploadStatus === 'error' ? 'error' : 'primary'" height="10" rounded />
             </div>
-        </el-card>
+        </AdminCard>
 
-        <el-card>
-            <template #header>
-                <div class="flex justify-between items-center">
-                    <span>大文件管理</span>
-                    <el-segmented
-                        v-model="selectedType"
-                        :options="[
-                            { label: '全部', value: 'all' },
-                            { label: '视频', value: 'video' },
-                            { label: '音频', value: 'audio' },
-                            { label: '文档', value: 'doc' },
-                            { label: '压缩包', value: 'package' },
-                            { label: '数据', value: 'data' },
-                        ]"
-                    />
-                </div>
-            </template>
-
-            <el-table
-                :data="sortedFiles"
-                v-loading="loading"
-                stripe
-                empty-text="暂无大文件"
-                :default-sort="{ prop: 'uploadTime', order: 'descending' }"
-                @sort-change="handleSortChange"
-            >
-                <el-table-column label="类型" width="110">
-                    <template #default="{ row }">
-                        <el-tag>
-                            <el-icon class="type-icon">
-                                <MaterialIcon :path="getTypeIcon(row.type)" />
-                            </el-icon>
-                            {{ typeLabels[row.type] }}
-                        </el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="name" label="文件名" min-width="220" sortable="custom" />
-                <el-table-column prop="size" label="大小" width="120" sortable="custom">
-                    <template #default="{ row }">{{ formatSize(row.size) }}</template>
-                </el-table-column>
-                <el-table-column prop="uploadTime" label="上传时间" width="180" sortable="custom">
-                    <template #default="{ row }">{{ formatDate(row.uploadDate) }}</template>
-                </el-table-column>
-                <el-table-column label="操作" width="88" fixed="right" align="center">
-                    <template #default="{ row }">
-                        <TableActionMenu>
-                            <TableActionItem kind="copy" @click="handleCopyUrl(row)">复制链接</TableActionItem>
-                            <TableActionItem kind="download" @click="handleDownload(row)">下载</TableActionItem>
-                            <TableActionItem kind="delete" @click="handleDelete(row)">删除</TableActionItem>
-                        </TableActionMenu>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </el-card>
-    </div>
+        <AdminCard title="文件列表">
+            <template #actions><AdminSegmented v-model="selectedType" :options="typeOptions" label="文件类型筛选" appearance="pill" /></template>
+            <div class="list-toolbar">
+                <span>{{ sortedFiles.length }} 个文件</span>
+                <AdminListSort v-model="sortBy" :options="sortOptions" />
+            </div>
+            <AdminList :items="sortedFiles" item-key="name" :loading="loading" empty-text="暂无大文件">
+                <template #item="{ item }">
+                    <AdminListItem
+                        :headline="item.name"
+                        :supporting-text="`${formatSize(item.size)} · ${formatDate(item.uploadDate)}`"
+                    >
+                        <template #leading><MaterialIcon class="file-type-icon" :path="getTypeIcon(item.type)" /></template>
+                        <template #overline><AdminListLabel>{{ typeLabels[item.type] || '文件' }}</AdminListLabel></template>
+                        <template #actions><AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" /></template>
+                    </AdminListItem>
+                </template>
+            </AdminList>
+        </AdminCard>
+    </AdminPage>
 </template>
 
 <style scoped>
 .upload-panel {
     margin-top: 16px;
+}
+
+.large-file-upload { width: 100%; }
+.large-file-upload :deep(.el-upload) { width: 100%; }
+.large-file-upload :deep(.el-upload-dragger) {
+    display: grid;
+    min-height: 210px;
+    place-content: center;
+    place-items: center;
+    gap: 16px;
+    border: 2px dashed var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface-container);
+}
+.large-file-upload :deep(.el-icon--upload) {
+    width: 64px;
+    height: 64px;
+    margin: 0;
+    color: var(--md-sys-color-on-surface-variant);
+}
+.large-file-upload :deep(.el-upload__text) { max-width: 100%; text-align: center; }
+.large-file-upload :deep(.el-upload-dragger:hover),
+.large-file-upload :deep(.el-upload-dragger.is-dragover) {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
 }
 
 .file-summary {
@@ -660,7 +646,7 @@ onBeforeUnmount(() => {
 
 .file-meta {
     margin-top: 4px;
-    color: #64748b;
+    color: var(--admin-text-muted);
     font-size: 13px;
 }
 
@@ -670,10 +656,8 @@ onBeforeUnmount(() => {
     flex-shrink: 0;
 }
 
-.type-icon {
-    margin-right: 4px;
-    vertical-align: -2px;
-}
+.list-toolbar { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.file-type-icon { width: 28px; height: 28px; }
 
 @media (max-width: 768px) {
     .file-summary {
@@ -683,6 +667,11 @@ onBeforeUnmount(() => {
 
     .file-name {
         max-width: 100%;
+    }
+
+    .list-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
 </style>

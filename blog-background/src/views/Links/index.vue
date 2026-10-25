@@ -1,19 +1,47 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { computed, ref, onMounted, reactive } from 'vue'
+import { mdiPlus } from '@mdi/js'
 import { getLinks, createLink, updateLink, deleteLink } from '@/api/links.js'
-import { ElMessageBox } from 'element-plus'
 import { getTimestampToSeconds } from '@/utils/date.js'
-import TableActionItem from '@/components/TableActionItem.vue'
-import TableActionMenu from '@/components/TableActionMenu.vue'
+import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
+import AdminButton from '@/components/admin/AdminButton.vue'
+import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminDialog from '@/components/admin/AdminDialog.vue'
+import AdminList from '@/components/admin/AdminList.vue'
+import AdminListItem from '@/components/admin/AdminListItem.vue'
+import AdminListSort from '@/components/admin/AdminListSort.vue'
+import AdminPage from '@/components/admin/AdminPage.vue'
+import MaterialTextField from '@/components/material/MaterialTextField.vue'
 
 const tableData = ref([])
 const dialogFormVisible = ref(false)
+const deleteDialogVisible = ref(false)
+const pendingDelete = ref(null)
+const snackbar = reactive({ visible: false, text: '', color: 'primary' })
+const formErrors = reactive({ name: '', description: '', site: '', avatar: '' })
+const sortBy = ref('recent')
+const sortOptions = [
+  { label: '最近添加', value: 'recent' },
+  { label: '名称 A–Z', value: 'name-asc' },
+  { label: '名称 Z–A', value: 'name-desc' }
+]
+const rowActions = [
+  { key: 'edit', label: '编辑' },
+  { key: 'delete', label: '删除', danger: true }
+]
 const form = reactive({
   id: '',
   name: '',
   description: '',
   site: '',
   avatar: ''
+})
+const sortedLinks = computed(() => {
+  const links = [...tableData.value]
+
+  if (sortBy.value === 'name-asc') return links.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+  if (sortBy.value === 'name-desc') return links.sort((a, b) => b.name.localeCompare(a.name, 'zh-CN'))
+  return links.sort((a, b) => Number(b.id) - Number(a.id))
 })
 
 onMounted(() => {
@@ -25,25 +53,35 @@ async function getLinksList() {
   tableData.value = res
 }
 
-function handleDelete(index, row) {
-  ElMessageBox.confirm('确定删除该友链吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(
-    async () => {
-      await deleteLink(row.id)
-      tableData.value.splice(index, 1)
-      ElMessageBox.alert('删除成功', '提示', {
-        confirmButtonText: '确定',
-        type: 'success'
-      })
-    }
-  ).catch(() => {
-  })
+function handleDelete(row) {
+  pendingDelete.value = row
+  deleteDialogVisible.value = true
 }
 
-function handleEdit(index, row) {
+async function confirmDelete() {
+  const target = pendingDelete.value
+  if (!target) return
+  await deleteLink(target.id)
+  const index = tableData.value.findIndex(item => item.id === target.id)
+  if (index >= 0) tableData.value.splice(index, 1)
+  deleteDialogVisible.value = false
+  pendingDelete.value = null
+  showMessage('友链已删除', 'success')
+}
+
+function showMessage(text, color = 'primary') {
+  snackbar.text = text
+  snackbar.color = color
+  snackbar.visible = true
+}
+
+function handleRowAction(action, row) {
+  if (action === 'edit') handleEdit(row)
+  if (action === 'delete') handleDelete(row)
+}
+
+function handleEdit(row) {
+  clearFormErrors()
   dialogFormVisible.value = true
   form.id = row.id
   form.name = row.name
@@ -53,6 +91,7 @@ function handleEdit(index, row) {
 }
 
 function handleAddLink() {
+  clearFormErrors()
   dialogFormVisible.value = true
   form.id = ''
   form.name = ''
@@ -61,14 +100,16 @@ function handleAddLink() {
   form.avatar = ''
 }
 
+function clearFormErrors() {
+  Object.keys(formErrors).forEach(key => { formErrors[key] = '' })
+}
+
 async function handleConfirm() {
-  if (!form.name || !form.description || !form.site || !form.avatar) {
-    ElMessageBox.alert('请填写完整信息', '提示', {
-      confirmButtonText: '确定',
-      type: 'warning'
-    })
-    return
-  }
+  formErrors.name = form.name.trim() ? '' : '请输入友链名称'
+  formErrors.description = form.description.trim() ? '' : '请输入友链描述'
+  formErrors.site = form.site.trim() ? '' : '请输入友链网址'
+  formErrors.avatar = form.avatar.trim() ? '' : '请输入头像地址'
+  if (Object.values(formErrors).some(Boolean)) return
 
   try {
     if (form.id) {
@@ -80,10 +121,7 @@ async function handleConfirm() {
       await createLink(form)
     }
     
-    ElMessageBox.alert('操作成功', '提示', {
-      confirmButtonText: '确定',
-      type: 'success'
-    })
+    showMessage(form.id ? '友链已更新' : '友链已添加', 'success')
     dialogFormVisible.value = false
     getLinksList()
   } catch (err) {
@@ -93,63 +131,77 @@ async function handleConfirm() {
 </script>
 
 <template>
-  <!-- 新增友链按钮 -->
-  <div class="w-full bg-white border-b">
-    <button class="bg-blue-400 text-white w-10 h-7 rounded-lg m-2" @click="handleAddLink">+</button>
-  </div>
-  <!-- 友链表格 -->
-  <el-table :data="tableData" max-height="703px">
-    <el-table-column label="头像" width="140">
-      <template #default="scope">
-        <el-image style="width: 50px; height: 50px" :src="scope.row.avatar" :preview-src-list="[scope.row.avatar]"
-          fit="cover" preview-teleported />
-      </template>
-    </el-table-column>
-    <el-table-column prop="name" label="名称" width="200">
-    </el-table-column>
-    <el-table-column prop="description" label="描述" width="400">
-    </el-table-column>
-    <el-table-column prop="site" label="网址" width="300">
-      <template #default="scope">
-        <a :href="scope.row.site" target="_blank" class="text-blue-400">{{ scope.row.site }}</a>
-      </template>
-    </el-table-column>
-    <el-table-column fixed="right" label="操作" width="88" align="center">
-      <template #default="scope">
-        <TableActionMenu>
-          <TableActionItem kind="edit" @click="handleEdit(scope.$index, scope.row)">编辑</TableActionItem>
-          <TableActionItem kind="delete" @click="handleDelete(scope.$index, scope.row)">删除</TableActionItem>
-        </TableActionMenu>
-      </template>
-    </el-table-column>
-  </el-table>
-
-  <!-- 编辑/新增表单 -->
-  <MaterialDialog v-model="dialogFormVisible" :title="form.id ? '编辑友链' : '新增友链'" width="500">
-    <el-form :model="form">
-      <el-form-item label="名称" label-width="80px">
-        <MaterialInput v-model="form.name" />
-      </el-form-item>
-      <el-form-item label="描述" label-width="80px">
-        <MaterialInput v-model="form.description" />
-      </el-form-item>
-      <el-form-item label="网址" label-width="80px">
-        <MaterialInput v-model="form.site" />
-      </el-form-item>
-      <el-form-item label="头像" label-width="80px">
-        <MaterialInput v-model="form.avatar" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <MaterialButton @click="dialogFormVisible = false">取消</MaterialButton>
-        <MaterialButton type="primary" @click="handleConfirm">
-          确认
-        </MaterialButton>
+  <AdminPage>
+    <AdminCard title="友链列表">
+      <template #actions><AdminButton tone="primary" :icon="mdiPlus" @click="handleAddLink">新增友链</AdminButton></template>
+      <div class="list-toolbar">
+        <span>{{ sortedLinks.length }} 个友链</span>
+        <AdminListSort v-model="sortBy" :options="sortOptions" />
       </div>
+      <AdminList :items="sortedLinks" item-key="id" empty-text="暂无友链">
+        <template #item="{ item }">
+          <AdminListItem :headline="item.name" :supporting-text="item.description">
+            <template #leading>
+              <v-avatar :image="item.avatar" size="56" rounded="circle" />
+            </template>
+            <template #supporting>
+              <span>{{ item.description }}</span>
+              <a class="link-address" :href="item.site" target="_blank" rel="noreferrer">{{ item.site }}</a>
+            </template>
+            <template #actions>
+              <AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" />
+            </template>
+          </AdminListItem>
+        </template>
+      </AdminList>
+    </AdminCard>
+  </AdminPage>
+
+  <AdminDialog v-model="dialogFormVisible" :title="form.id ? '编辑友链' : '新增友链'" max-width="560">
+    <MaterialTextField v-model="form.name" label="名称" required :error-message="formErrors.name" @update:model-value="formErrors.name = ''" />
+    <MaterialTextField v-model="form.description" label="描述" required :error-message="formErrors.description" @update:model-value="formErrors.description = ''" />
+    <MaterialTextField v-model="form.site" label="网址" required supporting-text="请输入包含 https:// 的完整地址" :error-message="formErrors.site" @update:model-value="formErrors.site = ''" />
+    <MaterialTextField v-model="form.avatar" label="头像地址" required supporting-text="请输入可公开访问的图片地址" :error-message="formErrors.avatar" @update:model-value="formErrors.avatar = ''" />
+    <template #actions>
+      <AdminButton variant="text" @click="dialogFormVisible = false">取消</AdminButton>
+      <AdminButton variant="text" @click="handleConfirm">确认</AdminButton>
     </template>
-  </MaterialDialog>
+  </AdminDialog>
+
+  <AdminDialog v-model="deleteDialogVisible" title="删除友链" max-width="440">
+    <p>确定删除“{{ pendingDelete?.name }}”吗？此操作无法撤销。</p>
+    <template #actions>
+      <AdminButton variant="text" @click="deleteDialogVisible = false">取消</AdminButton>
+      <AdminButton variant="danger-text" @click="confirmDelete">删除</AdminButton>
+    </template>
+  </AdminDialog>
+
+  <v-snackbar v-model="snackbar.visible" :color="snackbar.color" rounded="lg" location="top right">
+    {{ snackbar.text }}
+  </v-snackbar>
 </template>
 
 <style scoped>
+.list-toolbar {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+}
+
+.link-address {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--md-sys-color-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link-address:hover { text-decoration: underline; }
 </style>

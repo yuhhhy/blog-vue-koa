@@ -1,11 +1,20 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { mdiMagnify } from '@mdi/js';
 import { apiDeleteImage, apiGenerateImageVariants, apiGetImageList, apiReuploadImage } from '@/api/files.js';
 import cfg from '@/config/index.js';
 import { useUserStore } from '@/stores/userStore';
-import TableActionItem from '@/components/TableActionItem.vue';
-import TableActionMenu from '@/components/TableActionMenu.vue';
+import AdminActionMenu from '@/components/admin/AdminActionMenu.vue';
+import AdminCard from '@/components/admin/AdminCard.vue';
+import AdminFileButton from '@/components/admin/AdminFileButton.vue';
+import AdminList from '@/components/admin/AdminList.vue';
+import AdminListItem from '@/components/admin/AdminListItem.vue';
+import AdminListLabel from '@/components/admin/AdminListLabel.vue';
+import AdminListSort from '@/components/admin/AdminListSort.vue';
+import AdminPage from '@/components/admin/AdminPage.vue';
+import AdminSegmented from '@/components/admin/AdminSegmented.vue';
+import MaterialTextField from '@/components/material/MaterialTextField.vue';
 
 const baseApi = cfg.baseApi;
 const userStore = useUserStore();
@@ -23,17 +32,29 @@ const pageSize = ref(8);
 const uploadMode = ref('keep');
 const generatingImages = ref(new Set());
 const reuploadingImages = ref(new Set());
-const sortState = ref({
-    prop: 'uploadTime',
-    order: 'descending',
-});
+const sortBy = ref('upload-desc');
+const sortOptions = [
+    { label: '最近上传', value: 'upload-desc' },
+    { label: '最早上传', value: 'upload-asc' },
+    { label: '文件名 A–Z', value: 'name-asc' },
+    { label: '文件名 Z–A', value: 'name-desc' },
+    { label: '文件从大到小', value: 'size-desc' },
+    { label: '文件从小到大', value: 'size-asc' },
+];
+const uploadOptions = [
+    { label: '保留原格式', value: 'keep' },
+    { label: '转为 AVIF', value: 'avif' },
+];
+const rowActions = [
+    { key: 'download', label: '下载' },
+    { key: 'generate', label: '生成缩略图' },
+    { key: 'reupload', label: '重传' },
+    { key: 'delete', label: '删除', danger: true },
+];
 
 const uploadData = computed(() => ({
     convertToAvif: uploadMode.value === 'avif' ? 'true' : 'false'
 }));
-
-const isGenerating = (name) => generatingImages.value.has(name);
-const isReuploading = (name) => reuploadingImages.value.has(name);
 
 const setLoadingName = (state, name, loading) => {
     const nextState = new Set(state.value);
@@ -61,29 +82,23 @@ const getImageTime = (image) => {
 
 const sortedImages = computed(() => {
     const images = [...filteredImages.value];
-    const { prop, order } = sortState.value;
 
-    if (!prop || !order) return images;
-
-    const direction = order === 'ascending' ? 1 : -1;
-
-    return images.sort((a, b) => {
-        if (prop === 'name') {
-            return a.name.localeCompare(b.name) * direction;
-        }
-
-        if (prop === 'size') {
-            return ((a.size ?? 0) - (b.size ?? 0)) * direction;
-        }
-
-        return (getImageTime(a) - getImageTime(b)) * direction;
-    });
+    if (sortBy.value === 'name-asc') return images.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy.value === 'name-desc') return images.sort((a, b) => b.name.localeCompare(a.name));
+    if (sortBy.value === 'size-asc') return images.sort((a, b) => (a.size ?? 0) - (b.size ?? 0));
+    if (sortBy.value === 'size-desc') return images.sort((a, b) => (b.size ?? 0) - (a.size ?? 0));
+    if (sortBy.value === 'upload-asc') return images.sort((a, b) => getImageTime(a) - getImageTime(b));
+    return images.sort((a, b) => getImageTime(b) - getImageTime(a));
 });
 
 const pagedImages = computed(() => {
     const start = (currentPage.value - 1) * pageSize.value;
     return sortedImages.value.slice(start, start + pageSize.value);
 });
+
+const previewImageUrls = computed(() => sortedImages.value.map(image => image.url));
+
+const getPreviewIndex = (image) => sortedImages.value.findIndex(item => item.name === image.name);
 
 // 从后端获取图片列表
 const fetchImageList = async () => {
@@ -107,6 +122,21 @@ const handleUploadSuccess = (response, file) => {
 // 文件上传失败的回调
 const handleUploadError = (error) => {
     ElMessage.error('图片上传失败，请检查文件大小或网络，或提升权限');
+};
+
+const uploadImages = async (files) => {
+    for (const file of files) {
+        const body = new FormData();
+        body.append('file', file);
+        body.append('convertToAvif', uploadData.value.convertToAvif);
+        try {
+            const response = await fetch(`${baseApi}/upload/image`, { method: 'POST', headers: uploadHeaders.value, body });
+            if (!response.ok) throw new Error('upload failed');
+            handleUploadSuccess(null, file);
+        } catch (error) {
+            handleUploadError(error);
+        }
+    }
 };
 
 const handleGenerateVariants = async (row) => {
@@ -139,6 +169,24 @@ const handleReupload = async (row, options) => {
     } finally {
         setLoadingName(reuploadingImages, row.name, false);
     }
+};
+
+const chooseReupload = (row) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+        const file = input.files?.[0];
+        if (file) handleReupload(row, { file });
+    };
+    input.click();
+};
+
+const handleRowAction = (action, row) => {
+    if (action === 'download') handleDownload(row);
+    if (action === 'generate') handleGenerateVariants(row);
+    if (action === 'reupload') chooseReupload(row);
+    if (action === 'delete') handleDelete(row);
 };
 
 // 删除图片
@@ -174,14 +222,6 @@ const handleCurrentChange = (page) => {
     currentPage.value = page;
 };
 
-const handleSortChange = ({ prop, order }) => {
-    sortState.value = {
-        prop,
-        order,
-    };
-    currentPage.value = 1;
-};
-
 const formatSize = (size) => {
     if (!size || size === 0) return '0 B';
     const k = 1024;
@@ -202,6 +242,11 @@ const formatDate = (dateString) => {
     }).format(date);
 };
 
+const getFileType = (filename) => {
+    const extension = filename?.split('.').pop();
+    return extension ? extension.toUpperCase() : '图片';
+};
+
 const getVariantTip = (row) => {
     if (!row.variantWidths?.length) return '暂无缩略图信息';
 
@@ -214,7 +259,7 @@ onMounted(() => {
     fetchImageList();
 });
 
-watch([searchQuery, filteredImages], () => {
+watch([searchQuery, filteredImages, sortBy], () => {
     const maxPage = Math.max(1, Math.ceil(filteredImages.value.length / pageSize.value));
     if (currentPage.value > maxPage) {
         currentPage.value = 1;
@@ -224,125 +269,82 @@ watch([searchQuery, filteredImages], () => {
 </script>
 
 <template>
-    <el-card>
-        <template #header>
-            <div class="flex justify-between items-center">
-                <span>图片管理</span>
-                <div class="flex items-center gap-3">
-                    <el-radio-group v-model="uploadMode" size="small">
-                        <el-radio-button label="keep">保留原格式</el-radio-button>
-                        <el-radio-button label="avif">转为 AVIF</el-radio-button>
-                    </el-radio-group>
-                    <el-upload
-                        :action="`${baseApi}/upload/image`"
-                        :headers="uploadHeaders"
-                        :data="uploadData"
-                        :show-file-list="false"
-                        :on-success="handleUploadSuccess"
-                        :on-error="handleUploadError"
-                        name="file"
-                        accept="image/*"
-                    >
-                        <MaterialButton type="primary">上传图片</MaterialButton>
-                    </el-upload>
+    <AdminPage>
+        <AdminCard title="图片列表">
+            <div class="upload-toolbar" aria-label="图片上传">
+                <div class="upload-toolbar__actions">
+                    <AdminSegmented v-model="uploadMode" :options="uploadOptions" label="图片上传格式" appearance="pill" />
+                    <AdminFileButton accept="image/*" multiple label="上传图片" @select="uploadImages" />
                 </div>
             </div>
-        </template>
-
-        <MaterialInput
-            v-model="searchQuery"
-            placeholder="搜索图片名称"
-            clearable
-            class="mb-4"
-        />
-
-        <el-table
-            :data="pagedImages"
-            v-loading="loading"
-            stripe
-            empty-text="暂无图片，或无法连接到服务器"
-            :default-sort="{ prop: 'uploadTime', order: 'descending' }"
-            @sort-change="handleSortChange"
-        >
-            <el-table-column label="预览" width="120">
-                <template #default="{ row }">
-                    <el-image
-                        style="width: 80px; height: 80px; border-radius: 4px;"
-                        :src="`${row.url}`"
-                        :preview-src-list="filteredImages.map(img => `${img.url}`)"
-                        :initial-index="filteredImages.findIndex(img => img.name === row.name)"
-                        preview-teleported
-                        fit="cover"
-                        lazy
-                    />
+            <div class="list-toolbar">
+                <MaterialTextField v-model="searchQuery" type="search" label="搜索图片名称" :leading-icon="mdiMagnify" class="table-search" />
+                <AdminListSort v-model="sortBy" :options="sortOptions" />
+            </div>
+            <div class="list-count">{{ filteredImages.length }} 张图片</div>
+            <AdminList :items="pagedImages" item-key="name" :loading="loading" empty-text="暂无图片，或无法连接到服务器">
+                <template #item="{ item }">
+                    <AdminListItem class="image-list-item" :headline="item.name" :supporting-text="`${formatSize(item.size)} · ${formatDate(item.uploadDate)}`">
+                        <template #leading>
+                            <el-image
+                                class="image-thumbnail"
+                                :src="item.url"
+                                :preview-src-list="previewImageUrls"
+                                :initial-index="getPreviewIndex(item)"
+                                preview-teleported
+                                fit="cover"
+                                lazy
+                            />
+                        </template>
+                        <template #overline>
+                            <AdminListLabel>{{ getFileType(item.name) }}</AdminListLabel>
+                            <v-tooltip :text="getVariantTip(item)">
+                                <template #activator="{ props }">
+                                    <span v-bind="props">
+                                        <AdminListLabel :tone="item.hasAllVariants ? 'success' : 'warning'">
+                                            {{ item.hasAllVariants ? '缩略图完整' : '缺少缩略图' }}
+                                        </AdminListLabel>
+                                    </span>
+                                </template>
+                            </v-tooltip>
+                        </template>
+                        <template #actions><AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" /></template>
+                    </AdminListItem>
                 </template>
-            </el-table-column>
-            <el-table-column prop="name" label="文件名" sortable="custom">
-                <template #default="{ row }">
-                    <span>{{ row.name }}</span>
-                </template>
-            </el-table-column>
-            <el-table-column prop="size" label="大小" width="120" sortable="custom">
-                <template #default="{ row }">
-                    {{ formatSize(row.size) }}
-                </template>
-            </el-table-column>
-            <el-table-column label="缩略图" width="150">
-                <template #default="{ row }">
-                    <el-tooltip :content="getVariantTip(row)" placement="top">
-                        <el-tag :type="row.hasAllVariants ? 'success' : 'warning'" effect="plain">
-                            {{ row.hasAllVariants ? '完整' : '缺少' }}
-                        </el-tag>
-                    </el-tooltip>
-                </template>
-            </el-table-column>
-            <el-table-column prop="uploadTime" label="上传时间" width="180" sortable="custom">
-                <template #default="{ row }">
-                    {{ formatDate(row.uploadDate) }}
-                </template>
-            </el-table-column>
-            <el-table-column label="操作" width="88" fixed="right" align="center">
-                <template #default="{ row }">
-                    <TableActionMenu>
-                        <TableActionItem kind="download" @click="handleDownload(row)">下载</TableActionItem>
-                        <TableActionItem
-                            kind="generate"
-                            :loading="isGenerating(row.name)"
-                            @click="handleGenerateVariants(row)"
-                        >生成缩略图</TableActionItem>
-                        <el-upload
-                            class="inline-upload"
-                            :show-file-list="false"
-                            :http-request="(options) => handleReupload(row, options)"
-                            accept="image/*"
-                        >
-                            <TableActionItem kind="reupload" :loading="isReuploading(row.name)">重传</TableActionItem>
-                        </el-upload>
-                        <TableActionItem kind="delete" @click="handleDelete(row)">删除</TableActionItem>
-                    </TableActionMenu>
-                </template>
-            </el-table-column>
-        </el-table>
-
-        <div class="flex justify-end mt-4">
-            <el-pagination
-                background
-                :total="filteredImages.length"
-                :current-page="currentPage"
-                :page-size="pageSize"
-                :page-sizes="[8, 12, 20, 40]"
-                layout="total, sizes, prev, pager, next, jumper"
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-            />
-        </div>
-    </el-card>
+            </AdminList>
+            <div class="image-pagination">
+                <label class="page-size-control">每页
+                    <select :value="pageSize" @change="handleSizeChange(Number($event.target.value))">
+                        <option v-for="size in [8, 12, 20, 40]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                </label>
+                <v-pagination :model-value="currentPage" :length="Math.max(1, Math.ceil(filteredImages.length / pageSize))" rounded="circle" @update:model-value="handleCurrentChange" />
+            </div>
+        </AdminCard>
+    </AdminPage>
 </template>
 
 <style scoped>
-.inline-upload {
-    display: inline-block;
-    margin: 0 12px;
-    vertical-align: middle;
+.upload-toolbar { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 28px; }
+.upload-toolbar__actions { display: flex; align-items: center; gap: 8px; }
+.list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+.table-search { max-width: 360px; }
+.table-search :deep(.material-field__control), .table-search :deep(.material-field__body) { min-height: 48px; }
+.table-search :deep(.material-field__input) { height: 48px; padding-top: 6px; font-size: 15px; }
+.list-count { margin: 0 0 8px 4px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.image-list-item { min-height: 104px; }
+.image-list-item :deep(.admin-list-item__leading), .image-thumbnail { width: 80px; height: 80px; }
+.image-list-item :deep(.admin-list-item__leading) { border-radius: 8px; }
+.image-thumbnail { cursor: zoom-in; }
+.image-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 16px; }
+.page-size-control { display: inline-flex; align-items: center; gap: 8px; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+.page-size-control select { height: 36px; padding: 0 28px 0 12px; border: 0; border-radius: var(--admin-radius); color: var(--admin-text); background: var(--admin-surface-muted); }
+@media (max-width: 760px) {
+    .upload-toolbar { align-items: stretch; justify-content: flex-start; }
+    .upload-toolbar__actions, .image-pagination { align-items: stretch; flex-direction: column; }
+    .list-toolbar { align-items: flex-start; flex-direction: column; }
+    .list-toolbar .table-search { width: 100%; }
+    .image-list-item { min-height: 96px; }
+    .image-list-item :deep(.admin-list-item__leading), .image-thumbnail { width: 72px; height: 72px; }
 }
 </style>
