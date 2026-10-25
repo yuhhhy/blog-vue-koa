@@ -6,6 +6,7 @@ import { getFormatDateToMinutes } from '@/utils/date.js'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog.vue'
 import AdminDialog from '@/components/admin/AdminDialog.vue'
 import AdminList from '@/components/admin/AdminList.vue'
 import AdminListItem from '@/components/admin/AdminListItem.vue'
@@ -72,6 +73,7 @@ function showReplies(replies) {
  */
 // 控制审核弹框
 const reviewDialogVisible = ref(false)
+const deleteDialogVisible = ref(false)
 const currentReview = ref(null)
 // 处理点击
 function handleManage(row) {
@@ -98,8 +100,12 @@ async function reviewNotPassed() {
 }
 // 删除评论
 async function deleteComment() {
-  await apiDeleteComment(currentReview.value.id)
   reviewDialogVisible.value = false
+  deleteDialogVisible.value = true
+}
+async function confirmDeleteComment() {
+  await apiDeleteComment(currentReview.value.id)
+  deleteDialogVisible.value = false
   ElMessage.success('评论已删除')
   getComments()
 }
@@ -151,6 +157,7 @@ async function deleteComment() {
   <AdminDialog
     v-model="replyDialogVisible"
     title="评论回复"
+    description="查看该评论下的全部回复"
     max-width="720"
   >
     <AdminList :items="currentReplies" item-key="id" empty-text="暂无回复">
@@ -164,7 +171,7 @@ async function deleteComment() {
     <template #actions><AdminButton variant="text" @click="replyDialogVisible = false">关闭</AdminButton></template>
   </AdminDialog>
 
-  <AdminDialog v-model="reviewDialogVisible" title="评论审核" max-width="600">
+  <AdminDialog v-model="reviewDialogVisible" title="评论审核" description="查看评论内容并选择审核结果" max-width="600">
     <div v-if="currentReview">
       <div class="review-meta">{{ currentReview.username }} · {{ currentReview.email }}</div>
       <p class="review-content">{{ currentReview.content }}</p>
@@ -177,6 +184,15 @@ async function deleteComment() {
       <AdminButton tone="primary" @click="reviewPassed">通过审核</AdminButton>
     </template>
   </AdminDialog>
+
+  <AdminConfirmDialog
+    v-model="deleteDialogVisible"
+    title="删除评论"
+    :message="`确定删除 ${currentReview?.username || ''} 的这条评论吗？此操作无法撤销。`"
+    confirm-text="删除"
+    danger
+    @confirm="confirmDeleteComment"
+  />
 </template>
 
 <style scoped>

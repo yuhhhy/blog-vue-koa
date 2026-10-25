@@ -85,4 +85,8 @@ const createBlogAndBlogContent = async () => {
 .editor-card { overflow: hidden; }
 .editor-card :deep(.vditor) { border: 0; border-radius: var(--admin-radius); background: var(--md-sys-color-surface-container-low); }
 .editor-card :deep(.vditor-toolbar) { border-color: #e7e0ec; background: var(--admin-surface-muted); }
+@media (max-width: 720px) {
+    .editor-card :deep(.vditor-toolbar) { overflow-x: auto; white-space: nowrap; }
+    .editor-card :deep(.vditor-content) { min-height: 360px; }
+}
 </style>

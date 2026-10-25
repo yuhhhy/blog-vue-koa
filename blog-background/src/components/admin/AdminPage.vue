@@ -26,7 +26,7 @@
 }
 
 @media (max-width: 720px) {
-  .admin-page { padding: 16px; }
+  .admin-page { gap: 20px; padding: 16px; }
   .admin-page__actions { flex-wrap: wrap; justify-content: stretch; }
 }
 </style>

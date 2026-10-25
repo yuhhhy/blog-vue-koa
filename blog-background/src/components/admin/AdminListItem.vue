@@ -131,12 +131,24 @@ defineProps({
 
 @media (max-width: 760px) {
   .admin-list-item {
+    grid-template-areas:
+      "leading content actions"
+      "leading trailing actions";
     grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 12px;
+    column-gap: 12px;
+    row-gap: 2px;
+    padding-left: 12px;
   }
 
+  .admin-list-item__leading { grid-area: leading; }
+  .admin-list-item__content { grid-area: content; }
+  .admin-list-item__actions { grid-area: actions; }
   .admin-list-item__trailing {
-    display: none;
+    grid-area: trailing;
+    min-height: 0;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
   }
 }
 </style>

@@ -6,6 +6,7 @@ import { getTimestampToSeconds } from '@/utils/date.js'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog.vue'
 import AdminDialog from '@/components/admin/AdminDialog.vue'
 import AdminList from '@/components/admin/AdminList.vue'
 import AdminListItem from '@/components/admin/AdminListItem.vue'
@@ -157,24 +158,25 @@ async function handleConfirm() {
     </AdminCard>
   </AdminPage>
 
-  <AdminDialog v-model="dialogFormVisible" :title="form.id ? '编辑友链' : '新增友链'" max-width="560">
+  <AdminDialog v-model="dialogFormVisible" :title="form.id ? '编辑友链' : '新增友链'" description="填写友链展示信息和访问地址" max-width="560">
     <MaterialTextField v-model="form.name" label="名称" required :error-message="formErrors.name" @update:model-value="formErrors.name = ''" />
     <MaterialTextField v-model="form.description" label="描述" required :error-message="formErrors.description" @update:model-value="formErrors.description = ''" />
     <MaterialTextField v-model="form.site" label="网址" required supporting-text="请输入包含 https:// 的完整地址" :error-message="formErrors.site" @update:model-value="formErrors.site = ''" />
     <MaterialTextField v-model="form.avatar" label="头像地址" required supporting-text="请输入可公开访问的图片地址" :error-message="formErrors.avatar" @update:model-value="formErrors.avatar = ''" />
     <template #actions>
       <AdminButton variant="text" @click="dialogFormVisible = false">取消</AdminButton>
-      <AdminButton variant="text" @click="handleConfirm">确认</AdminButton>
+      <AdminButton tone="primary" @click="handleConfirm">{{ form.id ? '保存更改' : '添加友链' }}</AdminButton>
     </template>
   </AdminDialog>
 
-  <AdminDialog v-model="deleteDialogVisible" title="删除友链" max-width="440">
-    <p>确定删除“{{ pendingDelete?.name }}”吗？此操作无法撤销。</p>
-    <template #actions>
-      <AdminButton variant="text" @click="deleteDialogVisible = false">取消</AdminButton>
-      <AdminButton variant="danger-text" @click="confirmDelete">删除</AdminButton>
-    </template>
-  </AdminDialog>
+  <AdminConfirmDialog
+    v-model="deleteDialogVisible"
+    title="删除友链"
+    :message="`确定删除“${pendingDelete?.name || ''}”吗？此操作无法撤销。`"
+    confirm-text="删除"
+    danger
+    @confirm="confirmDelete"
+  />
 
   <v-snackbar v-model="snackbar.visible" :color="snackbar.color" rounded="lg" location="top right">
     {{ snackbar.text }}
@@ -204,4 +206,8 @@ async function handleConfirm() {
 }
 
 .link-address:hover { text-decoration: underline; }
+
+@media (max-width: 760px) {
+  .list-toolbar { align-items: flex-start; flex-direction: column; }
+}
 </style>

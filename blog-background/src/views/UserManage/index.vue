@@ -1,10 +1,11 @@
 <script setup>
 import { computed, ref, onMounted, reactive } from 'vue'
 import { apiGetUserList, apiDeleteUser, apiUpdateUser } from '@/api/user.js'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog.vue'
 import AdminDialog from '@/components/admin/AdminDialog.vue'
 import AdminList from '@/components/admin/AdminList.vue'
 import AdminListItem from '@/components/admin/AdminListItem.vue'
@@ -16,6 +17,9 @@ import MaterialTextField from '@/components/material/MaterialTextField.vue'
 const tableData = ref([])
 const loading = ref(false)
 const dialogFormVisible = ref(false)
+const deleteDialogVisible = ref(false)
+const pendingDelete = ref(null)
+const deleting = ref(false)
 const sortBy = ref('name-asc')
 const sortOptions = [
   { label: '用户名 A–Z', value: 'name-asc' },
@@ -55,19 +59,23 @@ const fetchUsers = async () => {
 onMounted(fetchUsers)
 
 function handleDelete(row) {
-  ElMessageBox.confirm('确定删除吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(
-    async () => {
-      await apiDeleteUser(row.userId)
-      const index = tableData.value.findIndex(item => item.userId === row.userId)
-      if (index >= 0) tableData.value.splice(index, 1)
-      ElMessage.success('用户已删除')
-    }
-  ).catch(() => {
-  })
+  pendingDelete.value = row
+  deleteDialogVisible.value = true
+}
+
+async function confirmDelete() {
+  if (!pendingDelete.value || deleting.value) return
+  deleting.value = true
+  try {
+    await apiDeleteUser(pendingDelete.value.userId)
+    const index = tableData.value.findIndex(item => item.userId === pendingDelete.value.userId)
+    if (index >= 0) tableData.value.splice(index, 1)
+    deleteDialogVisible.value = false
+    pendingDelete.value = null
+    ElMessage.success('用户已删除')
+  } finally {
+    deleting.value = false
+  }
 }
 
 function handleEdit(row) {
@@ -119,7 +127,7 @@ const handleRowAction = (action, row) => {
     </AdminCard>
   </AdminPage>
 
-  <AdminDialog v-model="dialogFormVisible" title="更改用户信息" max-width="520">
+  <AdminDialog v-model="dialogFormVisible" title="编辑用户" description="更新用户的登录信息" max-width="520">
     <div class="user-edit-form">
       <MaterialTextField v-model="form.username" label="用户名" required :error-message="formErrors.username" @update:model-value="formErrors.username = ''" />
       <MaterialTextField v-model="form.password" label="密码" type="password" revealable required :clearable="false" :error-message="formErrors.password" @update:model-value="formErrors.password = ''" />
@@ -127,9 +135,19 @@ const handleRowAction = (action, row) => {
     </div>
     <template #actions>
       <AdminButton variant="text" @click="dialogFormVisible = false">取消</AdminButton>
-      <AdminButton variant="text" @click="handleConfirm">确认</AdminButton>
+      <AdminButton tone="primary" @click="handleConfirm">保存更改</AdminButton>
     </template>
   </AdminDialog>
+
+  <AdminConfirmDialog
+    v-model="deleteDialogVisible"
+    title="删除用户"
+    :message="`确定删除用户“${pendingDelete?.username || ''}”吗？此操作无法撤销。`"
+    confirm-text="删除"
+    danger
+    :loading="deleting"
+    @confirm="confirmDelete"
+  />
 </template>
 
 <style scoped>

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import {
     mdiCloudUploadOutline,
     mdiFileDocumentOutline,
@@ -14,6 +14,7 @@ import MaterialIcon from '@/components/MaterialIcon.vue'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog.vue'
 import AdminList from '@/components/admin/AdminList.vue'
 import AdminListItem from '@/components/admin/AdminListItem.vue'
 import AdminListLabel from '@/components/admin/AdminListLabel.vue'
@@ -67,6 +68,9 @@ const uploadAccept = allowedExtensions.join(',')
 const staticBase = cfg.baseApi.endsWith('/api') ? cfg.baseApi.slice(0, -4) : ''
 
 const loading = ref(false)
+const deleteDialogVisible = ref(false)
+const pendingDelete = ref(null)
+const deleting = ref(false)
 const fileList = ref([])
 const selectedFile = ref(null)
 const selectedType = ref('all')
@@ -473,15 +477,22 @@ const pauseUpload = () => {
 }
 
 const handleDelete = (row) => {
-    ElMessageBox.confirm(`确定要删除文件 "${row.name}" 吗？`, '警告', {
-        confirmButtonText: '确定删除',
-        cancelButtonText: '取消',
-        type: 'warning',
-    }).then(async () => {
-        await apiDeleteLargeFile(row.type, row.name)
+    pendingDelete.value = row
+    deleteDialogVisible.value = true
+}
+
+const confirmDelete = async () => {
+    if (!pendingDelete.value || deleting.value) return
+    deleting.value = true
+    try {
+        await apiDeleteLargeFile(pendingDelete.value.type, pendingDelete.value.name)
         await fetchLargeFiles()
+        deleteDialogVisible.value = false
+        pendingDelete.value = null
         ElMessage.success('文件删除成功')
-    }).catch(() => {})
+    } finally {
+        deleting.value = false
+    }
 }
 
 const handleDownload = (row) => {
@@ -597,6 +608,15 @@ onBeforeUnmount(() => {
             </AdminList>
         </AdminCard>
     </AdminPage>
+    <AdminConfirmDialog
+        v-model="deleteDialogVisible"
+        title="删除文件"
+        :message="`确定删除“${pendingDelete?.name || ''}”吗？此操作无法撤销。`"
+        confirm-text="删除"
+        danger
+        :loading="deleting"
+        @confirm="confirmDelete"
+    />
 </template>
 
 <style scoped>
@@ -672,6 +692,15 @@ onBeforeUnmount(() => {
     .list-toolbar {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .upload-actions {
+        flex-wrap: wrap;
+    }
+
+    .large-file-upload :deep(.el-upload-dragger) {
+        min-height: 180px;
+        padding-inline: 16px;
     }
 }
 </style>

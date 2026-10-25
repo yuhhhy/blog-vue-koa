@@ -3,7 +3,7 @@ import { computed, reactive, ref, onMounted } from 'vue'
 import { apiGetBlogList, apiDeleteBlog, apiUpdateBlog } from '@/api/blog.js'
 import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } from '@/api/blogContent.js'
 import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount } from '@/api/websiteData.js'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import MaterialIcon from '@/components/MaterialIcon.vue'
 import { mdiDownload, mdiFileDocumentOutline } from '@mdi/js'
 import { getFormatDate } from '@/utils/date.js'
@@ -12,6 +12,8 @@ import Vditor from '@/views/ArticleCreate/components/Vditor.vue'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog.vue'
+import AdminDialog from '@/components/admin/AdminDialog.vue'
 import AdminList from '@/components/admin/AdminList.vue'
 import AdminListItem from '@/components/admin/AdminListItem.vue'
 import AdminListLabel from '@/components/admin/AdminListLabel.vue'
@@ -22,6 +24,9 @@ import MaterialTextField from '@/components/material/MaterialTextField.vue'
 
 const tableData = ref([])
 const dialogFormVisible = ref(false)
+const deleteDialogVisible = ref(false)
+const pendingDelete = ref(null)
+const deleting = ref(false)
 const exporting = ref(false)
 const sortBy = ref('created-desc')
 const sortOptions = [
@@ -157,29 +162,25 @@ const handleExportAll = async () => {
 
 // 处理删除
 function handleDelete(row) {
-  ElMessageBox.confirm('确定删除吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(
-    async () => {
-      // 更新数据
-      await apiDeleteBlog(row.id)
-      await apiDeleteBlogContent(row.id)
-      // 更新视图
-      const index = tableData.value.findIndex(item => item.id === row.id)
-      if (index >= 0) tableData.value.splice(index, 1)
-      // 更新网站更新时间
-      apiUpdateWebsiteLastUpdate()
-      // 更新网站总字数
-      apiUpdateWebsiteTotalWordCount()
+  pendingDelete.value = row
+  deleteDialogVisible.value = true
+}
 
-      ElMessageBox.alert('删除成功', '提示', {
-        confirmButtonText: '确定',
-        type: 'success'
-      })
-  }).catch(() => {
-  })
+async function confirmDelete() {
+  if (!pendingDelete.value || deleting.value) return
+  deleting.value = true
+  try {
+    await apiDeleteBlog(pendingDelete.value.id)
+    await apiDeleteBlogContent(pendingDelete.value.id)
+    const index = tableData.value.findIndex(item => item.id === pendingDelete.value.id)
+    if (index >= 0) tableData.value.splice(index, 1)
+    await Promise.all([apiUpdateWebsiteLastUpdate(), apiUpdateWebsiteTotalWordCount()])
+    deleteDialogVisible.value = false
+    pendingDelete.value = null
+    ElMessage.success('文章已删除')
+  } finally {
+    deleting.value = false
+  }
 }
 
 // 编辑文章信息前填入默认表单
@@ -207,10 +208,7 @@ async function handleConfirm() {
   formErrors.tags = form.tags.length ? '' : '请添加至少一个标签'
   if (Object.values(formErrors).some(Boolean)) return
   if (!form.content) {
-    ElMessageBox.alert('文章内容不能为空', '提示', {
-      confirmButtonText: '确定',
-      type: 'warning'
-    })
+    ElMessage.warning('文章内容不能为空')
     return
   }
 
@@ -259,10 +257,7 @@ async function UpdateBlog(id) {
     updateTime
   })
 
-  ElMessageBox.alert('修改成功', '提示', {
-    confirmButtonText: '确定',
-    type: 'success'
-  })
+  ElMessage.success('文章修改成功')
 }
 </script>
 
@@ -301,7 +296,7 @@ async function UpdateBlog(id) {
   </AdminPage>
 
   <!-- 更改表单 -->
-  <MaterialDialog v-model="dialogFormVisible" title="更改博客信息" width="800">
+  <AdminDialog v-model="dialogFormVisible" title="编辑文章" description="修改文章基本信息和正文内容" max-width="800">
     <div class="article-edit-form">
       <MaterialTextField v-model="form.author" label="作者" required :error-message="formErrors.author" @update:model-value="formErrors.author = ''" />
       <MaterialTextField v-model="form.title" label="标题" required :error-message="formErrors.title" @update:model-value="formErrors.title = ''" />
@@ -336,15 +331,21 @@ async function UpdateBlog(id) {
     <!-- 文本编辑器 -->
     <Vditor :content="form.content" @vblur="blurHandler"></Vditor>
 
-    <template #footer>
-      <div class="dialog-footer">
-        <MaterialButton @click="dialogFormVisible = false">取消</MaterialButton>
-        <MaterialButton type="primary" @click="handleConfirm">
-          确认
-        </MaterialButton>
-      </div>
+    <template #actions>
+      <AdminButton variant="text" @click="dialogFormVisible = false">取消</AdminButton>
+      <AdminButton tone="primary" @click="handleConfirm">保存更改</AdminButton>
     </template>
-  </MaterialDialog>
+  </AdminDialog>
+
+  <AdminConfirmDialog
+    v-model="deleteDialogVisible"
+    title="删除文章"
+    :message="`确定删除“${pendingDelete?.title || ''}”吗？文章正文也会一并删除，此操作无法撤销。`"
+    confirm-text="删除"
+    danger
+    :loading="deleting"
+    @confirm="confirmDelete"
+  />
 </template>
 
 <style scoped>
@@ -395,5 +396,6 @@ async function UpdateBlog(id) {
   .list-toolbar { align-items: flex-start; flex-direction: column; }
   .article-list-item { min-height: 96px; }
   .article-list-item :deep(.admin-list-item__leading), .article-cover { width: 72px; height: 72px; }
+  .cover-preview { width: 100%; max-width: 240px; }
 }
 </style>
