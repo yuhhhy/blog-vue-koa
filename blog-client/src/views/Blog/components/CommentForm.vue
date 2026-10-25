@@ -2,7 +2,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus/es/components/message/index.mjs'
-import { apiCreateComment, apiUpdateComment, apiSendEmailNotification } from '@/api/comment.js'
+import { apiCreateComment, apiSendEmailNotification } from '@/api/comment.js'
 import { apiUpdateWebsiteComment } from '@/api/websiteData.js'
 import { getAvatar } from '@/utils/avatar'
 
@@ -79,10 +79,10 @@ const onSubmit = () => {
 // 校验成功后的逻辑
 const doSubmit = async () => {
   try {
-    let avatarURL = '/src/assets/images/user_default.png'
+    let avatarURL = '/images/user_default.png'
     const hasCustomAvatar = form.avatar.trim().length > 0
 
-    // 如果用户填写了自定义头像URL，则使用它，否则使用默认头像
+    // 在创建评论前确定头像，避免创建后调用仅管理员可用的评论更新接口
     if (hasCustomAvatar) {
       // 验证URL格式
       try {
@@ -93,8 +93,7 @@ const doSubmit = async () => {
         return
       }
     } else {
-      // 使用默认头像
-      avatarURL = '/images/user_default.png'
+      avatarURL = await getAvatar(form.email)
     }
 
 
@@ -115,7 +114,6 @@ const doSubmit = async () => {
     await apiCreateComment(newComment)
 
     // 提交完成后清空表单数据
-    let userEmail = form.email
     form.username = ''
     form.email = ''
     form.website = ''
@@ -131,20 +129,6 @@ const doSubmit = async () => {
 
     // 更新网站评论数
     await apiUpdateWebsiteComment()
-
-
-    // 如果用户选择了默认头像或没有选择头像，则尝试自动获取头像
-    if (!hasCustomAvatar) {
-      // 尝试获取Grvatar头像，更新新评论的头像
-      const avatarSrc = await getAvatar(userEmail)
-
-      if (avatarSrc) {
-        newComment.avatar = avatarSrc
-        await apiUpdateComment(newComment)
-        // 触发更新评论
-        emit('updateComments')
-      }
-    }
 
 
     // 如果是有父评论，给它父评论的邮箱发送邮件
