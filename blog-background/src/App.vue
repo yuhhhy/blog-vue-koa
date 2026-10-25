@@ -2,10 +2,11 @@
 </script>
 
 <template>
-  <!-- 最外层容器 -->
-  <div class="h-screen w-screen relative">
-    <RouterView></RouterView>
-  </div>
+  <v-app>
+    <div class="h-screen w-screen relative">
+      <RouterView></RouterView>
+    </div>
+  </v-app>
 </template>
 
 <style scoped>
