@@ -8,7 +8,7 @@ import MaterialIcon from '@/components/MaterialIcon.vue'
 import { mdiDownload, mdiFileDocumentOutline } from '@mdi/js'
 import { getFormatDate } from '@/utils/date.js'
 import countWord from '@/utils/wordCount.js'
-import Vditor from '@/views/ArticleCreate/components/Vditor.vue'
+import MilkdownEditor from '@/views/ArticleCreate/components/MilkdownEditor.vue'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
@@ -329,7 +329,7 @@ async function UpdateBlog(id) {
       <MaterialTagField v-model="form.tags" label="标签" required :error-message="formErrors.tags" @update:model-value="formErrors.tags = ''" />
     </div>
     <!-- 文本编辑器 -->
-    <Vditor :content="form.content" @vblur="blurHandler"></Vditor>
+    <MilkdownEditor :content="form.content" @vblur="blurHandler" />
 
     <template #actions>
       <AdminButton variant="text" @click="dialogFormVisible = false">取消</AdminButton>

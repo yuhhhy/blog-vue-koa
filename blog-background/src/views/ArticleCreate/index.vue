@@ -1,5 +1,6 @@
 <script setup>
-import Vditor from './components/Vditor.vue'
+import { ref } from 'vue'
+import MilkdownEditor from './components/MilkdownEditor.vue'
 import ArticleForm from './components/ArticleForm.vue'
 import countWords from '@/utils/wordCount.js'
 import { ElMessage } from 'element-plus'
@@ -8,24 +9,41 @@ import { apiCreateBlogContent } from '@/api/blogContent.js'
 import { apiUpdateWebsiteLastUpdate, apiUpdateWebsiteTotalWordCount, apiUpdateWebsiteArticle } from '@/api/websiteData.js'
 import AdminCard from '@/components/admin/AdminCard.vue'
 import AdminPage from '@/components/admin/AdminPage.vue'
+import { useArticleStore } from '@/stores/articleStore.js'
 
 // 提交数据
 let blog = {}
+const submitting = ref(false)
+const editorRef = ref(null)
+const articleFormRef = ref(null)
+const articleStore = useArticleStore()
 
 const blurHandler = (content) => {
     blog = { ...blog, content }
 }
 
 // 处理用户的确定提交
-const submitHandler = (formData) => {
+const submitHandler = async (formData) => {
     // 文章内容不能为空
-    if (!blog.content || blog.content === '\n') {
+    if (!blog.content?.trim()) {
         ElMessage.error('文章内容不能为空')
         return
     }
 
     blog = { ...blog, ...formData }
-    createBlogAndBlogContent()
+    submitting.value = true
+    try {
+        await createBlogAndBlogContent()
+        articleStore.clearArticleDraft()
+        articleFormRef.value?.resetForm()
+        editorRef.value?.clearContent()
+        blog = {}
+        ElMessage.success('文章提交成功')
+    } catch {
+        ElMessage.error('文章提交失败，已保留全部草稿内容')
+    } finally {
+        submitting.value = false
+    }
 }
 
 // 创建博客和博客内容
@@ -62,31 +80,25 @@ const createBlogAndBlogContent = async () => {
         likeCount: 0
     })
 
-    // 更新最后更新时间
-    apiUpdateWebsiteLastUpdate()
-    // 更新站点总字数
-    apiUpdateWebsiteTotalWordCount()
-    // 更新网站总博客数
-    apiUpdateWebsiteArticle()
-    
-    ElMessage.success('文章提交成功')
+    // 统计数据更新失败不影响文章本身的创建结果
+    await Promise.allSettled([
+        apiUpdateWebsiteLastUpdate(),
+        apiUpdateWebsiteTotalWordCount(),
+        apiUpdateWebsiteArticle(),
+    ])
 }
 
 </script>
 
 <template>
     <AdminPage class="article-create-page">
-        <AdminCard title="文章正文" class="editor-card"><Vditor @vblur="blurHandler" /></AdminCard>
-        <ArticleForm @articleSubmit="submitHandler" />
+        <AdminCard title="文章正文" class="editor-card">
+            <MilkdownEditor ref="editorRef" @vblur="blurHandler" />
+        </AdminCard>
+        <ArticleForm ref="articleFormRef" :submitting="submitting" @articleSubmit="submitHandler" />
     </AdminPage>
 </template>
 
 <style scoped>
-.editor-card { overflow: hidden; }
-.editor-card :deep(.vditor) { border: 0; border-radius: var(--admin-radius); background: var(--md-sys-color-surface-container-low); }
-.editor-card :deep(.vditor-toolbar) { border-color: #e7e0ec; background: var(--admin-surface-muted); }
-@media (max-width: 720px) {
-    .editor-card :deep(.vditor-toolbar) { overflow-x: auto; white-space: nowrap; }
-    .editor-card :deep(.vditor-content) { min-height: 360px; }
-}
+.editor-card { overflow: visible; }
 </style>

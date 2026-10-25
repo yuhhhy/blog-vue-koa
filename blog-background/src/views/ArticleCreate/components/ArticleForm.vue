@@ -1,7 +1,8 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
+import { useArticleStore } from '@/stores/articleStore.js'
 import { useRouter } from 'vue-router'
 import cfg from '@/config/index.js'
 import AdminButton from '@/components/admin/AdminButton.vue'
@@ -12,14 +13,20 @@ import MaterialTagField from '@/components/material/MaterialTagField.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
 const baseApi = cfg.baseApi
 
-const emit = defineEmits(['articleSubmit'])
-const form = reactive({
-    title: '',
-    author: '',
-    tags: [],
-    coverImgUploaded: false
+const props = defineProps({
+  submitting: { type: Boolean, default: false }
 })
-const coverUploadMode = ref('keep')
+const emit = defineEmits(['articleSubmit'])
+const articleStore = useArticleStore()
+const savedForm = articleStore.createArticleForm || {}
+const form = reactive({
+    title: savedForm.title || '',
+    author: savedForm.author || '',
+    tags: Array.isArray(savedForm.tags) ? [...savedForm.tags] : [],
+    coverImg: savedForm.coverImg || '',
+    coverImgUploaded: Boolean(savedForm.coverImg)
+})
+const coverUploadMode = ref(savedForm.coverUploadMode === 'avif' ? 'avif' : 'keep')
 const errors = reactive({ title: '', author: '', tags: '' })
 const coverUploadData = computed(() => ({
   convertToAvif: coverUploadMode.value === 'avif' ? 'true' : 'false'
@@ -29,8 +36,34 @@ const uploadOptions = [
   { label: '转为 AVIF', value: 'avif' }
 ]
 
+watch([form, coverUploadMode], ([formValue, uploadMode]) => {
+  articleStore.setCreateArticleForm({
+    title: formValue.title,
+    author: formValue.author,
+    tags: [...formValue.tags],
+    coverImg: formValue.coverImg || '',
+    coverImgUploaded: Boolean(formValue.coverImg),
+    coverUploadMode: uploadMode,
+  })
+}, { deep: true })
+
+const resetForm = () => {
+  form.title = ''
+  form.author = ''
+  form.tags = []
+  form.coverImg = ''
+  form.coverImgUploaded = false
+  coverUploadMode.value = 'keep'
+  errors.title = ''
+  errors.author = ''
+  errors.tags = ''
+}
+
+defineExpose({ resetForm })
+
 // 提交文章的全部信息
 const handleSubmit = () => {
+  if (props.submitting) return
   errors.title = form.title.trim() ? '' : '请添加文章标题'
   errors.author = form.author.trim() ? '' : '请输入作者名称'
   errors.tags = form.tags.length ? '' : '请添加至少一个标签'
@@ -124,7 +157,9 @@ const uploadCover = async ([file]) => {
         <v-chip v-if="form.coverImgUploaded" color="success" rounded="pill">已上传</v-chip>
       </div>
       <div class="article-form__actions">
-        <AdminButton tone="primary" type="submit">提交文章</AdminButton>
+        <AdminButton tone="primary" type="submit" :disabled="submitting">
+          {{ submitting ? '提交中…' : '提交文章' }}
+        </AdminButton>
       </div>
     </form>
   </AdminCard>
