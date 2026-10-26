@@ -1,10 +1,21 @@
 <script setup>
 import ArticleFooter from "../Blog/components/ArticleFooter.vue"
+
+defineProps({
+    preview: {
+        type: Boolean,
+        default: false,
+    },
+})
 </script>
 
 <template>
     <div class="about-cotainer">
         <div class="about">
+            <header class="page-heading">
+                <p>ABOUT</p>
+                <h1>关于</h1>
+            </header>
             <div class="about-article">
                 <!-- 内容区域 -->
                 <div class="about-article-content">
@@ -96,7 +107,7 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
                     </ul>
                 </div>
                 <!-- 评论区域 -->
-                <ArticleFooter :pageId="'-1'"></ArticleFooter>
+                <ArticleFooter v-if="!preview" :pageId="'-1'"></ArticleFooter>
             </div>
         </div>
     </div>
@@ -104,12 +115,38 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
 
 <style lang="scss" scoped>
 .about-cotainer {
-    background-color: var(--white);
+    background-color: transparent;
     min-height: calc(100vh - 75px);
 
     .about {
         padding: 40px 0;
         height: 100%;
+
+        > .page-heading {
+            margin-bottom: clamp(40px, 6vw, 72px);
+
+            p {
+                margin: 0;
+                color: var(--quote-color);
+                font-family: var(--font-sans);
+                font-size: 0.75rem;
+                letter-spacing: 0.24em;
+                line-height: 1;
+            }
+
+            h1 {
+                width: max-content;
+                margin-top: 8px;
+                color: var(--black);
+                font-family: var(--font-serif);
+                font-size: clamp(1.75rem, 4vw, 3.5rem);
+                font-weight: 700;
+                letter-spacing: 0.12em;
+                line-height: 1;
+                white-space: nowrap;
+                view-transition-name: section-title;
+            }
+        }
 
         .about-article {
             .about-article-content {
@@ -209,7 +246,7 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
         }
 
         @media (max-width: 768px) {
-            padding: 20px 0;
+            padding: 40px 0;
 
             .about-article {
                 .about-article-content {

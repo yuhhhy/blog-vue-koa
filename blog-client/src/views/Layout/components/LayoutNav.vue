@@ -13,7 +13,7 @@ const navItems = [
     {
         label: '主页',
         to: '/home',
-        activePaths: ['/home', '/blog']
+        activePaths: ['/home', '/essays', '/archive', '/blog']
     },
     {
         label: '关于',

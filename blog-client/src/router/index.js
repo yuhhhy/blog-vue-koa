@@ -27,7 +27,26 @@ const routes = [
                 name: 'About',
                 component: () => import('@/views/About/index.vue'),
                 meta: {
-                    title: '关于 | 一曝十寒'
+                    title: '关于 | 一曝十寒',
+                    backgroundColor: '#eef6ff'
+                }
+            },
+            {
+                path: 'essays',
+                name: 'Essays',
+                component: () => import('@/views/Essays/index.vue'),
+                meta: {
+                    title: '随笔 | 一曝十寒',
+                    backgroundColor: '#fff0f5'
+                }
+            },
+            {
+                path: 'archive',
+                name: 'Archive',
+                component: () => import('@/views/Archive/index.vue'),
+                meta: {
+                    title: '归档 | 一曝十寒',
+                    backgroundColor: '#fff9e6'
                 }
             },
             {

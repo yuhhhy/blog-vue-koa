@@ -1,11 +1,27 @@
 <script setup>
-import LayoutNav from './components/LayoutNav.vue';
+import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useThemeStore } from '@/stores/themeStore.js'
+import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
+import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
+
+const themeStore = useThemeStore()
+const route = useRoute()
+const pageBackground = computed(() => route.meta.backgroundColor || 'var(--white)')
+
+onMounted(() => {
+    document.documentElement.classList.remove('light', 'dark')
+    document.documentElement.classList.add(themeStore.theme)
+
+    runAfterPageIdle(() => {
+        apiUpdateWebsiteVisit().catch(() => {})
+    })
+})
 </script>
 
 <template>
-    <div class="layout">
+    <div class="layout" :style="{ backgroundColor: pageBackground }">
         <div class="layout-page">
-            <LayoutNav />
             <main class="layout-main">
                 <div class="layout-content">
                     <RouterView />
