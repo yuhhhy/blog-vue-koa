@@ -161,12 +161,12 @@ onMounted(() => {
         border: none;
         cursor: pointer;
         font-size: 0.9rem;
-        color: var(--primary-color, #3b82f6);
-        background-color: rgba(59, 130, 246, 0.08);
+        color: var(--primary-color);
+        background-color: var(--primary-soft);
         transition: background-color 0.2s ease, transform 0.2s ease;
 
         &:hover {
-            background-color: rgba(59, 130, 246, 0.15);
+            background-color: var(--primary-soft-hover);
             transform: translateY(-1px);
         }
     }

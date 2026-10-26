@@ -45,7 +45,7 @@
 
         &:hover {
             color: var(--blue);
-            background-color: #E2F0FF;
+            background-color: var(--primary-soft);
         }
     }
 

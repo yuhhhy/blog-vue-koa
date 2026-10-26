@@ -1,7 +1,11 @@
 const IMAGE_VARIANT_WIDTHS = [360, 720, 960]
+const RASTER_IMAGE_PATTERN = /\.(?:avif|jpe?g|png|webp)$/i
 
 const canUseImageVariant = (src) => {
-    return typeof src === 'string' && src.startsWith('/images/')
+    if (typeof src !== 'string' || !src.startsWith('/images/')) return false
+
+    const pathname = src.split(/[?#]/, 1)[0]
+    return RASTER_IMAGE_PATTERN.test(pathname)
 }
 
 const getImageVariantUrl = (src, width) => {

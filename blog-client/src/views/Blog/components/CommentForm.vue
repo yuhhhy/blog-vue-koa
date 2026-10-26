@@ -456,9 +456,8 @@ const checkCostumAvatar = async () => {
           font-size: 15px;
 
           &:focus {
-            border: 1.5px solid transparent;
-            background: linear-gradient(var(--white), var(--white)) padding-box, 
-                        linear-gradient(135deg, #ff33b4, #c8ff00, #00ffff, #4400ff) border-box;
+            border: 1.5px solid var(--primary-color);
+            background: var(--white);
             }
         }
       }
@@ -511,9 +510,8 @@ const checkCostumAvatar = async () => {
         resize: none;  // 禁用手动调整大小
 
         &:focus {
-          border: 1.5px solid transparent;
-          background: linear-gradient(var(--white), var(--white)) padding-box, 
-          linear-gradient(135deg, #5bc9f8, #c7e9fb, #00c9a7, #a6defa, #35bef7);
+          border: 1.5px solid var(--primary-color);
+          background: var(--white);
         }
       }
       &::placeholder {

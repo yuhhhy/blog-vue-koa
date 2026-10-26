@@ -1,83 +1,115 @@
 :root.light {
-    --white: #FAF9F7;
-    --light: #F9FAFB;
-    --lightgrey: #dcdfe6;
-    --darkgrey: #d3d3d3;
-    --light-dark: #444;
-    --dark: #333;
-    --black: #000;
+    --white: #FFFFFF;
+    --light: #FAFAFA;
+    --lightgrey: #E5E5E5;
+    --darkgrey: #CFCFCF;
+    --light-dark: #2A2A2A;
+    --dark: #111111;
+    --black: #000000;
 
-    --border-color: #ECEEF2;
-    --quote-color: #666;
-    --code-color: #000;
-    --code-background: #f5f2f0;
-    --code-inline: #c7254e;
-    --code-background-inline: #f9f2f4;
-    --reply-border: #ECEEF2;
-    --submit-button: #909090;
-    --icon-background :#F2F3F5;
-    --links-background: #FAF9F7;
-    --b-color: #2D2D2D;
-    --hr-color: #ECEEF2;
+    --border-color: #E5E5E5;
+    --quote-color: #666666;
+    --code-color: #111111;
+    --code-background: #F4F4F4;
+    --code-inline: #222222;
+    --code-background-inline: #F2F2F2;
+    --reply-border: #E5E5E5;
+    --submit-button: #111111;
+    --icon-background: #F2F2F2;
+    --links-background: #FAFAFA;
+    --b-color: #111111;
+    --hr-color: #E5E5E5;
 
-    --c1: #F2F3F5;
-    --c2: #E5E7EB;
-    --c3: #D1D5DB;
+    --c1: #F5F5F5;
+    --c2: #EBEBEB;
+    --c3: #D8D8D8;
 
-    --blue: #2D2D2D;
-    --skyblue: #409eff;
+    --primary-color: #111111;
+    --primary-hover: #000000;
+    --primary-soft: #F2F2F2;
+    --primary-soft-hover: #E6E6E6;
+    --nav-active-color: #111111;
+    --selection-background: #111111;
+    --selection-color: #FFFFFF;
 
-    // 固定色
-    --light-blue: #51c7f9;
-    --lake: #A7CAFD;
-    --red: #ff4757;
-    --orange: #e8d229;
-    --gold: #ffff18;
-    --cyan: #005072;
-    --grape: #c850c0;
-    --lavender: #c792ff;
-    --sapphire: #163375; // 蓝宝石色
-    --green: #2aadb2;
+    // 旧变量继续保留，但全部映射为灰阶。
+    --blue: #111111;
+    --skyblue: #333333;
+    --light-blue: #666666;
+    --lake: #999999;
+    --red: #111111;
+    --orange: #444444;
+    --gold: #666666;
+    --cyan: #222222;
+    --grape: #555555;
+    --lavender: #777777;
+    --sapphire: #111111;
+    --green: #333333;
+
+    // Element Plus 黑白主题。
+    --el-color-primary: #111111;
+    --el-color-primary-light-3: #4D4D4D;
+    --el-color-primary-light-5: #777777;
+    --el-color-primary-light-7: #B0B0B0;
+    --el-color-primary-light-8: #D0D0D0;
+    --el-color-primary-light-9: #EFEFEF;
+    --el-color-primary-dark-2: #000000;
 }
 
 :root.dark {
-    --white: #222;
-    --light: #222;
-    --lightgrey: #939393;
-    --darkgrey : #000;
-    --light-dark: #dcdfe6;
-    --dark: #fff;
-    --black: #f5f5fa;
-    
-    --border-color: #333;
-    --quote-color: #999;
-    --code-color: #abb2bf;
-    --code-background: #282c34;
-    --code-inline: #f0c674;
-    --code-background-inline: #2d2d2d;
-    --reply-border: #666;
-    --submit-button: #cccfd4;
-    --icon-background: #cccfd4;
-    --links-background: #333;
+    --white: #0F0F0F;
+    --light: #0F0F0F;
+    --lightgrey: #707070;
+    --darkgrey: #000000;
+    --light-dark: #E0E0E0;
+    --dark: #FFFFFF;
+    --black: #FFFFFF;
+
+    --border-color: #303030;
+    --quote-color: #A0A0A0;
+    --code-color: #E4E4E4;
+    --code-background: #191919;
+    --code-inline: #E0E0E0;
+    --code-background-inline: #242424;
+    --reply-border: #444444;
+    --submit-button: #F0F0F0;
+    --icon-background: #282828;
+    --links-background: #181818;
     --b-color: #FFFFFF;
-    --hr-color: #e0e0e0;
+    --hr-color: #3A3A3A;
 
-    --c1: #1d1d1d;
-    --c2: #4e4f51;
-    --c3: #3c3c3c;
+    --c1: #1A1A1A;
+    --c2: #2A2A2A;
+    --c3: #3A3A3A;
 
+    --primary-color: #FFFFFF;
+    --primary-hover: #D8D8D8;
+    --primary-soft: #242424;
+    --primary-soft-hover: #323232;
+    --nav-active-color: #FFFFFF;
+    --selection-background: #FFFFFF;
+    --selection-color: #000000;
+
+    // 旧变量继续保留，但全部映射为灰阶。
     --blue: #FFFFFF;
-    --skyblue: #40b6ff;
+    --skyblue: #E0E0E0;
+    --light-blue: #C8C8C8;
+    --lake: #AAAAAA;
+    --red: #FFFFFF;
+    --orange: #D0D0D0;
+    --gold: #B8B8B8;
+    --cyan: #E8E8E8;
+    --grape: #C0C0C0;
+    --lavender: #B0B0B0;
+    --sapphire: #F0F0F0;
+    --green: #D8D8D8;
 
-    // 固定色
-    --light-blue: #51c7f9;
-    --lake: #A7CAFD;
-    --red: #ff4757;
-    --orange: #e8d229;
-    --gold: #ffff18;
-    --cyan: #005072;
-    --grape: #c850c0;
-    --lavender: #c792ff;
-    --sapphire: #163375; // 蓝宝石色
-    --green: #2aadb2;
+    // Element Plus 黑白主题。
+    --el-color-primary: #FFFFFF;
+    --el-color-primary-light-3: #D0D0D0;
+    --el-color-primary-light-5: #A0A0A0;
+    --el-color-primary-light-7: #666666;
+    --el-color-primary-light-8: #444444;
+    --el-color-primary-light-9: #242424;
+    --el-color-primary-dark-2: #D8D8D8;
 }

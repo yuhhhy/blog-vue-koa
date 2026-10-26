@@ -18,6 +18,6 @@ a {
 
 /* 选中文本的背景颜色 */
 ::selection {
-    background: #ffffb7;
-    color: black;
+    background: var(--selection-background);
+    color: var(--selection-color);
 }

@@ -7,7 +7,7 @@
     "server": "pnpm --dir blog-server serve",
     "client": "pnpm --dir blog-client dev",
     "background": "pnpm --dir blog-background dev",
-    "start-all": "concurrently \"pnpm server\" \"pnpm client\" \"pnpm background\"",
+    "start": "concurrently \"pnpm server\" \"pnpm client\" \"pnpm background\"",
     "start-client": "concurrently \"pnpm server\" \"pnpm client\"",
     "start-admin": "concurrently \"pnpm server\" \"pnpm background\"",
     "generate:image-variants": "pnpm --dir blog-server generate:image-variants"
