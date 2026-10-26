@@ -150,7 +150,7 @@ watch(() => route.params.id || props.pageId, (pageId) => {
   font-family: var(--font-serif);
   color: var(--light-dark);
   line-height: 1.6;
-  padding: 0 30px 10px 30px;
+  padding-bottom: 10px;
   
   .top-form {
     color: var(--blue);
@@ -241,11 +241,6 @@ watch(() => route.params.id || props.pageId, (pageId) => {
         }
       }
     }
-  }
-}
-@media screen and (max-width: 768px) {
-  .article-footer {
-    padding: 0 15px 10px 15px;
   }
 }
 </style>

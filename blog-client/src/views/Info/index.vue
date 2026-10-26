@@ -110,14 +110,12 @@
     min-height: calc(100vh - 75px);
 
     .info {
-        width: min(960px, calc(100% - 48px));
-        margin: 0 auto;
         padding: 40px 0;
         height: 100%;
 
         .info-article {
             .info-article-content {
-                padding: 0 30px 30px 30px;
+                padding-bottom: 30px;
                 line-height: 1.8;
                 font-family: var(--font-serif);
                 color: var(--light-dark);
@@ -200,14 +198,11 @@
             }
         }
         @media (max-width: 768px) {
-            width: calc(100% - 30px);
             padding: 20px 0;
 
             .info-article {
                 .info-article-content {
                     padding-bottom: 30px;
-                    padding-left: 15px;
-                    padding-right: 15px;
 
                     h1, h2, h3, h4 
                     {

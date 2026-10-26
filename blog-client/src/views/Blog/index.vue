@@ -277,16 +277,12 @@ img {
     }
 
     .blog-action-bar {
-        margin: 25px auto 30px;
-        width: 80%;
+        margin: 25px 0 30px;
     }
 
     .blog-main {
-        width: min(960px, calc(100% - 48px));
-        margin: 0 auto;
         padding: 0 0 40px;
         height: 100%;
-        max-width: 100vw;      // 限制最大宽度
 
         .blog-aritcle {
             min-width: 0;          // 允许 flex 项目收缩
@@ -332,12 +328,10 @@ img {
         }
 
         .blog-action-bar {
-            width: calc(100% - 30px);
-            margin: 15px auto 20px;
+            margin: 15px 0 20px;
         }
 
         .blog-main {
-            width: calc(100% - 30px);
             padding: 0 0 20px;
 
             .blog-aritcle {

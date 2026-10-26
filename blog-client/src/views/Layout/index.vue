@@ -7,7 +7,9 @@ import LayoutNav from './components/LayoutNav.vue';
         <div class="layout-page">
             <LayoutNav />
             <main class="layout-main">
-                <RouterView />
+                <div class="layout-content">
+                    <RouterView />
+                </div>
             </main>
         </div>
     </div>
@@ -28,6 +30,12 @@ import LayoutNav from './components/LayoutNav.vue';
 .layout-main {
     flex: 1;
     min-width: 0;
+}
+
+.layout-content {
+    width: min(100%, 1080px);
+    margin: 0 auto;
+    padding-inline: clamp(20px, 4vw, 48px);
 }
 
 </style>

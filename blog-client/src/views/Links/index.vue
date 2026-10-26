@@ -85,14 +85,12 @@ onMounted(async () => {
     min-height: calc(100vh - 75px);
     
     .links {
-        width: min(960px, calc(100% - 48px));
-        margin: 0 auto;
         padding: 40px 0;
         height: 100%;
 
         .links-article {
             .links-article-content {
-                padding: 0 30px 30px 30px;
+                padding-bottom: 30px;
                 line-height: 1.8;
                 font-family: var(--font-serif);
                 color: var(--light-dark);
@@ -248,14 +246,11 @@ onMounted(async () => {
             }
         }
         @media (max-width: 768px) {
-            width: calc(100% - 30px);
             padding: 20px 0;
 
             .links-article {
                 .links-article-content {
                     padding-bottom: 30px;
-                    padding-left: 15px;
-                    padding-right: 15px;
 
                     .links-display {
                         grid-template-columns: repeat(1, 1fr);

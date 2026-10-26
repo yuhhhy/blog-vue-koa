@@ -24,9 +24,7 @@ onMounted(() => {
 
 <style scoped>
 .blog-list {
-    width: min(100%, 1080px);
-    margin: 0 auto;
-    padding: clamp(32px, 6vw, 72px) clamp(20px, 4vw, 48px);
+    padding-block: clamp(32px, 6vw, 72px);
     color: var(--black);
 }
 

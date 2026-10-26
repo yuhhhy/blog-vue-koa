@@ -74,7 +74,6 @@ onBeforeUnmount(cleanupAnimations)
 <!-- 这个不能加scoped，因为是全局的html样式 -->
 <style lang="scss">
 .article-content {
-    padding: 0 30px;
     line-height: 1.8;
     font-family: var(--font-serif);
     color: var(--light-dark);
@@ -190,8 +189,6 @@ onBeforeUnmount(cleanupAnimations)
 @media (max-width: 768px) {
     .article-content {
         padding-bottom: 30px;
-        padding-left: 15px;
-        padding-right: 15px;
 
         .markdown-content {
 

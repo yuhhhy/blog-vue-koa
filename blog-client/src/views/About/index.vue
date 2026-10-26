@@ -108,14 +108,11 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
     min-height: calc(100vh - 75px);
 
     .about {
-        width: min(960px, calc(100% - 48px));
-        margin: 0 auto;
         padding: 40px 0;
         height: 100%;
 
         .about-article {
             .about-article-content {
-                padding: 0 30px;
                 line-height: 1.8;
                 padding-bottom: 30px;
                 font-family: var(--font-serif);
@@ -212,14 +209,11 @@ import ArticleFooter from "../Blog/components/ArticleFooter.vue"
         }
 
         @media (max-width: 768px) {
-            width: calc(100% - 30px);
             padding: 20px 0;
 
             .about-article {
                 .about-article-content {
                     padding-bottom: 30px;
-                    padding-left: 15px;
-                    padding-right: 15px;
 
                     ul {
                         padding-left: 1.5em;

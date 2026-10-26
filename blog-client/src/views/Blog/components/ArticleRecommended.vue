@@ -86,7 +86,6 @@ watch(() => route.params.id, async (newId) => {
   display: flex;
   height: 80px;
   width: 100%;
-  padding: 0 30px;
 
   .article-nav {
     flex: 1;
