@@ -11,7 +11,7 @@ import { sendEmail } from '../utils/sendEmail.js'
 
 // 获取网站的所有评论
 export const getAllComments = async (ctx) => {
-    const allComments = await Comment.find({})
+    const allComments = await Comment.find({}).sort({ createTime: -1 })
 
     ctx.status = 200
     ctx.body = allComments
