@@ -176,9 +176,9 @@ const openSection = async (section) => {
 
 <style scoped>
 .home-sections {
-    --about-block: #eef6ff;
-    --essays-block: #fff0f5;
-    --archive-block: #fff9e6;
+    --about-block: #e8d7de;
+    --essays-block: #d6e2ea;
+    --archive-block: #e9dfc7;
     --page-title-left: calc(max(0px, 50vw - 540px) + clamp(20px, 4vw, 48px));
     --page-title-top: calc(clamp(48px, 8vw, 96px) + 20px);
 
@@ -204,12 +204,14 @@ const openSection = async (section) => {
         clip-path 900ms cubic-bezier(0.76, 0, 0.24, 1),
         transform 900ms cubic-bezier(0.76, 0, 0.24, 1),
         opacity 900ms ease,
+        background-color 300ms ease,
         filter 300ms ease;
     will-change: clip-path, transform, opacity;
 }
 
 .home-section.is-hovered {
-    filter: brightness(1.08);
+    background-color: #f5f2ec;
+    filter: none;
 }
 
 .home-section.is-hovered > h1 {
@@ -236,14 +238,35 @@ const openSection = async (section) => {
         opacity 300ms ease;
 }
 
+.home-section.is-selected::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    background-color: #f5f2ec;
+    pointer-events: none;
+}
+
+.home-section--about.is-selected::before {
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 50%);
+}
+
+.home-section--essays.is-selected::before {
+    clip-path: polygon(100% 0, 0 50%, 0 50%, 100% 100%);
+}
+
+.home-section--archive.is-selected::before {
+    clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
+}
+
 .home-section--about {
     background-color: var(--about-block);
     clip-path: polygon(0 0, 100% 0, 100% 0, 0 50%);
 }
 
 .home-section--about > h1 {
-    top: 17%;
-    left: 33%;
+    top: 11%;
+    left: 58%;
 }
 
 .home-section--essays {
@@ -253,7 +276,7 @@ const openSection = async (section) => {
 
 .home-section--essays > h1 {
     top: 50%;
-    left: 67%;
+    left: 27%;
 }
 
 .home-section--archive {
@@ -262,8 +285,8 @@ const openSection = async (section) => {
 }
 
 .home-section--archive > h1 {
-    top: 83%;
-    left: 33%;
+    top: 89%;
+    left: 58%;
 }
 
 .home-section.is-selected > h1 {
@@ -344,18 +367,18 @@ const openSection = async (section) => {
 }
 
 .home-section--about .home-content-preview {
-    --preview-from-x: calc(33vw - var(--page-title-left));
-    --preview-from-y: calc(17vh - 60px);
+    --preview-from-x: calc(58vw - var(--page-title-left));
+    --preview-from-y: calc(11vh - 60px);
 }
 
 .home-section--essays .home-content-preview {
-    --preview-from-x: calc(67vw - var(--page-title-left));
+    --preview-from-x: calc(27vw - var(--page-title-left));
     --preview-from-y: calc(50vh - var(--page-title-top));
 }
 
 .home-section--archive .home-content-preview {
-    --preview-from-x: calc(33vw - var(--page-title-left));
-    --preview-from-y: calc(83vh - var(--page-title-top));
+    --preview-from-x: calc(58vw - var(--page-title-left));
+    --preview-from-y: calc(89vh - var(--page-title-top));
 }
 
 .home-content-preview :deep(.page-heading h1) {
@@ -406,9 +429,9 @@ const openSection = async (section) => {
 }
 
 :global(.dark) .home-sections {
-    --about-block: #eef6ff;
-    --essays-block: #fff0f5;
-    --archive-block: #fff9e6;
+    --about-block: #e8d7de;
+    --essays-block: #d6e2ea;
+    --archive-block: #e9dfc7;
 }
 
 :global(.dark) .home-section {
