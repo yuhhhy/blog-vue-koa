@@ -1,20 +1,8 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useBlogList } from '@/composables/useBlogList.js'
-import { getImageVariantSrcset } from '@/utils/imageVariants.js'
 
 const { blogList, fetchBlogList } = useBlogList()
-
-const handleImageError = (event) => {
-    const image = event.currentTarget
-    const originalSrc = image.dataset.originalSrc
-
-    if (!originalSrc || image.dataset.fallbackApplied === 'true') return
-
-    image.dataset.fallbackApplied = 'true'
-    image.srcset = ''
-    image.src = originalSrc
-}
 
 onMounted(() => {
     // 获取后台数据
@@ -24,27 +12,11 @@ onMounted(() => {
 
 <template>
     <section class="blog-list" aria-label="博客文章">
-        <article v-for="(blog, index) in blogList" :key="blog.id">
-            <RouterLink :to="`/blog/${blog.id}`">
+        <article v-for="blog in blogList" :key="blog.id" class="blog-card">
+            <RouterLink class="blog-card__link" :to="`/blog/${blog.id}`">
                 <h2>{{ blog.title }}</h2>
                 <p>{{ blog.excerpt }}</p>
                 <time :datetime="blog.createTime">{{ blog.createTime.substring(0, 10) }}</time>
-                <span v-for="tag in blog.tags" :key="tag"> #{{ tag }}</span>
-                <figure>
-                    <img
-                      :src="blog.coverImage"
-                      :srcset="getImageVariantSrcset(blog.coverImage)"
-                      sizes="240px"
-                      :data-original-src="blog.coverImage"
-                      :alt="blog.title"
-                      :loading="index === 0 ? 'eager' : 'lazy'"
-                      :fetchpriority="index === 0 ? 'high' : 'auto'"
-                      decoding="async"
-                      width="240"
-                      height="150"
-                      @error="handleImageError"
-                    >
-                </figure>
             </RouterLink>
         </article>
     </section>
@@ -52,12 +24,49 @@ onMounted(() => {
 
 <style scoped>
 .blog-list {
+    width: min(100%, 1080px);
+    margin: 0 auto;
+    padding: clamp(32px, 6vw, 72px) clamp(20px, 4vw, 48px);
     color: var(--black);
 }
 
+.blog-card {
+    min-width: 0;
+}
+
+.blog-card + .blog-card {
+    margin-top: 24px;
+}
+
+.blog-card__link {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    font-size: 1rem;
+    text-align: left;
+}
+
+.blog-card h2 {
+    max-width: 100%;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
 .blog-list p,
-.blog-list time,
-.blog-list span {
+.blog-list time {
     color: var(--quote-color);
 }
+
+.blog-list p {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    line-height: 1.7;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 </style>
