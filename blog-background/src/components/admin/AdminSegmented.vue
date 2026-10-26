@@ -65,10 +65,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
   max-width: 100%;
   gap: 2px;
   overflow-x: auto;
-  scrollbar-width: none;
 }
-
-.admin-button-group::-webkit-scrollbar { display: none; }
 
 .admin-button-group__button {
   min-width: 48px;

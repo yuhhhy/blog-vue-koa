@@ -291,13 +291,52 @@ router.delete('/comment/:id', (ctx) => {
     ctx.body = { message: '评论删除成功' }
 })
 
-const websiteResponse = (timeRange = 'all') => {
-    const lengthByRange = { today: 1, week: 7, month: 30, year: 365 }
-    const limit = lengthByRange[timeRange]
-    const values = (metric) => {
-        const items = limit ? state.website[metric].dailyData.slice(-limit) : state.website[metric].dailyData
-        return items.map((item) => item.count)
+const getLocalDateKey = (date) => {
+    const value = new Date(date)
+    return `${value.getFullYear()}-${value.getMonth()}-${value.getDate()}`
+}
+
+const getMetricValues = (metric, timeRange) => {
+    const dailyData = state.website[metric].dailyData
+    const countsByDate = dailyData.reduce((counts, item) => {
+        const key = getLocalDateKey(item.date)
+        counts.set(key, (counts.get(key) || 0) + item.count)
+        return counts
+    }, new Map())
+    const now = new Date()
+
+    if (timeRange === 'today') {
+        return [countsByDate.get(getLocalDateKey(now)) || 0]
     }
+
+    if (timeRange === 'week') {
+        return Array.from({ length: 7 }, (_, index) => {
+            const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (6 - index))
+            return countsByDate.get(getLocalDateKey(date)) || 0
+        })
+    }
+
+    if (timeRange === 'month') {
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+        return Array.from({ length: daysInMonth }, (_, index) => {
+            const date = new Date(now.getFullYear(), now.getMonth(), index + 1)
+            return countsByDate.get(getLocalDateKey(date)) || 0
+        })
+    }
+
+    if (timeRange === 'year') {
+        return Array.from({ length: 12 }, (_, month) => dailyData.reduce((total, item) => {
+            const date = new Date(item.date)
+            const isCurrentMonth = date.getFullYear() === now.getFullYear() && date.getMonth() === month
+            return total + (isCurrentMonth ? item.count : 0)
+        }, 0))
+    }
+
+    return dailyData.map((item) => item.count)
+}
+
+const websiteResponse = (timeRange = 'all') => {
+    const values = (metric) => getMetricValues(metric, timeRange)
 
     return {
         view: { total: state.website.view.total, data: values('view') },

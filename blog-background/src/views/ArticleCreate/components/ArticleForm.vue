@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
 import { useArticleStore } from '@/stores/articleStore.js'
 import { useRouter } from 'vue-router'
-import { mdiImageOutline } from '@mdi/js'
+import { mdiClose, mdiImageOutline } from '@mdi/js'
 import cfg from '@/config/index.js'
 import AdminCard from '@/components/admin/AdminCard.vue'
 import MaterialIcon from '@/components/MaterialIcon.vue'
@@ -130,6 +130,12 @@ const handleCoverChange = (event) => {
   if (files.length) uploadCover(files)
   event.target.value = ''
 }
+
+const removeCover = () => {
+  form.coverImg = ''
+  form.coverImgUploaded = false
+  if (coverInput.value) coverInput.value.value = ''
+}
 </script>
 
 <template>
@@ -150,6 +156,16 @@ const handleCoverChange = (event) => {
             <MaterialIcon :path="mdiImageOutline" />
             <span>点击上传封面</span>
           </div>
+        </button>
+        <button
+          v-if="coverPreviewUrl"
+          class="cover-remove"
+          type="button"
+          title="删除文章封面"
+          aria-label="删除文章封面"
+          @click="removeCover"
+        >
+          <MaterialIcon :path="mdiClose" />
         </button>
       </div>
       <div class="article-fields">
@@ -183,7 +199,7 @@ const handleCoverChange = (event) => {
 <style scoped>
 .article-form-card { margin-bottom: 4px; }
 .article-form { display: grid; grid-template-columns: minmax(280px, 420px) minmax(0, 1fr); align-items: stretch; gap: 24px; }
-.cover-field { min-width: 0; }
+.cover-field { position: relative; min-width: 0; }
 .cover-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 .cover-preview { display: grid; width: 100%; height: 100%; min-height: 224px; padding: 0; overflow: hidden; border: 0; aspect-ratio: 16 / 9; place-items: center; border-radius: var(--admin-radius); color: var(--admin-text-muted); background: var(--admin-surface-muted); cursor: pointer; }
 .cover-preview img { width: 100%; height: 100%; object-fit: cover; }
@@ -191,6 +207,10 @@ const handleCoverChange = (event) => {
 .cover-preview__empty :deep(.material-icon) { width: 28px; height: 28px; }
 .cover-preview:hover { background: var(--admin-surface-high); }
 .cover-preview:focus-visible { outline: 3px solid color-mix(in srgb, var(--md-sys-color-primary) 32%, transparent); outline-offset: 2px; }
+.cover-remove { position: absolute; z-index: 1; top: 10px; right: 10px; display: grid; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; place-items: center; color: #fff; background: rgba(29, 27, 32, 0.72); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24); cursor: pointer; transition: background-color 150ms ease, transform 150ms ease; }
+.cover-remove:hover { background: rgba(29, 27, 32, 0.9); transform: scale(1.04); }
+.cover-remove:focus-visible { outline: 3px solid var(--md-sys-color-primary-container); outline-offset: 2px; }
+.cover-remove :deep(.material-icon) { width: 20px; height: 20px; }
 .article-fields { display: grid; min-width: 0; align-content: center; gap: 16px; }
 @media (max-width: 800px) {
   .article-form { grid-template-columns: 1fr; gap: 16px; }

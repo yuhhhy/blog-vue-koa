@@ -5,6 +5,7 @@ import { mdiEyeOutline } from '@mdi/js'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import BlogMarkdownPreview from './BlogMarkdownPreview.vue'
+import AdminLoadingState from '@/components/admin/AdminLoadingState.vue'
 import MaterialIcon from '@/components/MaterialIcon.vue'
 import { useArticleStore } from '@/stores/articleStore.js'
 import { useUserStore } from '@/stores/userStore.js'
@@ -215,7 +216,12 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="vditor-editor-field">
-        <div v-show="viewMode === 'edit'" class="vditor-editor__edit-shell">
+        <AdminLoadingState
+            v-if="!editorReady"
+            class="vditor-editor__loading"
+            label="文章编辑器加载中"
+        />
+        <div v-show="viewMode === 'edit'" class="vditor-editor__edit-shell" :class="{ 'is-loading': !editorReady }">
             <div ref="editorRoot" class="vditor-editor"></div>
         </div>
         <BlogMarkdownPreview v-show="viewMode === 'preview'" :markdown="previewMarkdown">
@@ -238,15 +244,29 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .vditor-editor-field {
+    position: relative;
     width: 100%;
     min-width: 0;
     max-width: 100%;
+    min-height: 80vh;
+}
+
+.vditor-editor__loading {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    min-height: 320px;
+    background: var(--md-sys-color-surface-container-low, #f7f2fa);
 }
 
 .vditor-editor__edit-shell {
     width: 100%;
     min-width: 0;
     max-width: 100%;
+}
+
+.vditor-editor__edit-shell.is-loading {
+    opacity: 0;
 }
 
 .vditor-editor {

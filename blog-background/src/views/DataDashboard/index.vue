@@ -3,9 +3,10 @@ import { Chart } from 'frappe-charts'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { apiGetWebsiteData } from '@/api/websiteData.js'
+import AdminLoadingState from '@/components/admin/AdminLoadingState.vue'
 import MaterialIcon from '@/components/MaterialIcon.vue'
 import {
-  mdiAccountGroupOutline,
+  mdiAccountMultipleOutline,
   mdiCommentTextMultipleOutline,
   mdiEyeOutline
 } from '@mdi/js'
@@ -14,6 +15,16 @@ const chartTheme = {
   primary: '#6750a4',
   accent: '#4f6350',
   violet: '#7d5260'
+}
+
+const miniChartMeasures = {
+  margins: { top: 0, right: 0, bottom: 0, left: 0 },
+  paddings: { top: 8, right: 8, bottom: 10, left: 8 }
+}
+
+const mainChartMeasures = {
+  margins: { top: 0, right: 0, bottom: 0, left: 0 },
+  paddings: { top: 16, right: 8, bottom: 30, left: 32 }
 }
 
 const charts = new Map()
@@ -205,7 +216,7 @@ const handleChartResize = () => {
   }, 100)
 }
 
-const replaceChart = (key, elementId, options) => {
+const replaceChart = (key, elementId, options, measures) => {
   charts.get(key)?.destroy()
   const element = document.getElementById(elementId)
 
@@ -215,6 +226,17 @@ const replaceChart = (key, elementId, options) => {
     animate: 0,
     ...options
   })
+
+  if (measures) {
+    Object.assign(chart.measures.margins, measures.margins)
+    Object.assign(chart.measures.paddings, measures.paddings)
+    const verticalInset = chart.measures.margins.top
+      + chart.measures.margins.bottom
+      + chart.measures.paddings.top
+      + chart.measures.paddings.bottom
+    chart.height = chart.baseHeight - verticalInset
+    chart.draw(false)
+  }
 
   // Axis charts initially render Frappe's zero-value seed and update after 700ms.
   // Apply the real dataset synchronously so that intermediate state stays behind loading.
@@ -246,7 +268,10 @@ async function fetchData() {
   setAllChartsLoading(true)
 
   try {
-    const data = await apiGetWebsiteData('week')
+    const [data, monthData] = await Promise.all([
+      apiGetWebsiteData('week'),
+      timeRange.value === 'month' ? apiGetWebsiteData('month') : Promise.resolve(null)
+    ])
 
     // 更新顶部统计数据
     Object.assign(topData.value.view, data.view)
@@ -256,6 +281,7 @@ async function fetchData() {
 
     // 更新主图表初始数据
     mainData.value.view.weekData = data.view.data
+    if (monthData) mainData.value.view.monthData = monthData.view.data
 
     // 更新热力图表数据
     heatmapData.value = data.article.data
@@ -317,7 +343,7 @@ const initTopCards = () => {
   setChartLoading('comment', true)
 
   const miniChartOptions = {
-    height: 120,
+    height: 140,
     axisOptions: {
       xAxisMode: 'tick',
       yAxisMode: 'span',
@@ -348,7 +374,7 @@ const initTopCards = () => {
     tooltipOptions: {
       formatTooltipY: value => formatMetric(viewSeries.getOriginalValue(value))
     }
-  })
+  }, miniChartMeasures)
 
   const lastDay = topData.value.view.data.length - 1
   const todayView = topData.value.view.data[lastDay] || 0
@@ -367,7 +393,7 @@ const initTopCards = () => {
     tooltipOptions: {
       formatTooltipY: value => formatMetric(visitSeries.getOriginalValue(value))
     }
-  })
+  }, miniChartMeasures)
 
   replaceChart('comment', 'commentChart', {
     ...miniChartOptions,
@@ -381,7 +407,7 @@ const initTopCards = () => {
     tooltipOptions: {
       formatTooltipY: value => formatMetric(commentSeries.getOriginalValue(value))
     }
-  })
+  }, miniChartMeasures)
 
   revealChartWhenReady('view', 'viewChart')
   revealChartWhenReady('visit', 'visitChart')
@@ -404,7 +430,7 @@ const mainData = ref({
 })
 
 // 时间范围选择
-const timeRange = ref('week')
+const timeRange = ref(window.matchMedia('(max-width: 900px)').matches ? 'week' : 'month')
 const timeRanges = [
   { label: '七日', value: 'week' },
   { label: '本月', value: 'month' },
@@ -479,7 +505,7 @@ const initMainChart = () => {
 
   replaceChart('main', 'mainChart', {
     type: 'bar',
-    height: 300,
+    height: 340,
     colors: [chartTheme.primary],
     data: {
       labels: getTimeLabels(),
@@ -500,7 +526,7 @@ const initMainChart = () => {
     tooltipOptions: {
       formatTooltipY: value => formatMetric(chartSeries.getOriginalValue(value))
     }
-  })
+  }, mainChartMeasures)
 
   queueYAxisRestore()
 }
@@ -589,15 +615,13 @@ const initArticleChart = () => {
           </div>
         </div>
         <div id="viewChart" class="mini-chart" :class="{ 'is-loading': chartLoading.view }"></div>
-        <div v-if="chartLoading.view" class="chart-loading chart-loading--mini" role="status" aria-label="总浏览量图表加载中">
-          <span class="chart-loading__spinner"></span>
-        </div>
+        <AdminLoadingState v-if="chartLoading.view" class="chart-loading chart-loading--mini" label="总浏览量图表加载中" />
       </article>
 
       <!-- 访问量卡片 -->
       <article class="material-card metric-card metric-card--tertiary">
         <div class="metric-header">
-          <div class="metric-icon"><MaterialIcon :path="mdiAccountGroupOutline" /></div>
+          <div class="metric-icon"><MaterialIcon :path="mdiAccountMultipleOutline" /></div>
           <div class="metric-copy">
             <h3>总访问量</h3>
             <p>{{ formatMetric(topData.visit.total) }}</p>
@@ -605,9 +629,7 @@ const initArticleChart = () => {
           <span class="metric-period">近 7 日</span>
         </div>
         <div id="visitChart" class="mini-chart" :class="{ 'is-loading': chartLoading.visit }"></div>
-        <div v-if="chartLoading.visit" class="chart-loading chart-loading--mini" role="status" aria-label="总访问量图表加载中">
-          <span class="chart-loading__spinner"></span>
-        </div>
+        <AdminLoadingState v-if="chartLoading.visit" class="chart-loading chart-loading--mini" label="总访问量图表加载中" />
       </article>
 
       <!-- 评论数卡片 -->
@@ -621,9 +643,7 @@ const initArticleChart = () => {
           <span class="metric-period">近 7 日</span>
         </div>
         <div id="commentChart" class="mini-chart" :class="{ 'is-loading': chartLoading.comment }"></div>
-        <div v-if="chartLoading.comment" class="chart-loading chart-loading--mini" role="status" aria-label="总评论数图表加载中">
-          <span class="chart-loading__spinner"></span>
-        </div>
+        <AdminLoadingState v-if="chartLoading.comment" class="chart-loading chart-loading--mini" label="总评论数图表加载中" />
       </article>
     </section>
 
@@ -657,14 +677,11 @@ const initArticleChart = () => {
         class="chart chart--main"
         :class="{ 'is-loading': chartLoading.main }"
       ></div>
-      <div
+      <AdminLoadingState
         v-if="chartLoading.main"
         class="chart-loading chart-loading--main"
-        role="status"
-        aria-label="浏览量趋势图表加载中"
-      >
-        <span class="chart-loading__spinner"></span>
-      </div>
+        label="浏览量趋势图表加载中"
+      />
     </section>
 
     <!-- 底部图表 -->
@@ -682,9 +699,7 @@ const initArticleChart = () => {
         </div>
       </div>
       <div id="articleChart" class="chart chart--heatmap" :class="{ 'is-loading': chartLoading.article }"></div>
-      <div v-if="chartLoading.article" class="chart-loading chart-loading--heatmap" role="status" aria-label="文章发布图表加载中">
-        <span class="chart-loading__spinner"></span>
-      </div>
+      <AdminLoadingState v-if="chartLoading.article" class="chart-loading chart-loading--heatmap" label="文章发布图表加载中" />
     </section>
 
   </main>
@@ -693,7 +708,7 @@ const initArticleChart = () => {
 <style scoped>
 .mini-chart {
   width: calc(100% + 36px);
-  height: 120px;
+  height: 140px;
   margin-top: 8px;
   margin-left: -18px;
   overflow: visible;
@@ -704,7 +719,7 @@ const initArticleChart = () => {
 }
 
 .chart--main {
-  height: 300px;
+  height: 340px;
 }
 
 .chart--heatmap {
@@ -720,24 +735,20 @@ const initArticleChart = () => {
 .chart-loading {
   position: absolute;
   z-index: 1;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-  background: var(--admin-surface);
 }
 
 .chart-loading--mini {
   right: 18px;
   bottom: 12px;
   left: 18px;
-  height: 120px;
+  height: 140px;
 }
 
 .chart-loading--main {
   right: 20px;
   bottom: 20px;
   left: 20px;
-  height: 300px;
+  height: 340px;
 }
 
 .chart-loading--heatmap {
@@ -745,21 +756,6 @@ const initArticleChart = () => {
   bottom: 20px;
   left: 20px;
   height: 190px;
-}
-
-.chart-loading__spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid var(--admin-primary-soft);
-  border-top-color: var(--admin-primary);
-  border-radius: 50%;
-  animation: chart-loading-spin 700ms linear infinite;
-}
-
-@keyframes chart-loading-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .chart-heading {
@@ -1080,9 +1076,6 @@ const initArticleChart = () => {
     transition: none;
   }
 
-  .chart-loading__spinner {
-    animation-duration: 1400ms;
-  }
 }
 
 @media (max-width: 900px) {

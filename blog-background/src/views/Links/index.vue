@@ -15,6 +15,7 @@ import AdminPage from '@/components/admin/AdminPage.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
 
 const tableData = ref([])
+const loading = ref(true)
 const dialogFormVisible = ref(false)
 const deleteDialogVisible = ref(false)
 const pendingDelete = ref(null)
@@ -50,8 +51,12 @@ onMounted(() => {
 })
 
 async function getLinksList() {
-  const res = await getLinks()
-  tableData.value = res
+  loading.value = true
+  try {
+    tableData.value = await getLinks()
+  } finally {
+    loading.value = false
+  }
 }
 
 function handleDelete(row) {
@@ -141,7 +146,7 @@ async function handleConfirm() {
           <AdminListSort v-model="sortBy" :options="sortOptions" />
         </div>
       </div>
-      <AdminList :items="sortedLinks" item-key="id" empty-text="暂无友链">
+      <AdminList :items="sortedLinks" item-key="id" :loading="loading" empty-text="暂无友链">
         <template #item="{ item }">
           <AdminListItem :headline="item.name" :supporting-text="item.description">
             <template #leading>
