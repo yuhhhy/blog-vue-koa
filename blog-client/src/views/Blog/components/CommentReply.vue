@@ -34,7 +34,7 @@ const handleUpdate = () => {
         <div class="comment-header">
             <el-avatar :src="reply.avatar" :size="48" />
             <div class="comment-info">
-                <a v-if="reply.website" :href="reply.website" target="_blank" class="comment-name" :style="{ color: '#409eff' }">
+                <a v-if="reply.website" :href="reply.website" target="_blank" class="comment-name comment-name--link">
                 {{ reply.username }}
                 </a>
                 <span v-else class="comment-name">
@@ -102,6 +102,14 @@ const handleUpdate = () => {
             align-items: center;
             gap: 8px;
             padding-top: 5px;
+
+            .comment-name--link {
+              color: var(--skyblue);
+
+              &:hover {
+                color: var(--primary-color);
+              }
+            }
             
             .comment-sep {
               font-size: 0.8rem;

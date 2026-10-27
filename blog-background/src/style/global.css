@@ -1,8 +1,14 @@
+@property --admin-scrollbar-thumb-color {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: transparent;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    scrollbar-color: color-mix(in srgb, var(--admin-text-soft) 58%, transparent) transparent;
+    scrollbar-color: transparent transparent;
     scrollbar-width: auto;
 }
 html {
@@ -57,10 +63,25 @@ a:focus-visible {
 ::-webkit-scrollbar-thumb {
     border: 2px solid transparent;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--admin-text-soft) 52%, transparent);
+    background: transparent;
     background-clip: content-box;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.has-auto-hide-scrollbar {
+    --admin-scrollbar-thumb-color: transparent;
+    scrollbar-color: var(--admin-scrollbar-thumb-color) transparent;
+    transition: --admin-scrollbar-thumb-color 560ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.has-auto-hide-scrollbar.is-scrolling {
+    --admin-scrollbar-thumb-color: color-mix(in srgb, var(--admin-text-soft) 52%, transparent);
+    transition-duration: 80ms;
+}
+
+.has-auto-hide-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--admin-scrollbar-thumb-color);
+}
+
+.has-auto-hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb:hover {
     background-color: color-mix(in srgb, var(--admin-text-muted) 72%, transparent);
 }

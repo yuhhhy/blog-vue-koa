@@ -192,11 +192,6 @@ const visibleSiderNavItems = computed(() => filterNavItems(siderNavItems))
     min-height: 0;
     flex: 1;
     overflow-y: auto;
-    scrollbar-width: none;
-}
-
-.sidenav-scroll::-webkit-scrollbar {
-    display: none;
 }
 
 .admin-menu {

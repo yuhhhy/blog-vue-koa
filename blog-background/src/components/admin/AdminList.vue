@@ -81,6 +81,7 @@ const resolveKey = (item, index, itemKey) => {
   position: relative;
   width: 100%;
   min-width: 0;
+  min-height: 152px;
 }
 
 .admin-list__progress {
