@@ -23,6 +23,7 @@ import AdminPage from '@/components/admin/AdminPage.vue'
 import AdminSegmented from '@/components/admin/AdminSegmented.vue'
 import {
     apiDeleteLargeFile,
+    apiDownloadLargeFile,
     apiGetLargeFileList,
     apiInitLargeUpload,
     apiMergeLargeFile,
@@ -156,11 +157,6 @@ const resolveFileUrl = (url) => {
 
     const base = staticBase || window.location.origin
     return `${base}${encodeUrlPath(url)}`
-}
-
-const resolveDownloadUrl = (row) => {
-    const base = staticBase || window.location.origin
-    return `${base}/download${encodeUrlPath(row.url)}`
 }
 
 const fetchLargeFiles = async () => {
@@ -448,7 +444,7 @@ const startUpload = async () => {
             progress.value = 100
             uploadStatus.value = 'success'
             speedText.value = '秒传'
-            ElMessage.success(`文件 "${initRes.file?.filename || file.name}" 秒传成功`)
+            ElMessage.success(`文件 "${initRes.file?.name || file.name}" 秒传成功`)
             await fetchLargeFiles()
             return
         }
@@ -486,7 +482,7 @@ const startUpload = async () => {
 
         progress.value = 100
         uploadStatus.value = 'success'
-        ElMessage.success(`文件 "${res.filename}" 上传完成`)
+        ElMessage.success(`文件 "${res.name || file.name}" 上传完成`)
         await fetchLargeFiles()
     } catch (error) {
         if (isPaused.value) {
@@ -518,7 +514,10 @@ const confirmDelete = async () => {
     if (!pendingDelete.value || deleting.value) return
     deleting.value = true
     try {
-        await apiDeleteLargeFile(pendingDelete.value.type, pendingDelete.value.name)
+        await apiDeleteLargeFile(
+            pendingDelete.value.type,
+            pendingDelete.value.filename || pendingDelete.value.name,
+        )
         await fetchLargeFiles()
         deleteDialogVisible.value = false
         pendingDelete.value = null
@@ -528,14 +527,17 @@ const confirmDelete = async () => {
     }
 }
 
-const handleDownload = (row) => {
+const handleDownload = async (row) => {
+    const blob = await apiDownloadLargeFile(row.type, row.filename || row.name)
+    const objectUrl = URL.createObjectURL(blob)
     const link = document.createElement('a')
 
-    link.href = resolveDownloadUrl(row)
+    link.href = objectUrl
     link.download = row.name
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    URL.revokeObjectURL(objectUrl)
     ElMessage.success(`已交给浏览器下载 "${row.name}"`)
 }
 
