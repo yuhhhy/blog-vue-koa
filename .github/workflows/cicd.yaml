@@ -199,8 +199,15 @@ jobs:
           rsync_ssh="ssh -i ${HOME}/.ssh/deploy_key -p ${REMOTE_PORT} -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20"
 
           echo "Preparing the incoming release directory on the server..."
+          remote_prepare="rm -rf '${remote_dir}' && mkdir -p '${remote_dir}'"
+          if [[ -d release/frontend ]]; then
+            remote_prepare+=" && cp -al /var/www/frontend '${remote_dir}/frontend'"
+          fi
+          if [[ -d release/admin ]]; then
+            remote_prepare+=" && cp -al /var/www/admin '${remote_dir}/admin'"
+          fi
           ssh "${ssh_options[@]}" "${REMOTE_USER}@${REMOTE_HOST}" \
-            "rm -rf '${remote_dir}' && mkdir -p '${remote_dir}'"
+            "${remote_prepare}"
           echo "Incoming release directory is ready."
 
           transferred=false
