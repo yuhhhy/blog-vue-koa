@@ -17,5 +17,8 @@ const currentEnvConfig = envConfig[env] || envConfig.production
 export default {
     env,
     baseApi: currentEnvConfig.baseApi,
-    baseUrl: currentEnvConfig.baseUrl
+    baseUrl: currentEnvConfig.baseUrl,
+    analyticsEnabled: import.meta.env?.PROD === true && import.meta.env?.VITE_ANALYTICS_ENABLED === 'true',
+    analyticsEndpoint: import.meta.env?.VITE_ANALYTICS_ENDPOINT || '',
+    analyticsSiteId: import.meta.env?.VITE_ANALYTICS_SITE_ID || 'personal-blog',
 }

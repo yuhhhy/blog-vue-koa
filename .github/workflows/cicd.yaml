@@ -94,12 +94,18 @@ jobs:
 
       - name: Build frontend
         if: steps.changes.outputs.frontend == 'true'
+        env:
+          VITE_ANALYTICS_ENABLED: ${{ vars.VITE_ANALYTICS_ENABLED || 'false' }}
+          VITE_ANALYTICS_ENDPOINT: ${{ vars.VITE_ANALYTICS_ENDPOINT }}
+          VITE_ANALYTICS_SITE_ID: ${{ vars.VITE_ANALYTICS_SITE_ID || 'personal-blog' }}
         run: |
           pnpm --filter frontend build
           node scripts/report-bundle-size.js frontend | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Build admin
         if: steps.changes.outputs.admin == 'true'
+        env:
+          VITE_ANALYTICS_ADMIN_URL: ${{ vars.VITE_ANALYTICS_ADMIN_URL }}
         run: |
           pnpm --filter blog-background build
           node scripts/report-bundle-size.js admin | tee -a "$GITHUB_STEP_SUMMARY"
@@ -114,7 +120,7 @@ jobs:
         run: |
           find . -path ./node_modules -prune -o -name '*.js' -type f -print0 \
             | xargs -0 -n1 node --check
-          node --test utils/*.test.js
+          node --test controllers/*.test.js utils/*.test.js
 
       - name: Verify deployment scripts
         if: steps.changes.outputs.has_changes == 'true'
@@ -199,8 +205,15 @@ jobs:
           rsync_ssh="ssh -i ${HOME}/.ssh/deploy_key -p ${REMOTE_PORT} -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20"
 
           echo "Preparing the incoming release directory on the server..."
+          remote_prepare="rm -rf '${remote_dir}' && mkdir -p '${remote_dir}'"
+          if [[ -d release/frontend ]]; then
+            remote_prepare+=" && cp -al /var/www/frontend '${remote_dir}/frontend'"
+          fi
+          if [[ -d release/admin ]]; then
+            remote_prepare+=" && cp -al /var/www/admin '${remote_dir}/admin'"
+          fi
           ssh "${ssh_options[@]}" "${REMOTE_USER}@${REMOTE_HOST}" \
-            "rm -rf '${remote_dir}' && mkdir -p '${remote_dir}'"
+            "${remote_prepare}"
           echo "Incoming release directory is ready."
 
           transferred=false

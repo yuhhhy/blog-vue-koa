@@ -5,20 +5,17 @@ const IP2Region = ip2region.default
 // 获取IP地址
 // 代理处理
 export const getIp = (ctx) => {
-    // 按优先级获取IP
-    const ip =
-        ctx.req.headers['x-forwarded-for']?.split(',')[0] || // 代理转发的真实IP
-        ctx.req.headers['x-real-ip'] || // nginx代理的真实IP
-        ctx.req.socket.remoteAddress?.replace(/^::ffff:/, '') || // IPv4
-        ctx.request.ip ||
-        '0.0.0.0' // 默认值
+    const forwardedFor = ctx.req?.headers?.['x-forwarded-for']
+    const forwardedIp = (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor)
+        ?.split(',')[0]
+        ?.trim()
+    const ip = forwardedIp
+        || ctx.req?.headers?.['x-real-ip']
+        || ctx.req?.socket?.remoteAddress
+        || ctx.request?.ip
+        || '0.0.0.0'
 
-    // 如果是本地测试，替换为我的IP
-    if (ip === '127.0.0.1' || ip === '::1') {
-        return '58.20.126.212'
-    }
-
-    return ip
+    return String(ip).trim().replace(/^::ffff:/, '')
 }
 
 // 解析IP地址

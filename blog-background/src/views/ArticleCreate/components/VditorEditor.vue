@@ -1,7 +1,7 @@
 <script setup>
 import Vditor from 'vditor'
 import 'vditor/dist/index.css'
-import { mdiEyeOutline } from '@mdi/js'
+import { mdiEyeOutline, mdiPencilOutline } from '@mdi/js'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import BlogMarkdownPreview from './BlogMarkdownPreview.vue'
@@ -216,7 +216,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="vditor-editor-field">
+    <div class="vditor-editor-field" :class="{ 'is-preview': viewMode === 'preview' }">
         <AdminLoadingState
             v-if="!editorReady"
             class="vditor-editor__loading"
@@ -235,7 +235,7 @@ onBeforeUnmount(() => {
                         aria-label="返回编辑"
                         @click="setViewMode('edit')"
                     >
-                        <MaterialIcon :path="mdiEyeOutline" />
+                        <MaterialIcon :path="mdiPencilOutline" />
                     </button>
                 </div>
             </template>
@@ -250,6 +250,10 @@ onBeforeUnmount(() => {
     min-width: 0;
     max-width: 100%;
     min-height: 80vh;
+}
+
+.vditor-editor-field.is-preview {
+    min-height: 0;
 }
 
 .vditor-editor__loading {
@@ -271,7 +275,15 @@ onBeforeUnmount(() => {
 }
 
 .vditor-editor {
-    --border-color: var(--md-sys-color-outline-variant, #e7e0ec);
+    --border-color: #e5e1e7;
+    --second-color: #77717d;
+    --panel-background-color: #fff;
+    --panel-shadow: 0 2px 8px rgba(29, 27, 32, 0.14);
+    --toolbar-background-color: #fbf9fc;
+    --toolbar-icon-color: #625d68;
+    --toolbar-icon-hover-color: var(--md-sys-color-primary, #6750a4);
+    --textarea-background-color: #fff;
+    --textarea-text-color: #2f2b32;
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -279,7 +291,8 @@ onBeforeUnmount(() => {
     box-sizing: border-box;
     border: 0;
     border-radius: 0;
-    background: var(--md-sys-color-surface-container-low, #f7f2fa);
+    color: var(--textarea-text-color);
+    background: var(--textarea-background-color);
 }
 
 .vditor-editor :deep(.vditor-toolbar) {
@@ -287,8 +300,13 @@ onBeforeUnmount(() => {
     border: 0;
     border-bottom: 1px solid rgba(73, 69, 79, 0.12);
     border-radius: 0;
-    background: var(--md-sys-color-surface-container, #f3edf7);
+    background: var(--toolbar-background-color);
     box-shadow: none;
+}
+
+/* Vditor positions the first block's actions slightly over the pinned toolbar. */
+.vditor-editor :deep(.vditor-panel) {
+    z-index: 21;
 }
 
 .vditor-editor :deep(.vditor-toolbar__item:has(> [data-type="edit-mode"])),
@@ -302,7 +320,8 @@ onBeforeUnmount(() => {
 .vditor-editor :deep(.vditor-reset) {
     min-width: 0;
     max-width: 100%;
-    background: #fff;
+    color: var(--textarea-text-color);
+    background: var(--textarea-background-color);
 }
 
 .vditor-editor :deep(.vditor-reset) {

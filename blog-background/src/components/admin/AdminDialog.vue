@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { mdiClose } from '@mdi/js'
 import MaterialIcon from '@/components/MaterialIcon.vue'
 
@@ -12,12 +12,21 @@ const props = defineProps({
   maxWidth: { type: [Number, String], default: 600 }
 })
 const model = defineModel({ type: Boolean, default: false })
+const bodyRef = ref(null)
 const dialogWidth = computed(() => {
   const width = typeof props.maxWidth === 'number' || /^\d+$/.test(props.maxWidth)
     ? `${props.maxWidth}px`
     : props.maxWidth
   return `min(calc(100vw - 32px), ${width})`
 })
+
+const resetScrollPosition = async () => {
+  await nextTick()
+  const scrollContainer = bodyRef.value?.parentElement
+  if (!scrollContainer) return
+  scrollContainer.scrollTop = 0
+  scrollContainer.scrollLeft = 0
+}
 </script>
 <template>
   <el-dialog
@@ -28,6 +37,7 @@ const dialogWidth = computed(() => {
     :show-close="false"
     append-to-body
     align-center
+    @open="resetScrollPosition"
   >
     <template #header>
       <div class="admin-dialog__header">
@@ -46,7 +56,7 @@ const dialogWidth = computed(() => {
         </button>
       </div>
     </template>
-    <div class="admin-dialog__body"><slot /></div>
+    <div ref="bodyRef" class="admin-dialog__body"><slot /></div>
     <template v-if="$slots.actions" #footer>
       <div class="admin-dialog__actions">
         <slot name="actions" />
