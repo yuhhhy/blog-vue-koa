@@ -1,7 +1,7 @@
 <script setup>
 import Vditor from 'vditor'
 import 'vditor/dist/index.css'
-import { mdiEyeOutline } from '@mdi/js'
+import { mdiEyeOutline, mdiPencilOutline } from '@mdi/js'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import BlogMarkdownPreview from './BlogMarkdownPreview.vue'
@@ -216,7 +216,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="vditor-editor-field">
+    <div class="vditor-editor-field" :class="{ 'is-preview': viewMode === 'preview' }">
         <AdminLoadingState
             v-if="!editorReady"
             class="vditor-editor__loading"
@@ -235,7 +235,7 @@ onBeforeUnmount(() => {
                         aria-label="返回编辑"
                         @click="setViewMode('edit')"
                     >
-                        <MaterialIcon :path="mdiEyeOutline" />
+                        <MaterialIcon :path="mdiPencilOutline" />
                     </button>
                 </div>
             </template>
@@ -250,6 +250,10 @@ onBeforeUnmount(() => {
     min-width: 0;
     max-width: 100%;
     min-height: 80vh;
+}
+
+.vditor-editor-field.is-preview {
+    min-height: 0;
 }
 
 .vditor-editor__loading {
