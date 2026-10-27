@@ -273,15 +273,13 @@ onMounted(() => {
                         </template>
                         <template #overline>
                             <AdminListLabel>{{ getFileType(item.name) }}</AdminListLabel>
-                            <v-tooltip :text="getVariantTip(item)">
-                                <template #activator="{ props }">
-                                    <span v-bind="props">
-                                        <AdminListLabel :tone="item.hasAllVariants ? 'success' : 'warning'">
-                                            {{ item.hasAllVariants ? '缩略图完整' : '缺少缩略图' }}
-                                        </AdminListLabel>
-                                    </span>
-                                </template>
-                            </v-tooltip>
+                            <el-tooltip :content="getVariantTip(item)" placement="top">
+                                <span>
+                                    <AdminListLabel :tone="item.hasAllVariants ? 'success' : 'warning'">
+                                        {{ item.hasAllVariants ? '缩略图完整' : '缺少缩略图' }}
+                                    </AdminListLabel>
+                                </span>
+                            </el-tooltip>
                         </template>
                         <template #actions><AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" /></template>
                     </AdminListItem>

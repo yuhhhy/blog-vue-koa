@@ -8,6 +8,10 @@ const envConfig = {
     development: {
         currentEnv: 'development',
         allowAnyLogin: true,
+        // 开发环境默认使用内存 mock；设置 USE_MOCK_DATA=false 可切回 MongoDB。
+        get useMockData() {
+            return process.env.USE_MOCK_DATA !== 'false'
+        },
         port: 3000,
         allowOrigins: [
             'http://localhost:8080',
@@ -22,6 +26,7 @@ const envConfig = {
     production: {
         currentEnv: 'production',
         allowAnyLogin: false,
+        useMockData: false,
         port: 3000,
         allowOrigins: [
             'https://yuhhhy.cn',

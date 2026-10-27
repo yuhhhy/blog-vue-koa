@@ -7,10 +7,13 @@
     "server": "pnpm --dir blog-server serve",
     "client": "pnpm --dir blog-client dev",
     "background": "pnpm --dir blog-background dev",
-    "start-all": "concurrently \"pnpm server\" \"pnpm client\" \"pnpm background\"",
+    "start": "concurrently \"pnpm server\" \"pnpm client\" \"pnpm background\"",
     "start-client": "concurrently \"pnpm server\" \"pnpm client\"",
     "start-admin": "concurrently \"pnpm server\" \"pnpm background\"",
-    "generate:image-variants": "pnpm --dir blog-server generate:image-variants"
+    "generate:image-variants": "pnpm --dir blog-server generate:image-variants",
+    "analyze": "pnpm --filter frontend analyze && pnpm --filter blog-background analyze && pnpm bundle:report",
+    "bundle:report": "node scripts/report-bundle-size.js frontend admin",
+    "bundle:baseline": "pnpm --filter frontend build && pnpm --filter blog-background build && node scripts/update-bundle-baseline.js"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

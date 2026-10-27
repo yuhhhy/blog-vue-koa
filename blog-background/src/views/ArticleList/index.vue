@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, onMounted } from 'vue'
+import { computed, defineAsyncComponent, reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiGetBlogList, apiDeleteBlog, apiUpdateBlog } from '@/api/blog.js'
 import { apiGetBlogContentList, apiDeleteBlogContent, apiUpdateBlogContent } from '@/api/blogContent.js'
@@ -10,7 +10,6 @@ import MaterialIcon from '@/components/MaterialIcon.vue'
 import { mdiDownload, mdiFileDocumentOutline } from '@mdi/js'
 import { getFormatDate } from '@/utils/date.js'
 import countWord from '@/utils/wordCount.js'
-import VditorEditor from '@/views/ArticleCreate/components/VditorEditor.vue'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
@@ -20,12 +19,16 @@ import AdminList from '@/components/admin/AdminList.vue'
 import AdminListItem from '@/components/admin/AdminListItem.vue'
 import AdminListLabel from '@/components/admin/AdminListLabel.vue'
 import AdminListSort from '@/components/admin/AdminListSort.vue'
+import AdminLoadingState from '@/components/admin/AdminLoadingState.vue'
 import AdminPage from '@/components/admin/AdminPage.vue'
 import MaterialTagField from '@/components/material/MaterialTagField.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
 import { useArticleStore } from '@/stores/articleStore.js'
 
+const VditorEditor = defineAsyncComponent(() => import('@/views/ArticleCreate/components/VditorEditor.vue'))
+
 const tableData = ref([])
+const loading = ref(true)
 const router = useRouter()
 const articleStore = useArticleStore()
 const dialogFormVisible = ref(false)
@@ -55,22 +58,25 @@ const form = reactive({
   content: ''
 })
 
+const isDirectCoverUrl = (value = '') => (
+  /^(?:https?:)?\/\//i.test(value) || /^(?:data|blob):/i.test(value)
+)
+
 const normalizeCoverFilename = (value = '') => {
   const trimmedValue = value.trim()
 
   if (!trimmedValue) return ''
+  if (isDirectCoverUrl(trimmedValue)) return trimmedValue
 
-  try {
-    const url = new URL(trimmedValue)
-    return decodeURIComponent(url.pathname.replace(/^\/images\//, ''))
-  } catch (error) {
-    return trimmedValue.replace(/^\/?images\//, '')
-  }
+  return trimmedValue
+    .replace(/^\/?images\//, '')
+    .replace(/^\/+/, '')
 }
 
-const buildCoverImageUrl = (filename) => {
-  const normalizedFilename = normalizeCoverFilename(filename)
-  return normalizedFilename ? `/images/${normalizedFilename}` : ''
+const buildCoverImageUrl = (value) => {
+  const normalizedValue = normalizeCoverFilename(value)
+  if (!normalizedValue || isDirectCoverUrl(normalizedValue)) return normalizedValue
+  return `/images/${normalizedValue}`
 }
 
 const coverPreviewUrl = computed(() => buildCoverImageUrl(form.coverImage))
@@ -97,30 +103,35 @@ function blurHandler(content) {
 
 // 获取数据
 async function getBlogs() {
-  const [articles, contents, drafts] = await Promise.all([
-    apiGetBlogList(),
-    apiGetBlogContentList(),
-    apiGetArticleDrafts(),
-  ])
-  const contentMap = new Map(contents.map(content => [content.id, content]))
-  const publishedRows = articles.map((article) => {
-    const content = contentMap.get(article.id) || {}
-    return {
-      ...article,
-      ...content,
-      status: 'published',
-      sortTime: article.createTime,
-      createTime: getFormatDate(article.createTime),
-    }
-  })
-  const draftRows = drafts.map(draft => ({
-    ...draft,
-    title: draft.title || '未命名草稿',
-    status: 'draft',
-    sortTime: draft.updatedAt,
-    createTime: getFormatDate(draft.updatedAt),
-  }))
-  tableData.value = [...publishedRows, ...draftRows]
+  loading.value = true
+  try {
+    const [articles, contents, drafts] = await Promise.all([
+      apiGetBlogList(),
+      apiGetBlogContentList(),
+      apiGetArticleDrafts(),
+    ])
+    const contentMap = new Map(contents.map(content => [content.id, content]))
+    const publishedRows = articles.map((article) => {
+      const content = contentMap.get(article.id) || {}
+      return {
+        ...article,
+        ...content,
+        status: 'published',
+        sortTime: article.createTime,
+        createTime: getFormatDate(article.createTime),
+      }
+    })
+    const draftRows = drafts.map(draft => ({
+      ...draft,
+      title: draft.title || '未命名草稿',
+      status: 'draft',
+      sortTime: draft.updatedAt,
+      createTime: getFormatDate(draft.updatedAt),
+    }))
+    tableData.value = [...publishedRows, ...draftRows]
+  } finally {
+    loading.value = false
+  }
 }
 
 const formatExportDate = (value) => {
@@ -311,7 +322,7 @@ async function UpdateBlog(id) {
           <AdminListSort v-model="sortBy" :options="sortOptions" />
         </div>
       </div>
-      <AdminList :items="sortedArticles" item-key="id" empty-text="暂无文章">
+      <AdminList :items="sortedArticles" item-key="id" :loading="loading" empty-text="暂无文章">
         <template #item="{ item }">
           <AdminListItem class="article-list-item" :headline="item.title" :supporting-text="`${item.author || '未知作者'} · ${item.createTime || '未知日期'}`">
             <template #leading>
@@ -346,7 +357,7 @@ async function UpdateBlog(id) {
           <MaterialTextField
             v-model="form.coverImage"
             label="封面路径"
-            prefix="/images/"
+            :prefix="isDirectCoverUrl(form.coverImage) ? '' : '/images/'"
             placeholder="dev-covers/vite.jpg"
             required
             :error-message="formErrors.coverImage"
@@ -371,7 +382,12 @@ async function UpdateBlog(id) {
       <MaterialTagField v-model="form.tags" label="标签" required :error-message="formErrors.tags" @update:model-value="formErrors.tags = ''" />
     </div>
     <!-- 文本编辑器 -->
-    <VditorEditor :content="form.content" :persist-draft="false" @vblur="blurHandler" />
+    <Suspense>
+      <VditorEditor :content="form.content" :persist-draft="false" @vblur="blurHandler" />
+      <template #fallback>
+        <AdminLoadingState class="article-editor-loading" label="文章编辑器加载中" />
+      </template>
+    </Suspense>
 
     <template #actions>
       <AdminButton variant="text" @click="dialogFormVisible = false">取消</AdminButton>
@@ -437,6 +453,13 @@ async function UpdateBlog(id) {
   justify-content: center;
   color: var(--el-text-color-secondary);
   font-size: 13px;
+}
+
+.article-editor-loading {
+  width: 100%;
+  height: 80vh;
+  min-height: 320px;
+  background: var(--md-sys-color-surface-container-low);
 }
 
 @media (max-width: 760px) {

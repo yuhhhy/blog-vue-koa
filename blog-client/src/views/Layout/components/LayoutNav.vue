@@ -24,6 +24,11 @@ const navItems = [
         label: '友链',
         to: '/links',
         activePaths: ['/links']
+    },
+    {
+        label: '信息',
+        to: '/info',
+        activePaths: ['/info']
     }
 ]
 
@@ -100,7 +105,7 @@ onMounted(() => {
     .nav-links {
         display: none;
 
-        @media (min-width: 768px) {
+        @media (min-width: 900px) {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -145,7 +150,7 @@ onMounted(() => {
     .el-drop-down {
         display: none;
 
-        @media (max-width: 768px) {
+        @media (max-width: 899px) {
             display: block;
             position: absolute;
             top: 22px;

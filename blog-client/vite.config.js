@@ -6,6 +6,8 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import viteImageminModule from 'vite-plugin-imagemin'
+import { visualizer } from 'rollup-plugin-visualizer'
+import { bundleReportPath, bundleSizeBudget } from '../scripts/vite-bundle-tools.js'
 
 const viteImagemin = viteImageminModule.default || viteImageminModule
 
@@ -28,11 +30,16 @@ const backendProxy = {
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
-  build: {
-    sourcemap: mode === "analyze",
-  },
   plugins: [
     vue(),
+    bundleSizeBudget('frontend'),
+    mode === 'analyze' && visualizer({
+      filename: bundleReportPath('frontend'),
+      template: 'treemap',
+      gzipSize: true,
+      brotliSize: true,
+      open: false,
+    }),
     // Gzip 压缩插件
     viteCompression({
       verbose: true, // 是否在控制台输出压缩结果

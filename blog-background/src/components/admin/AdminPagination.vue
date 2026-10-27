@@ -40,17 +40,14 @@ const changePage = (page) => {
     </span>
 
     <div class="admin-pagination__actions" role="group" aria-label="翻页操作">
-      <v-tooltip v-for="action in pageActions" :key="action.key" :text="action.label" location="top">
-        <template #activator="{ props: activatorProps }">
+      <el-tooltip v-for="action in pageActions" :key="action.key" :content="action.label" placement="top">
           <button
-            v-bind="activatorProps"
             type="button"
             :disabled="disabled || action.disabled"
             :aria-label="`转到${action.label}`"
             @click="changePage(action.page)"
           ><MaterialIcon :path="action.icon" /></button>
-        </template>
-      </v-tooltip>
+      </el-tooltip>
     </div>
   </nav>
 </template>

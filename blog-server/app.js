@@ -13,6 +13,11 @@ import { refreshRSS } from './services/RSSService.js'
 // 加载环境变量配置（.ENV 文件）
 dotenv.config()
 
+// 生产发布包不包含开发 mock；仅在开发环境启用时动态加载。
+const mockRouter = envConfig.useMockData
+    ? (await import('./mock/router.js')).default
+    : null
+
 // 创建 Koa 实例
 const app = new Koa()
 
@@ -29,11 +34,15 @@ app.on('error', (error, ctx) => {
     logger.error(error?.stack || error?.message || error)
 })
 
-// 连接数据库
-connectDB().then(async (connected) => {
-    if (!connected) return
-    await refreshRSS('server startup')
-})
+// 开发环境默认使用内存 mock 数据，不依赖本机 MongoDB。
+if (mockRouter) {
+    console.log('Development mock data enabled (set USE_MOCK_DATA=false to use MongoDB)')
+} else {
+    connectDB().then(async (connected) => {
+        if (!connected) return
+        await refreshRSS('server startup')
+    })
+}
 
 // 全局错误处理中间件
 app.use(async (ctx, next) => {
@@ -98,6 +107,10 @@ app.use(serve(envConfig.staticResourceFilePath))
 app.use(authMiddleware)
 
 // 注册路由
+if (mockRouter) {
+    app.use(mockRouter.routes())
+    app.use(mockRouter.allowedMethods())
+}
 app.use(router.routes())
 app.use(router.allowedMethods())
 

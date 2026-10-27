@@ -4,6 +4,7 @@ dist/
 dist-ssr/
 /release/
 /server/
+/reports/
 
 # 日志文件
 logs
@@ -41,6 +42,3 @@ compose.yaml
 
 # public文件夹
 /public/
-
-# 本地任务与调试记录
-/docs/

@@ -6,7 +6,8 @@ import {
   mdiAccountCircleOutline,
   mdiCommentProcessingOutline,
   mdiLogoutVariant,
-  mdiShieldAccountOutline
+  mdiShieldAccountOutline,
+  mdiWeatherSunny
 } from '@mdi/js'
 import avatarUrl from '@/assets/avatar.jpg'
 import MaterialIcon from '@/components/MaterialIcon.vue'
@@ -73,7 +74,11 @@ function handleLogin() {
         <button class="user-trigger" type="button" :aria-label="userStore.userData.username">
           <span class="avatar-wrap">
             <img class="trigger-avatar" :src="avatarUrl" alt="">
-            <span v-if="notificationStore.totalNotifications" class="notification-dot"></span>
+            <MaterialIcon
+              v-if="notificationStore.totalNotifications"
+              class="notification-dot"
+              :path="mdiWeatherSunny"
+            />
           </span>
           <strong class="trigger-username">{{ userStore.userData.username }}</strong>
         </button>
@@ -170,13 +175,12 @@ function handleLogin() {
 
 .notification-dot {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 9px;
-  height: 9px;
-  border: 2px solid var(--admin-bg-soft);
-  border-radius: 50%;
-  background: var(--admin-danger);
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  color: var(--admin-danger);
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--admin-danger) 24%, transparent));
 }
 
 .trigger-username {

@@ -1,13 +1,13 @@
-<script setup>
-</script>
-
 <template>
-  <v-app>
-    <div class="h-screen w-screen relative">
-      <RouterView></RouterView>
-    </div>
-  </v-app>
+  <div class="app-shell">
+    <RouterView />
+  </div>
 </template>
 
 <style scoped>
+.app-shell {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
 </style>

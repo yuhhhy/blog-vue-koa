@@ -1,9 +1,11 @@
 <script setup>
 import { computed, ref, onMounted, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 import { mdiPlus } from '@mdi/js'
 import { getLinks, createLink, updateLink, deleteLink } from '@/api/links.js'
 import { getTimestampToSeconds } from '@/utils/date.js'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
+import AdminAvatar from '@/components/admin/AdminAvatar.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog.vue'
@@ -15,10 +17,10 @@ import AdminPage from '@/components/admin/AdminPage.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
 
 const tableData = ref([])
+const loading = ref(true)
 const dialogFormVisible = ref(false)
 const deleteDialogVisible = ref(false)
 const pendingDelete = ref(null)
-const snackbar = reactive({ visible: false, text: '', color: 'primary' })
 const formErrors = reactive({ name: '', description: '', site: '', avatar: '' })
 const sortBy = ref('recent')
 const sortOptions = [
@@ -50,8 +52,12 @@ onMounted(() => {
 })
 
 async function getLinksList() {
-  const res = await getLinks()
-  tableData.value = res
+  loading.value = true
+  try {
+    tableData.value = await getLinks()
+  } finally {
+    loading.value = false
+  }
 }
 
 function handleDelete(row) {
@@ -71,9 +77,8 @@ async function confirmDelete() {
 }
 
 function showMessage(text, color = 'primary') {
-  snackbar.text = text
-  snackbar.color = color
-  snackbar.visible = true
+  const type = color === 'error' ? 'error' : color === 'success' ? 'success' : 'info'
+  ElMessage({ message: text, type })
 }
 
 function handleRowAction(action, row) {
@@ -141,11 +146,11 @@ async function handleConfirm() {
           <AdminListSort v-model="sortBy" :options="sortOptions" />
         </div>
       </div>
-      <AdminList :items="sortedLinks" item-key="id" empty-text="暂无友链">
+      <AdminList :items="sortedLinks" item-key="id" :loading="loading" empty-text="暂无友链">
         <template #item="{ item }">
           <AdminListItem :headline="item.name" :supporting-text="item.description">
             <template #leading>
-              <v-avatar :image="item.avatar" size="56" rounded="lg" />
+              <AdminAvatar :src="item.avatar" :alt="`${item.name} 的头像`" />
             </template>
             <template #supporting>
               <span>{{ item.description }}</span>
@@ -180,9 +185,6 @@ async function handleConfirm() {
     @confirm="confirmDelete"
   />
 
-  <v-snackbar v-model="snackbar.visible" :color="snackbar.color" rounded="lg" location="top right">
-    {{ snackbar.text }}
-  </v-snackbar>
 </template>
 
 <style scoped>

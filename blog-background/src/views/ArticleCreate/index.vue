@@ -1,12 +1,12 @@
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { mdiPlus, mdiUpload } from '@mdi/js'
-import VditorEditor from './components/VditorEditor.vue'
 import ArticleForm from './components/ArticleForm.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
+import AdminLoadingState from '@/components/admin/AdminLoadingState.vue'
 import AdminPage from '@/components/admin/AdminPage.vue'
 import { useArticleStore } from '@/stores/articleStore.js'
 import {
@@ -15,6 +15,8 @@ import {
     apiPublishArticleDraft,
     apiUpdateArticleDraft,
 } from '@/api/articleDraft.js'
+
+const VditorEditor = defineAsyncComponent(() => import('./components/VditorEditor.vue'))
 
 const AUTO_SAVE_DELAY = 2000
 
@@ -321,7 +323,12 @@ onBeforeUnmount(() => {
             @article-submit="submitHandler"
         />
         <AdminCard title="文章正文" class="editor-card">
-            <VditorEditor ref="editorRef" :content="editorContent" @vblur="handleContentChange" />
+            <Suspense>
+                <VditorEditor ref="editorRef" :content="editorContent" @vblur="handleContentChange" />
+                <template #fallback>
+                    <AdminLoadingState class="article-editor-loading" label="文章编辑器加载中" />
+                </template>
+            </Suspense>
         </AdminCard>
         <div class="article-create-actions">
             <AdminButton type="button" :icon="mdiPlus" :disabled="submitting" @click="startNewDraft">
@@ -336,6 +343,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .editor-card { overflow: visible; }
+.article-editor-loading { width: 100%; height: 80vh; min-height: 320px; background: var(--md-sys-color-surface-container-low); }
 .article-create-actions { display: flex; justify-content: flex-end; gap: 10px; }
 @media (max-width: 800px) {
     .article-create-actions :deep(.admin-button) { flex: 1; }
