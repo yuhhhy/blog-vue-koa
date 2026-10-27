@@ -22,6 +22,9 @@ const envConfig = {
         // 前端请求的静态资源文件路径
         staticResourceFilePath: path.join(__dirname, "../../public"),
         baseUrl: 'http://localhost:3000',
+        get legacyVisitorWritesEnabled() {
+            return process.env.LEGACY_VISITOR_WRITES_ENABLED !== 'false'
+        },
     },
     production: {
         currentEnv: 'production',
@@ -40,6 +43,9 @@ const envConfig = {
         ],
         staticResourceFilePath: '/var/www/public',
         baseUrl: 'https://yuhhhy.cn',
+        get legacyVisitorWritesEnabled() {
+            return process.env.LEGACY_VISITOR_WRITES_ENABLED !== 'false'
+        },
     }
 }
 
