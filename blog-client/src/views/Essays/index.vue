@@ -1,10 +1,42 @@
 <script setup>
-import { onMounted } from 'vue'
-import { useBlogList } from '@/composables/useBlogList.js'
+import { onMounted, ref } from 'vue'
+import { apiGetEssays } from '@/api/essays.js'
 
-const { blogList, fetchBlogList } = useBlogList()
+const essays = ref([])
+const loading = ref(true)
+const loadError = ref(false)
 
-onMounted(fetchBlogList)
+const loadEssays = async () => {
+    loading.value = true
+    loadError.value = false
+    try {
+        essays.value = await apiGetEssays()
+    } catch {
+        loadError.value = true
+    } finally {
+        loading.value = false
+    }
+}
+
+const formatDate = (value) => new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+}).format(new Date(value))
+
+const isDateTitle = (essay) => {
+    const parts = new Intl.DateTimeFormat('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+    }).formatToParts(new Date(essay.createTime))
+    const value = (type) => parts.find((part) => part.type === type)?.value
+    return essay.title === `${value('year')}年${value('month')}月${value('day')}日随笔`
+}
+
+onMounted(loadEssays)
 </script>
 
 <template>
@@ -14,13 +46,16 @@ onMounted(fetchBlogList)
             <h1 id="essays-title">随笔</h1>
         </header>
 
-        <div class="essay-list">
-            <article v-for="blog in blogList" :key="blog.id" class="essay-item">
-                <RouterLink :to="`/blog/${blog.id}`">
-                    <h2>{{ blog.title }}</h2>
-                    <p>{{ blog.excerpt }}</p>
-                    <time :datetime="blog.createTime">{{ blog.createTime.substring(0, 10) }}</time>
-                </RouterLink>
+        <div v-if="loading" class="essay-status">正在加载随笔…</div>
+        <div v-else-if="loadError" class="essay-status">
+            随笔加载失败，<button type="button" @click="loadEssays">点击重试</button>
+        </div>
+        <div v-else-if="!essays.length" class="essay-status">暂无随笔</div>
+        <div v-else class="essay-list">
+            <article v-for="essay in essays" :key="essay.id" class="essay-item">
+                <h2>{{ essay.title }}</h2>
+                <time v-if="!isDateTitle(essay)" :datetime="essay.createTime">{{ formatDate(essay.createTime) }}</time>
+                <p>{{ essay.content }}</p>
             </article>
         </div>
     </section>
@@ -55,17 +90,14 @@ onMounted(fetchBlogList)
     view-transition-name: section-title;
 }
 
-.essay-item + .essay-item {
-    margin-top: 32px;
-}
-
-.essay-item a {
-    display: block;
-}
-
-.essay-item h2,
-.essay-item p {
+.essay-list {
     max-width: 760px;
+}
+
+.essay-item + .essay-item {
+    margin-top: 48px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(38, 56, 70, 0.38);
 }
 
 .essay-item h2 {
@@ -75,15 +107,33 @@ onMounted(fetchBlogList)
 }
 
 .essay-item p {
-    overflow: hidden;
-    color: var(--quote-color);
-    line-height: 1.7;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    margin-top: 24px;
+    color: var(--light-dark);
+    font-family: var(--font-serif);
+    line-height: 1.9;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .essay-item time {
+    display: block;
+    margin-top: 8px;
     color: var(--quote-color);
     font-size: 0.875rem;
+}
+
+.essay-status {
+    color: var(--quote-color);
+    line-height: 1.8;
+}
+
+.essay-status button {
+    padding: 0;
+    border: 0;
+    color: var(--skyblue);
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
 }
 </style>

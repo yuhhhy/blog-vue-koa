@@ -2,6 +2,8 @@ import Router from '@koa/router'
 import jwt from 'jsonwebtoken'
 import { randomUUID } from 'node:crypto'
 import KEY from '../config/key.js'
+import { requireAdmin } from '../middlewares/auth.js'
+import { normalizeEssayInput } from '../utils/essay.js'
 import {
     createMockWebsiteData,
     mockComments,
@@ -55,6 +57,7 @@ const state = {
     users: clone(mockUsers),
     visitors: clone(mockVisitors),
     drafts: [],
+    essays: [],
     website: createMockWebsiteData(),
 }
 
@@ -115,6 +118,48 @@ router.get('/blog/bloglist', (ctx) => {
     ctx.body = [...state.blogs]
         .sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
         .map((blog) => ({ ...clone(blog), excerpt: createExcerpt(contentMap.get(blog.id)) }))
+})
+
+router.get('/essays', (ctx) => {
+    ctx.body = [...state.essays]
+        .sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
+        .map(clone)
+})
+
+router.post('/essays', requireAdmin, (ctx) => {
+    const now = new Date()
+    const values = normalizeEssayInput(ctx.request.body, now)
+    if (values.error) ctx.throw(422, values.error)
+
+    const essay = {
+        id: randomUUID(),
+        ...values,
+        createTime: now.toISOString(),
+        updateTime: now.toISOString(),
+    }
+    state.essays.push(essay)
+    ctx.status = 201
+    ctx.body = clone(essay)
+})
+
+router.put('/essays/:id', requireAdmin, (ctx) => {
+    const essay = findById(state.essays, ctx.params.id)
+    if (!essay) return notFound(ctx, '随笔不存在')
+
+    const values = normalizeEssayInput({
+        title: ctx.request.body?.title ?? essay.title,
+        content: ctx.request.body?.content ?? essay.content,
+    }, new Date(essay.createTime))
+    if (values.error) ctx.throw(422, values.error)
+
+    Object.assign(essay, values, { updateTime: new Date().toISOString() })
+    ctx.body = clone(essay)
+})
+
+router.delete('/essays/:id', requireAdmin, (ctx) => {
+    if (!findById(state.essays, ctx.params.id)) return notFound(ctx, '随笔不存在')
+    state.essays = state.essays.filter((essay) => essay.id !== ctx.params.id)
+    setNoContent(ctx)
 })
 
 router.get('/blog/prev/:id', (ctx) => {

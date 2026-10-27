@@ -14,6 +14,7 @@ import { requireAdmin } from '../middlewares/auth.js'
 import { storage } from '../config/upload.js'
 import { convertImageToAvif, generateImageVariants } from '../utils/imageVariants.js'
 import { checkReadiness } from '../utils/readiness.js'
+import { getEssays, createEssay, updateEssay, deleteEssay } from '../controllers/EssayController.js'
 
 const router = new Router({ prefix: '/api' })
 const upload = multer({ storage })
@@ -105,6 +106,14 @@ router.get('/drafts/:id', requireAdmin, getArticleDraft)
 router.put('/drafts/:id', requireAdmin, updateArticleDraft)
 router.delete('/drafts/:id', requireAdmin, deleteArticleDraft)
 router.post('/drafts/:id/publish', requireAdmin, publishArticleDraft)
+
+/**
+ * Essay API
+ */
+router.get('/essays', getEssays)
+router.post('/essays', requireAdmin, createEssay)
+router.put('/essays/:id', requireAdmin, updateEssay)
+router.delete('/essays/:id', requireAdmin, deleteEssay)
 
 
 /**

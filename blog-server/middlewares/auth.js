@@ -56,17 +56,19 @@ export const requireAdmin = async (ctx, next) => {
         return
     }
 
+    let decoded
     try {
-        const decoded = jwt.verify(token, KEY)
-
-        if (decoded.role !== 'admin') {
-            forbidden(ctx)
-            return
-        }
-
-        ctx.state.user = decoded
-        await next()
+        decoded = jwt.verify(token, KEY)
     } catch (error) {
         tokenInvalid(ctx)
+        return
     }
+
+    if (decoded.role !== 'admin') {
+        forbidden(ctx)
+        return
+    }
+
+    ctx.state.user = decoded
+    await next()
 }

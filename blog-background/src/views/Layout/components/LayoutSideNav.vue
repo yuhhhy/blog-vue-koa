@@ -65,6 +65,12 @@ const siderNavItems = [
         ]
     },
     {
+        title: '随笔',
+        link: '/essays/manage',
+        icon: mdiFileEditOutline,
+        requiresAdmin: true
+    },
+    {
         title: '用户',
         icon: mdiAccountCircleOutline,
         children: [
