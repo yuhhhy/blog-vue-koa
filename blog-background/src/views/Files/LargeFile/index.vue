@@ -82,9 +82,11 @@ const hashProgress = ref(0)
 const currentFileHash = ref('')
 const isPaused = ref(false)
 const uploadedBytes = ref(0)
-const startTime = ref(0)
 const uploadControllers = ref(new Set())
 const hashWorker = ref(null)
+const speedSampleWindow = 1500
+let transferredBytes = 0
+let speedSamples = []
 const typeOptions = [
     { label: '全部', value: 'all' }, { label: '视频', value: 'video' },
     { label: '音频', value: 'audio' }, { label: '文档', value: 'doc' },
@@ -270,9 +272,29 @@ const updateUploadProgress = (loadedBytes, totalBytes) => {
     progress.value = Math.max(progress.value, nextProgress)
 }
 
-const updateSpeed = () => {
-    const elapsedSeconds = Math.max((Date.now() - startTime.value) / 1000, 1)
-    speedText.value = `${formatSize(uploadedBytes.value / elapsedSeconds)}/s`
+const resetSpeedTracker = () => {
+    transferredBytes = 0
+    speedSamples = [{ time: performance.now(), bytes: 0 }]
+    speedText.value = '0 B/s'
+}
+
+const recordTransferredBytes = (bytes) => {
+    if (bytes <= 0) return
+
+    transferredBytes += bytes
+    const now = performance.now()
+    speedSamples.push({ time: now, bytes: transferredBytes })
+
+    const cutoff = now - speedSampleWindow
+    while (speedSamples.length > 2 && speedSamples[1].time <= cutoff) {
+        speedSamples.shift()
+    }
+
+    const firstSample = speedSamples[0]
+    const elapsedSeconds = (now - firstSample.time) / 1000
+    if (elapsedSeconds <= 0) return
+
+    speedText.value = `${formatSize((transferredBytes - firstSample.bytes) / elapsedSeconds)}/s`
 }
 
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
@@ -318,22 +340,28 @@ const uploadChunk = async (file, fileHash, chunkIndex, chunkTotal, onChunkProgre
     const timeoutTimer = setTimeout(() => {
         controller.abort()
     }, chunkUploadTimeout)
+    let lastLoaded = 0
 
     try {
         await apiUploadLargeChunk(
             formData,
             (event) => {
-                onChunkProgress?.(chunkIndex, event.loaded || 0)
+                const loaded = event.loaded || 0
+                const transferred = Math.max(0, loaded - lastLoaded)
+                lastLoaded = loaded
+                onChunkProgress?.(chunkIndex, Math.min(loaded, chunk.size), transferred)
             },
             controller.signal,
         )
+
+        const remainingBytes = Math.max(0, chunk.size - Math.min(lastLoaded, chunk.size))
+        onChunkProgress?.(chunkIndex, chunk.size, remainingBytes)
     } finally {
         clearTimeout(timeoutTimer)
         uploadControllers.value.delete(controller)
     }
 
     uploadedBytes.value += chunk.size
-    updateSpeed()
 }
 
 const uploadChunkWithRetry = async (file, fileHash, chunkIndex, chunkTotal, onChunkProgress) => {
@@ -359,8 +387,9 @@ const uploadAllChunks = async (chunks, file, fileHash, chunkTotal) => {
     let pointer = 0
     let failed = null
     const activeChunkLoaded = new Map()
-    const onChunkProgress = (chunkIndex, loaded) => {
+    const onChunkProgress = (chunkIndex, loaded, transferred) => {
         activeChunkLoaded.set(chunkIndex, loaded)
+        recordTransferredBytes(transferred)
         const activeLoaded = Array.from(activeChunkLoaded.values()).reduce((total, size) => total + size, 0)
         updateUploadProgress(uploadedBytes.value + activeLoaded, file.size)
     }
@@ -400,7 +429,6 @@ const startUpload = async () => {
 
     try {
         isPaused.value = false
-        startTime.value = Date.now()
         uploadStatus.value = currentFileHash.value ? 'uploading' : 'hashing'
 
         const fileHash = currentFileHash.value || await calculateHash(file)
@@ -431,6 +459,7 @@ const startUpload = async () => {
             return total + getChunkRange(index, file.size).size
         }, 0)
         progress.value = Math.min(99, (uploadedBytes.value / file.size) * 100)
+        resetSpeedTracker()
         uploadStatus.value = 'uploading'
 
         const pendingChunks = []
