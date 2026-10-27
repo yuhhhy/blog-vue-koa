@@ -42,6 +42,3 @@ compose.yaml
 
 # public文件夹
 /public/
-
-# 本地任务与调试记录
-/docs/
