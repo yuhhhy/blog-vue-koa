@@ -23,17 +23,90 @@ jobs:
     name: Build and verify
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    outputs:
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+      components: ${{ steps.changes.outputs.components }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed components
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -Eeuo pipefail
+
+          frontend=false
+          admin=false
+          server=false
+
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            frontend=true
+            admin=true
+            server=true
+          else
+            if [[ "${EVENT_NAME}" == "pull_request" ]]; then
+              base_sha="${PR_BASE_SHA}"
+            else
+              base_sha="${BEFORE_SHA}"
+            fi
+
+            if [[ -z "${base_sha}" || "${base_sha}" =~ ^0+$ ]]; then
+              frontend=true
+              admin=true
+              server=true
+            else
+              echo "Changed files between ${base_sha} and ${GITHUB_SHA}:"
+              while IFS= read -r changed_file; do
+                [[ -z "${changed_file}" ]] && continue
+                echo "  ${changed_file}"
+
+                case "${changed_file}" in
+                  blog-client/*) frontend=true ;;
+                  blog-background/*) admin=true ;;
+                  blog-server/*) server=true ;;
+                  package.json|pnpm-lock.yaml|pnpm-workspace.yaml|.github/workflows/*|scripts/*)
+                    frontend=true
+                    admin=true
+                    server=true
+                    ;;
+                esac
+              done < <(git diff --name-only "${base_sha}" "${GITHUB_SHA}")
+            fi
+          fi
+
+          components=()
+          [[ "${frontend}" == true ]] && components+=(frontend)
+          [[ "${admin}" == true ]] && components+=(admin)
+          [[ "${server}" == true ]] && components+=(server)
+
+          if (( ${#components[@]} > 0 )); then
+            has_changes=true
+          else
+            has_changes=false
+          fi
+
+          echo "frontend=${frontend}" >> "${GITHUB_OUTPUT}"
+          echo "admin=${admin}" >> "${GITHUB_OUTPUT}"
+          echo "server=${server}" >> "${GITHUB_OUTPUT}"
+          echo "has_changes=${has_changes}" >> "${GITHUB_OUTPUT}"
+          echo "components=${components[*]}" >> "${GITHUB_OUTPUT}"
+          echo "Selected components: ${components[*]:-none}"
 
       - name: Set up pnpm
+        if: steps.changes.outputs.has_changes == 'true'
         uses: pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b # v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
       - name: Set up Node.js
+        if: steps.changes.outputs.has_changes == 'true'
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -41,27 +114,49 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        if: steps.changes.outputs.has_changes == 'true'
+        env:
+          BUILD_FRONTEND: ${{ steps.changes.outputs.frontend }}
+          BUILD_ADMIN: ${{ steps.changes.outputs.admin }}
+          BUILD_SERVER: ${{ steps.changes.outputs.server }}
+        run: |
+          set -Eeuo pipefail
+          filters=()
+          [[ "${BUILD_FRONTEND}" == true ]] && filters+=(--filter=frontend)
+          [[ "${BUILD_ADMIN}" == true ]] && filters+=(--filter=blog-background)
+          [[ "${BUILD_SERVER}" == true ]] && filters+=(--filter=backend)
+          pnpm "${filters[@]}" install --frozen-lockfile
 
       - name: Build frontend
+        if: steps.changes.outputs.frontend == 'true'
         run: pnpm --filter frontend build
 
       - name: Build admin
+        if: steps.changes.outputs.admin == 'true'
         run: pnpm --filter blog-background build
 
       - name: Verify backend
+        if: steps.changes.outputs.server == 'true'
         working-directory: blog-server
         run: |
           find . -path ./node_modules -prune -o -name '*.js' -type f -print0 \
             | xargs -0 -n1 node --check
           node --test utils/RSS.test.js
 
+      - name: Verify deployment scripts
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          bash -n scripts/deploy-release.sh
+          node --check scripts/prepare-release.js
+
       - name: Prepare release
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.changes.outputs.has_changes == 'true'
+        env:
+          DEPLOY_COMPONENTS: ${{ steps.changes.outputs.components }}
         run: node scripts/prepare-release.js
 
       - name: Upload release
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.changes.outputs.has_changes == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: blog-release-${{ github.sha }}
@@ -72,7 +167,7 @@ jobs:
 
   deploy:
     name: Deploy production
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.build.outputs.has_changes == 'true'
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -131,9 +226,7 @@ jobs:
 
           echo "Preparing the incoming release directory on the server..."
           ssh "${ssh_options[@]}" "${REMOTE_USER}@${REMOTE_HOST}" \
-            "rm -rf '${remote_dir}' && mkdir -p '${remote_dir}' && \
-             cp -al /var/www/frontend '${remote_dir}/frontend' && \
-             cp -al /var/www/admin '${remote_dir}/admin'"
+            "rm -rf '${remote_dir}' && mkdir -p '${remote_dir}'"
           echo "Incoming release directory is ready."
 
           transferred=false
