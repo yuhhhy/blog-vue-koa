@@ -41,14 +41,8 @@ jobs:
         run: |
           set -Eeuo pipefail
 
-          frontend=false
-          admin=false
-          server=false
-
           if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
-            frontend=true
-            admin=true
-            server=true
+            FORCE_ALL=true node scripts/detect-deploy-components.js </dev/null
           else
             if [[ "${EVENT_NAME}" == "pull_request" ]]; then
               base_sha="${PR_BASE_SHA}"
@@ -57,46 +51,13 @@ jobs:
             fi
 
             if [[ -z "${base_sha}" || "${base_sha}" =~ ^0+$ ]]; then
-              frontend=true
-              admin=true
-              server=true
+              FORCE_ALL=true node scripts/detect-deploy-components.js </dev/null
             else
               echo "Changed files between ${base_sha} and ${GITHUB_SHA}:"
-              while IFS= read -r changed_file; do
-                [[ -z "${changed_file}" ]] && continue
-                echo "  ${changed_file}"
-
-                case "${changed_file}" in
-                  blog-client/*) frontend=true ;;
-                  blog-background/*) admin=true ;;
-                  blog-server/*) server=true ;;
-                  package.json|pnpm-lock.yaml|pnpm-workspace.yaml|.github/workflows/*|scripts/*)
-                    frontend=true
-                    admin=true
-                    server=true
-                    ;;
-                esac
-              done < <(git diff --name-only "${base_sha}" "${GITHUB_SHA}")
+              git diff --name-only -z "${base_sha}" "${GITHUB_SHA}" \
+                | node scripts/detect-deploy-components.js
             fi
           fi
-
-          components=()
-          [[ "${frontend}" == true ]] && components+=(frontend)
-          [[ "${admin}" == true ]] && components+=(admin)
-          [[ "${server}" == true ]] && components+=(server)
-
-          if (( ${#components[@]} > 0 )); then
-            has_changes=true
-          else
-            has_changes=false
-          fi
-
-          echo "frontend=${frontend}" >> "${GITHUB_OUTPUT}"
-          echo "admin=${admin}" >> "${GITHUB_OUTPUT}"
-          echo "server=${server}" >> "${GITHUB_OUTPUT}"
-          echo "has_changes=${has_changes}" >> "${GITHUB_OUTPUT}"
-          echo "components=${components[*]}" >> "${GITHUB_OUTPUT}"
-          echo "Selected components: ${components[*]:-none}"
 
       - name: Set up pnpm
         if: steps.changes.outputs.has_changes == 'true'
@@ -152,6 +113,7 @@ jobs:
         run: |
           bash -n scripts/deploy-release.sh
           node --check scripts/prepare-release.js
+          node --test scripts/*.test.js
 
       - name: Prepare release
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.changes.outputs.has_changes == 'true'
