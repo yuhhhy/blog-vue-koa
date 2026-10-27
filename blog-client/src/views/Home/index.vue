@@ -122,8 +122,10 @@ const openSection = async (section) => {
             @keydown.enter.prevent="openSection('about')"
             @keydown.space.prevent="openSection('about')"
         >
-            <h1 id="home-about-title">关于</h1>
-            <div v-if="selectedSection === 'about'" class="home-content-preview" aria-hidden="true" inert>
+            <h1 id="home-about-title">
+                <span>关于</span>
+            </h1>
+            <div class="home-content-preview" aria-hidden="true" inert>
                 <div class="home-content-preview__layout">
                     <AboutPage preview />
                 </div>
@@ -143,8 +145,10 @@ const openSection = async (section) => {
             @keydown.enter.prevent="openSection('essays')"
             @keydown.space.prevent="openSection('essays')"
         >
-            <h1 id="home-essays-title">随笔</h1>
-            <div v-if="selectedSection === 'essays'" class="home-content-preview" aria-hidden="true" inert>
+            <h1 id="home-essays-title">
+                <span>随笔</span>
+            </h1>
+            <div class="home-content-preview" aria-hidden="true" inert>
                 <div class="home-content-preview__layout">
                     <EssaysPage />
                 </div>
@@ -164,8 +168,10 @@ const openSection = async (section) => {
             @keydown.enter.prevent="openSection('archive')"
             @keydown.space.prevent="openSection('archive')"
         >
-            <h1 id="home-archive-title">归档</h1>
-            <div v-if="selectedSection === 'archive'" class="home-content-preview" aria-hidden="true" inert>
+            <h1 id="home-archive-title">
+                <span>归档</span>
+            </h1>
+            <div class="home-content-preview" aria-hidden="true" inert>
                 <div class="home-content-preview__layout">
                     <ArchivePage />
                 </div>
@@ -176,9 +182,16 @@ const openSection = async (section) => {
 
 <style scoped>
 .home-sections {
-    --about-block: #e8d7de;
-    --essays-block: #d6e2ea;
-    --archive-block: #e9dfc7;
+    --about-block: #f3d2dd;
+    --essays-block: #c8e4f3;
+    --archive-block: #d9e9cb;
+    --black: #263846;
+    --dark: #263846;
+    --light-dark: #354b56;
+    --quote-color: #526976;
+    --blue: #263846;
+    --skyblue: #3e7181;
+    --b-color: #263846;
     --page-title-left: calc(max(0px, 50vw - 540px) + clamp(20px, 4vw, 48px));
     --page-title-top: calc(clamp(48px, 8vw, 96px) + 20px);
 
@@ -196,7 +209,8 @@ const openSection = async (section) => {
 .home-section {
     position: absolute;
     inset: 0;
-    color: #111111;
+    color: #263846;
+    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
     cursor: pointer;
     transform: translate(0) rotate(0) scale(1);
     transform-origin: 0 50%;
@@ -209,18 +223,32 @@ const openSection = async (section) => {
     will-change: clip-path, transform, opacity;
 }
 
+.home-section::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    background-image: var(--pattern-image);
+    background-position: 0 0;
+    background-size: 320px 320px;
+    background-repeat: repeat;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+}
+
 .home-section.is-hovered {
-    background-color: #f5f2ec;
+    background-color: #fafcf9;
     filter: none;
 }
 
 .home-section.is-hovered > h1 {
-    transform: translate(-50%, -50%) scale(1.08);
+    transform: translateY(-50%) scale(1.06);
 }
 
 .home-section > h1 {
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     width: max-content;
     margin: 0;
     font-family: var(--font-serif);
@@ -229,7 +257,8 @@ const openSection = async (section) => {
     letter-spacing: 0.12em;
     line-height: 1;
     white-space: nowrap;
-    transform: translate(-50%, -50%);
+    transform: translateY(-50%);
+    transform-origin: left center;
     transition:
         top 900ms cubic-bezier(0.76, 0, 0.24, 1),
         left 900ms cubic-bezier(0.76, 0, 0.24, 1),
@@ -241,10 +270,15 @@ const openSection = async (section) => {
 .home-section.is-selected::before {
     content: "";
     position: absolute;
-    z-index: 0;
+    z-index: 1;
     inset: 0;
-    background-color: #f5f2ec;
+    background-color: #fafcf9;
+    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
     pointer-events: none;
+}
+
+.home-section.is-selected::after {
+    z-index: 1;
 }
 
 .home-section--about.is-selected::before {
@@ -260,38 +294,42 @@ const openSection = async (section) => {
 }
 
 .home-section--about {
+    --pattern-image: url('/textures/sakura-weave.webp');
     background-color: var(--about-block);
     clip-path: polygon(0 0, 100% 0, 100% 0, 0 50%);
 }
 
 .home-section--about > h1 {
-    top: 11%;
-    left: 58%;
+    top: 10%;
+    left: 5%;
 }
 
 .home-section--essays {
+    --pattern-image: url('/textures/cloud-weave.webp');
     background-color: var(--essays-block);
     clip-path: polygon(100% 0, 0 50%, 0 50%, 100% 100%);
 }
 
 .home-section--essays > h1 {
-    top: 50%;
-    left: 27%;
+    top: 33%;
+    left: 48%;
 }
 
 .home-section--archive {
+    --pattern-image: url('/textures/leaf-weave.webp');
     background-color: var(--archive-block);
     clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
 }
 
 .home-section--archive > h1 {
-    top: 89%;
-    left: 58%;
+    top: 68%;
+    left: 10%;
 }
 
 .home-section.is-selected > h1 {
     top: var(--page-title-top);
     left: var(--page-title-left);
+    color: var(--dark);
     transform: translate(0, 0);
     view-transition-name: section-title;
 }
@@ -352,12 +390,16 @@ const openSection = async (section) => {
     --preview-from-y: 0px;
 
     position: absolute;
-    z-index: 1;
+    z-index: 2;
     inset: 0;
-    overflow: hidden;
     pointer-events: none;
     cursor: default;
-    animation: page-content-follow 900ms cubic-bezier(0.76, 0, 0.24, 1) both;
+    transform: translate(var(--preview-from-x), var(--preview-from-y));
+    transition: transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.home-section.is-selected .home-content-preview {
+    transform: translate(0, 0);
 }
 
 .home-content-preview__layout {
@@ -367,35 +409,26 @@ const openSection = async (section) => {
 }
 
 .home-section--about .home-content-preview {
-    --preview-from-x: calc(58vw - var(--page-title-left));
-    --preview-from-y: calc(11vh - 60px);
+    --preview-from-x: calc(5vw - var(--page-title-left));
+    --preview-from-y: calc(18vh - 173px);
 }
 
 .home-section--essays .home-content-preview {
-    --preview-from-x: calc(27vw - var(--page-title-left));
-    --preview-from-y: calc(50vh - var(--page-title-top));
+    --preview-from-x: calc(48vw - var(--page-title-left));
+    --preview-from-y: calc(36vh - 185px);
 }
 
 .home-section--archive .home-content-preview {
-    --preview-from-x: calc(58vw - var(--page-title-left));
-    --preview-from-y: calc(89vh - var(--page-title-top));
+    --preview-from-x: calc(10vw - var(--page-title-left));
+    --preview-from-y: calc(74vh - 185px);
+}
+
+.home-content-preview :deep(.page-heading) {
+    visibility: hidden;
 }
 
 .home-content-preview :deep(.page-heading h1) {
-    visibility: hidden;
     view-transition-name: none;
-}
-
-@keyframes page-content-follow {
-    from {
-        opacity: 0;
-        transform: translate(var(--preview-from-x), var(--preview-from-y));
-    }
-
-    to {
-        opacity: 1;
-        transform: translate(0, 0);
-    }
 }
 
 @keyframes essays-about-follow {
@@ -428,14 +461,40 @@ const openSection = async (section) => {
     }
 }
 
-:global(.dark) .home-sections {
-    --about-block: #e8d7de;
-    --essays-block: #d6e2ea;
-    --archive-block: #e9dfc7;
-}
+@media (max-width: 600px) {
+    .home-section > h1 {
+        font-size: clamp(1.5rem, 7vw, 2.25rem);
+    }
 
-:global(.dark) .home-section {
-    color: #111111;
+    .home-section--about > h1 {
+        top: 9%;
+        left: 5%;
+    }
+
+    .home-section--essays > h1 {
+        top: 33%;
+        left: 47%;
+    }
+
+    .home-section--archive > h1 {
+        top: 68%;
+        left: 9%;
+    }
+
+    .home-section--about .home-content-preview {
+        --preview-from-x: calc(5vw - var(--page-title-left));
+        --preview-from-y: calc(21vh - 173px);
+    }
+
+    .home-section--essays .home-content-preview {
+        --preview-from-x: calc(47vw - var(--page-title-left));
+        --preview-from-y: calc(44vh - 185px);
+    }
+
+    .home-section--archive .home-content-preview {
+        --preview-from-x: calc(9vw - var(--page-title-left));
+        --preview-from-y: calc(83vh - 185px);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

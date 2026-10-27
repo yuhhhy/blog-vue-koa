@@ -28,7 +28,7 @@ const routes = [
                 component: () => import('@/views/About/index.vue'),
                 meta: {
                     title: '关于 | 一曝十寒',
-                    backgroundColor: '#e8d7de',
+                    backgroundColor: '#f3d2dd',
                     backgroundShape: 'about'
                 }
             },
@@ -38,7 +38,7 @@ const routes = [
                 component: () => import('@/views/Essays/index.vue'),
                 meta: {
                     title: '随笔 | 一曝十寒',
-                    backgroundColor: '#d6e2ea',
+                    backgroundColor: '#c8e4f3',
                     backgroundShape: 'essays'
                 }
             },
@@ -48,7 +48,7 @@ const routes = [
                 component: () => import('@/views/Archive/index.vue'),
                 meta: {
                     title: '归档 | 一曝十寒',
-                    backgroundColor: '#e9dfc7',
+                    backgroundColor: '#d9e9cb',
                     backgroundShape: 'archive'
                 }
             },

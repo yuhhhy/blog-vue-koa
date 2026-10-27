@@ -44,12 +44,60 @@ onMounted(() => {
     background-color: var(--white);
 }
 
+.layout--about,
+.layout--essays,
+.layout--archive {
+    --white: #ffffff;
+    --light: #fafcf9;
+    --lightgrey: #ccd9d9;
+    --light-dark: #354b56;
+    --dark: #263846;
+    --black: #263846;
+    --quote-color: #526976;
+    --border-color: #d3dfdf;
+    --blue: #263846;
+    --skyblue: #3e7181;
+    --b-color: #263846;
+    color: var(--black);
+    color-scheme: light;
+    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
+}
+
 .layout::before {
     position: fixed;
-    z-index: 0;
+    z-index: 1;
     inset: 0;
-    background-color: #f5f2ec;
+    background-color: #fafcf9;
+    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
     pointer-events: none;
+}
+
+.layout--about::after,
+.layout--essays::after,
+.layout--archive::after {
+    content: "";
+    position: fixed;
+    z-index: 1;
+    inset: 0;
+    background-image: var(--pattern-image);
+    background-position: 0 0;
+    background-size: 320px 320px;
+    background-repeat: repeat;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+}
+
+.layout--about {
+    --pattern-image: url('/textures/sakura-weave.webp');
+}
+
+.layout--essays {
+    --pattern-image: url('/textures/cloud-weave.webp');
+}
+
+.layout--archive {
+    --pattern-image: url('/textures/leaf-weave.webp');
 }
 
 .layout--about::before,
@@ -72,7 +120,7 @@ onMounted(() => {
 
 .layout-page {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     min-width: 0;

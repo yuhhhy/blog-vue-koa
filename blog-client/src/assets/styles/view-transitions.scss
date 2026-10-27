@@ -21,7 +21,7 @@ html[data-route-transition]::view-transition-old(root) {
 }
 
 html[data-route-transition]::view-transition-new(root) {
-    animation: route-content-in 500ms ease both;
+    animation: none;
 }
 
 html[data-route-transition]::view-transition-group(section-title) {
@@ -48,12 +48,6 @@ html[data-route-transition]::view-transition-old(section-title) {
 }
 
 @keyframes route-view-in {
-    from {
-        opacity: 0;
-    }
-}
-
-@keyframes route-content-in {
     from {
         opacity: 0;
     }
