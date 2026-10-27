@@ -3,13 +3,13 @@ defineOptions({ inheritAttrs: false })
 defineProps({ title: { type: String, default: '' } })
 </script>
 <template>
-  <v-card class="admin-card" v-bind="$attrs">
+  <section class="admin-card" v-bind="$attrs">
     <div v-if="title || $slots.actions" class="admin-card__header">
       <h2 v-if="title">{{ title }}</h2>
       <slot name="actions" />
     </div>
     <div class="admin-card__body"><slot /></div>
-  </v-card>
+  </section>
 </template>
 <style scoped>
 .admin-card {

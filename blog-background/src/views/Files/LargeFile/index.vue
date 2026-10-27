@@ -20,6 +20,7 @@ import AdminListItem from '@/components/admin/AdminListItem.vue'
 import AdminListLabel from '@/components/admin/AdminListLabel.vue'
 import AdminListSort from '@/components/admin/AdminListSort.vue'
 import AdminPage from '@/components/admin/AdminPage.vue'
+import AdminProgressLinear from '@/components/admin/AdminProgressLinear.vue'
 import AdminSegmented from '@/components/admin/AdminSegmented.vue'
 import {
     apiDeleteLargeFile,
@@ -619,7 +620,12 @@ onBeforeUnmount(() => {
                         >{{ uploadStatus === 'paused' ? '继续' : '开始上传' }}</AdminButton>
                     </div>
                 </div>
-                <v-progress-linear :model-value="Number(progress.toFixed(1))" :color="uploadStatus === 'error' ? 'error' : 'primary'" height="10" rounded />
+                <AdminProgressLinear
+                    :model-value="Number(progress.toFixed(1))"
+                    :tone="uploadStatus === 'error' ? 'error' : 'primary'"
+                    :height="10"
+                    rounded
+                />
             </div>
         </AdminCard>
 

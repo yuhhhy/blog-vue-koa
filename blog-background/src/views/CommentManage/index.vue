@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus'
 import { apiGetAllComments, apiReviewComment, apiDeleteComment } from '@/api/comment.js'
 import { getFormatDateToMinutes } from '@/utils/date.js'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
+import AdminAvatar from '@/components/admin/AdminAvatar.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
 import AdminCard from '@/components/admin/AdminCard.vue'
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog.vue'
@@ -122,7 +123,7 @@ async function confirmDeleteComment() {
             :headline="item.username"
             :supporting-text="item.content"
           >
-            <template #leading><v-avatar :image="item.avatar" size="56" rounded="lg" /></template>
+            <template #leading><AdminAvatar :src="item.avatar" :alt="`${item.username} 的头像`" /></template>
             <template #overline>
               <AdminListLabel :tone="item.reviewed ? 'success' : 'warning'">
                 {{ item.reviewed ? '已审核' : '待审核' }}
@@ -163,7 +164,7 @@ async function confirmDeleteComment() {
     <AdminList :items="currentReplies" item-key="id" empty-text="暂无回复">
       <template #item="{ item }">
         <AdminListItem :headline="item.username" :supporting-text="item.content">
-          <template #leading><v-avatar :image="item.avatar" size="56" rounded="lg" /></template>
+          <template #leading><AdminAvatar :src="item.avatar" :alt="`${item.username} 的头像`" /></template>
           <template #trailing>{{ getFormatDateToMinutes(item.createTime) }}</template>
         </AdminListItem>
       </template>

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import AdminPagination from '@/components/admin/AdminPagination.vue'
+import AdminProgressLinear from '@/components/admin/AdminProgressLinear.vue'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -47,12 +48,11 @@ const resolveKey = (item, index, itemKey) => {
 
 <template>
   <div class="admin-list" :aria-busy="loading || undefined">
-    <v-progress-linear
+    <AdminProgressLinear
       v-if="loading"
       class="admin-list__progress"
-      color="primary"
       indeterminate
-      height="3"
+      :height="3"
     />
 
     <ul v-if="visibleItems.length" class="admin-list__items" role="list">

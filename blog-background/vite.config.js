@@ -6,7 +6,6 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import ElementPlus from 'unplugin-element-plus/vite'
-import vuetify from 'vite-plugin-vuetify'
 
 const backendTarget = 'http://localhost:3000'
 const backendProxy = {
@@ -24,7 +23,6 @@ const backendProxy = {
 export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
-    vuetify({ autoImport: true }),
     ElementPlus(),
     // Gzip 压缩插件
     viteCompression({
