@@ -1,19 +1,45 @@
 <script setup>
+import { computed, nextTick, ref } from 'vue'
 import { mdiClose } from '@mdi/js'
 import MaterialIcon from '@/components/MaterialIcon.vue'
 
 defineOptions({ inheritAttrs: false })
-defineProps({
+const props = defineProps({
   title: { type: String, required: true },
   description: { type: String, default: '' },
   closeLabel: { type: String, default: '关闭对话框' },
-  showClose: { type: Boolean, default: true }
+  showClose: { type: Boolean, default: true },
+  maxWidth: { type: [Number, String], default: 600 }
 })
 const model = defineModel({ type: Boolean, default: false })
+const bodyRef = ref(null)
+const dialogWidth = computed(() => {
+  const width = typeof props.maxWidth === 'number' || /^\d+$/.test(props.maxWidth)
+    ? `${props.maxWidth}px`
+    : props.maxWidth
+  return `min(calc(100vw - 32px), ${width})`
+})
+
+const resetScrollPosition = async () => {
+  await nextTick()
+  const scrollContainer = bodyRef.value?.parentElement
+  if (!scrollContainer) return
+  scrollContainer.scrollTop = 0
+  scrollContainer.scrollLeft = 0
+}
 </script>
 <template>
-  <v-dialog v-model="model" v-bind="$attrs" class="admin-dialog-overlay" scrollable>
-    <v-card class="admin-dialog" rounded="xl" role="document">
+  <el-dialog
+    v-model="model"
+    v-bind="$attrs"
+    class="admin-dialog"
+    :width="dialogWidth"
+    :show-close="false"
+    append-to-body
+    align-center
+    @open="resetScrollPosition"
+  >
+    <template #header>
       <div class="admin-dialog__header">
         <div class="admin-dialog__heading">
           <h2>{{ title }}</h2>
@@ -29,21 +55,33 @@ const model = defineModel({ type: Boolean, default: false })
           <MaterialIcon :path="mdiClose" />
         </button>
       </div>
-      <v-card-text class="admin-dialog__body"><slot /></v-card-text>
-      <v-card-actions v-if="$slots.actions" class="admin-dialog__actions">
+    </template>
+    <div ref="bodyRef" class="admin-dialog__body"><slot /></div>
+    <template v-if="$slots.actions" #footer>
+      <div class="admin-dialog__actions">
         <slot name="actions" />
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 <style scoped>
-.admin-dialog {
+:global(.admin-dialog.el-dialog) {
+  display: flex;
+  flex-direction: column;
   max-height: min(88vh, 900px);
+  overflow: hidden;
   border: 0;
+  border-radius: 28px;
   color: var(--md-sys-color-on-surface);
   background: var(--md-sys-color-surface-container-high);
   box-shadow: 0 8px 12px 6px rgba(29, 27, 32, 0.15), 0 4px 4px rgba(29, 27, 32, 0.3);
 }
+
+:global(.admin-dialog .el-dialog__header),
+:global(.admin-dialog .el-dialog__body),
+:global(.admin-dialog .el-dialog__footer) { margin: 0; padding: 0; }
+
+:global(.admin-dialog .el-dialog__body) { min-height: 0; overflow-y: auto; }
 
 .admin-dialog__header {
   display: flex;
@@ -79,7 +117,7 @@ const model = defineModel({ type: Boolean, default: false })
 .admin-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; min-height: 64px; padding: 8px 24px 24px !important; }
 
 @media (max-width: 600px) {
-  .admin-dialog { max-height: calc(100dvh - 32px); margin: 16px; border-radius: 24px !important; }
+  :global(.admin-dialog.el-dialog) { max-height: calc(100dvh - 32px); border-radius: 24px; }
   .admin-dialog__header { padding: 20px 20px 8px; }
   .admin-dialog__body { padding: 12px 20px !important; }
   .admin-dialog__actions { padding: 8px 20px 20px !important; }

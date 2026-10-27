@@ -1,0 +1,22 @@
+{
+  "frontend": {
+    "entryGzipLimit": 163840,
+    "asyncChunkGzipLimit": 163840,
+    "baseline": {
+      "largestEntryGzipBytes": 141826,
+      "largestAsyncChunkGzipBytes": 51076,
+      "totalJavaScriptGzipBytes": 249564,
+      "totalCssGzipBytes": 22461
+    }
+  },
+  "admin": {
+    "entryGzipLimit": 153600,
+    "asyncChunkGzipLimit": 163840,
+    "baseline": {
+      "largestEntryGzipBytes": 86466,
+      "largestAsyncChunkGzipBytes": 136891,
+      "totalJavaScriptGzipBytes": 367107,
+      "totalCssGzipBytes": 43269
+    }
+  }
+}

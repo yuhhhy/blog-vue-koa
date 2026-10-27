@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { mdiCheck, mdiSortVariant } from '@mdi/js'
 import MaterialIcon from '@/components/MaterialIcon.vue'
 import AdminButton from '@/components/admin/AdminButton.vue'
@@ -9,35 +9,41 @@ const props = defineProps({
   label: { type: String, default: '排序' }
 })
 const model = defineModel({ type: String, required: true })
+const visible = ref(false)
 const currentLabel = computed(() => props.options.find(option => option.value === model.value)?.label || props.label)
+
+const selectOption = (value) => {
+  model.value = value
+  visible.value = false
+}
 </script>
 
 <template>
-  <v-menu location="bottom end">
-    <template #activator="{ props: menuProps }">
+  <el-popover v-model:visible="visible" placement="bottom-end" :width="188" trigger="click" popper-class="admin-list-sort__popover">
+    <template #reference>
       <AdminButton
-        v-bind="menuProps"
         :icon="mdiSortVariant"
         variant="tonal"
         :aria-label="`${label}：${currentLabel}`"
+        :aria-expanded="visible"
       >{{ currentLabel }}</AdminButton>
     </template>
-    <v-list class="admin-list-sort__menu" density="comfortable">
-      <v-list-item
+    <div class="admin-list-sort__menu" role="menu">
+      <button
         v-for="option in options"
         :key="option.value"
-        :active="model === option.value"
-        color="primary"
-        rounded="lg"
-        @click="model = option.value"
+        class="admin-list-sort__option"
+        :class="{ 'is-active': model === option.value }"
+        type="button"
+        role="menuitemradio"
+        :aria-checked="model === option.value"
+        @click="selectOption(option.value)"
       >
-        <template #prepend>
-          <MaterialIcon class="admin-list-sort__check" :class="{ 'is-hidden': model !== option.value }" :path="mdiCheck" />
-        </template>
-        <v-list-item-title>{{ option.label }}</v-list-item-title>
-      </v-list-item>
-    </v-list>
-  </v-menu>
+        <MaterialIcon class="admin-list-sort__check" :class="{ 'is-hidden': model !== option.value }" :path="mdiCheck" />
+        <span>{{ option.label }}</span>
+      </button>
+    </div>
+  </el-popover>
 </template>
 
 <style scoped>
@@ -47,14 +53,38 @@ const currentLabel = computed(() => props.options.find(option => option.value ==
 }
 
 .admin-list-sort__menu {
-  min-width: 188px;
   padding: 4px;
-  border-radius: 12px !important;
-  background: var(--admin-surface);
-  box-shadow: var(--admin-shadow-soft);
 }
+
+.admin-list-sort__option {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--md-sys-color-on-surface);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-list-sort__option:hover { background: var(--md-sys-color-surface-container-highest); }
+.admin-list-sort__option.is-active { color: var(--md-sys-color-on-secondary-container); background: var(--md-sys-color-secondary-container); }
 
 .admin-list-sort__check.is-hidden {
   visibility: hidden;
+}
+
+:global(.admin-list-sort__popover.el-popper) {
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow-soft);
 }
 </style>

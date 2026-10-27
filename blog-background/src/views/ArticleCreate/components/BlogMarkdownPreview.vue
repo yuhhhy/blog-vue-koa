@@ -88,8 +88,6 @@ watch(htmlContent, async () => {
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    height: 420px;
-    overflow: hidden;
     box-sizing: border-box;
     color: var(--preview-text);
     background: #fff;
@@ -102,8 +100,6 @@ watch(htmlContent, async () => {
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    height: 100%;
-    overflow: auto;
     box-sizing: border-box;
     padding: 0 30px 30px;
 }

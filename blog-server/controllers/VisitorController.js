@@ -1,6 +1,7 @@
 import { Visitor } from '../models/VisitorSchema.js'
 import { WebsiteData } from '../models/WebsiteDataSchema.js'
 import { getIp, parseIp, parseBrowser } from '../utils/index.js' 
+import envConfig from '../config/env.js'
 
 /**
  * Visitor Controller
@@ -8,8 +9,13 @@ import { getIp, parseIp, parseBrowser } from '../utils/index.js'
  */
 // 新建访客记录
 export const createVisitor = async (ctx) => {
-    const { role } = ctx.request.body || 'client'
-    const { page } = ctx.request.body || 'home'
+    if (!envConfig.legacyVisitorWritesEnabled) {
+        ctx.status = 202
+        ctx.body = { accepted: true, legacyWrite: false }
+        return
+    }
+
+    const { role = 'client', page = 'home' } = ctx.request.body || {}
     const ip = getIp(ctx)
     const address = parseIp(ip)
     const browser = parseBrowser(ctx.request.headers['user-agent'])
@@ -64,7 +70,8 @@ export const getVisitorList = async (ctx) => {
             visitors,
             total: totalVisitors,
             page: parseInt(page),
-            limit: parseInt(limit)
+            limit: parseInt(limit),
+            readOnly: !envConfig.legacyVisitorWritesEnabled,
         }
     } catch (error) {
         ctx.status = 500
@@ -74,6 +81,12 @@ export const getVisitorList = async (ctx) => {
 
 // 删除访客记录
 export const deleteVisitor = async (ctx) => {  
+    if (!envConfig.legacyVisitorWritesEnabled) {
+        ctx.status = 409
+        ctx.body = { message: '旧访客记录已设为只读' }
+        return
+    }
+
     const { id } = ctx.params
     
     try {

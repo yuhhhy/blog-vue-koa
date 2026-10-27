@@ -273,18 +273,13 @@ onMounted(() => {
                         </template>
                         <template #overline>
                             <AdminListLabel>{{ getFileType(item.name) }}</AdminListLabel>
-                            <v-tooltip
-                                :text="getVariantTip(item)"
-                                content-class="image-variant-tooltip"
-                            >
-                                <template #activator="{ props }">
-                                    <span v-bind="props">
-                                        <AdminListLabel :tone="item.hasAllVariants ? 'success' : 'warning'">
-                                            {{ item.hasAllVariants ? '缩略图完整' : '缺少缩略图' }}
-                                        </AdminListLabel>
-                                    </span>
-                                </template>
-                            </v-tooltip>
+                            <el-tooltip :content="getVariantTip(item)" placement="top">
+                                <span>
+                                    <AdminListLabel :tone="item.hasAllVariants ? 'success' : 'warning'">
+                                        {{ item.hasAllVariants ? '缩略图完整' : '缺少缩略图' }}
+                                    </AdminListLabel>
+                                </span>
+                            </el-tooltip>
                         </template>
                         <template #actions><AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" /></template>
                     </AdminListItem>
@@ -314,11 +309,6 @@ onMounted(() => {
 .image-list-item :deep(.admin-list-item__leading), .image-thumbnail { width: 80px; height: 80px; }
 .image-list-item :deep(.admin-list-item__leading) { border-radius: 8px; }
 .image-thumbnail { cursor: zoom-in; }
-:global(.image-variant-tooltip) {
-    color: var(--md-sys-color-inverse-on-surface);
-    background: var(--md-sys-color-inverse-surface);
-    box-shadow: var(--admin-shadow);
-}
 @media (max-width: 760px) {
     .list-toolbar { align-items: flex-start; flex-direction: column; }
     .list-toolbar .table-search { width: 100%; }

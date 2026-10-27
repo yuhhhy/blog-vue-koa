@@ -3,6 +3,7 @@ import { apiCreateVisitor } from '@/api/visitor.js'
 import { apiUpdateWebsiteView } from "@/api/websiteData.js"
 import Layout from '@/views/Layout/index.vue'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
+import { recordHostedPage } from '@/utils/hostedAnalytics.js'
 
 const routes = [
     {
@@ -115,11 +116,13 @@ router.afterEach((to, from) => {
         return
     }
 
+    recordHostedPage(to)
+
     runAfterPageIdle(() => {
         const { role, page } = { role: 'client', page: to.name }
         Promise.allSettled([
             apiCreateVisitor({ role, page }),
-            apiUpdateWebsiteView()
+            apiUpdateWebsiteView(),
         ])
     })
 })

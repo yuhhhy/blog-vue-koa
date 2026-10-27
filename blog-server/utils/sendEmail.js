@@ -5,6 +5,8 @@ const transporter = nodemailer.createTransport({
     host: 'smtp.163.com',
     port: 465,                 // 安全端口（SSL）
     secure: true,              // 使用 SSL 加密
+    disableFileAccess: true,
+    disableUrlAccess: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS

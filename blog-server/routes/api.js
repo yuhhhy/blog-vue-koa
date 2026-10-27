@@ -13,6 +13,7 @@ import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus
 import { requireAdmin } from '../middlewares/auth.js'
 import { storage } from '../config/upload.js'
 import { convertImageToAvif, generateImageVariants } from '../utils/imageVariants.js'
+import { checkReadiness } from '../utils/readiness.js'
 
 const router = new Router({ prefix: '/api' })
 const upload = multer({ storage })
@@ -27,6 +28,18 @@ const largeChunkUpload = multer({
 router.get('/health', (ctx) => {
     ctx.status = 200
     ctx.body = { status: 'ok' }
+})
+
+// 部署就绪检查：确认数据源已连接，且静态资源目录可读写。
+router.get('/ready', async (ctx) => {
+    const readiness = await checkReadiness()
+
+    ctx.status = readiness.ready ? 200 : 503
+    ctx.body = {
+        status: readiness.ready ? 'ready' : 'not_ready',
+        dataSource: readiness.dataSource,
+        checks: readiness.checks,
+    }
 })
 
 /**

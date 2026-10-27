@@ -428,6 +428,7 @@ router.get('/visitor', (ctx) => {
         total: state.visitors.length,
         page,
         limit,
+        readOnly: false,
     }
 })
 
