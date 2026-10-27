@@ -170,10 +170,10 @@ if [[ -n "${SELECTED_COMPONENTS[server]:-}" ]]; then
     NODE_ENV=production pm2 restart blog-server --update-env
   )
 
-  log "Waiting for the backend health check..."
+  log "Waiting for the backend readiness check..."
   api_healthy=false
   for attempt in {1..15}; do
-    if curl --fail --silent --show-error --max-time 3 http://127.0.0.1:3000/api/health >/dev/null; then
+    if curl --fail --silent --show-error --max-time 3 http://127.0.0.1:3000/api/ready >/dev/null; then
       api_healthy=true
       break
     fi
@@ -181,10 +181,10 @@ if [[ -n "${SELECTED_COMPONENTS[server]:-}" ]]; then
   done
 
   if [[ "${api_healthy}" != true ]]; then
-    echo "API health check failed after 30 seconds." >&2
+    echo "API readiness check failed after 30 seconds." >&2
     false
   fi
-  log "Backend health check passed."
+  log "Backend readiness check passed."
 fi
 
 if [[ -n "${SELECTED_COMPONENTS[frontend]:-}" || -n "${SELECTED_COMPONENTS[admin]:-}" ]]; then

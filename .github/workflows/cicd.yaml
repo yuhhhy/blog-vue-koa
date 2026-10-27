@@ -145,7 +145,7 @@ jobs:
         run: |
           find . -path ./node_modules -prune -o -name '*.js' -type f -print0 \
             | xargs -0 -n1 node --check
-          node --test utils/RSS.test.js
+          node --test utils/*.test.js
 
       - name: Verify deployment scripts
         if: steps.changes.outputs.has_changes == 'true'
