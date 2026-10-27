@@ -127,6 +127,10 @@ jobs:
           [[ "${BUILD_SERVER}" == true ]] && filters+=(--filter=backend)
           pnpm "${filters[@]}" install --frozen-lockfile
 
+      - name: Audit production dependencies
+        if: steps.changes.outputs.has_changes == 'true'
+        run: pnpm audit --prod --audit-level high
+
       - name: Build frontend
         if: steps.changes.outputs.frontend == 'true'
         run: pnpm --filter frontend build
