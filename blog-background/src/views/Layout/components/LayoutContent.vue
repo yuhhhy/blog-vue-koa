@@ -15,6 +15,7 @@
     margin-left: var(--admin-sidebar-width);
     padding: 0;
     overflow: auto;
+    scrollbar-gutter: stable;
     background: var(--admin-bg);
 }
 

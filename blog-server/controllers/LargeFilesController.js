@@ -105,6 +105,13 @@ const buildStoredFilename = (filename, fileHash) => {
     return `${name}-${fileHash.slice(0, 8)}${ext}`
 }
 
+const getDisplayFilename = (storedFilename) => {
+    const ext = path.extname(storedFilename)
+    const name = path.basename(storedFilename, ext).replace(/-[a-f0-9]{8}$/i, '')
+
+    return `${name}${ext}`
+}
+
 const safeJoin = (dir, filename) => {
     const targetPath = path.join(dir, filename)
     const relative = path.relative(dir, targetPath)
@@ -143,7 +150,7 @@ const getFileMeta = async (type, config, file) => {
     return {
         type,
         filename: file,
-        name: file,
+        name: getDisplayFilename(file),
         url: `${config.urlPrefix}/${file}`,
         size: stats.size,
         uploadDate: stats.birthtime,
@@ -418,6 +425,7 @@ export const mergeLargeFile = async (ctx) => {
         success: true,
         type: fileConfig.type,
         filename: storedFilename,
+        name: safeName,
         url: `${fileConfig.config.urlPrefix}/${storedFilename}`,
         size: stats.size,
         uploadDate: stats.birthtime,
@@ -439,7 +447,7 @@ export const getLargeFiles = async (ctx) => {
                 fileList.push({
                     type,
                     filename: file,
-                    name: file,
+                    name: getDisplayFilename(file),
                     url: `${config.urlPrefix}/${file}`,
                     size: stats.size,
                     uploadDate: stats.birthtime,
@@ -505,7 +513,7 @@ export const downloadLargeFile = async (ctx) => {
 
     try {
         const stats = await fsp.stat(filePath)
-        ctx.attachment(safeName)
+        ctx.attachment(getDisplayFilename(safeName))
         ctx.length = stats.size
         ctx.type = path.extname(safeName)
         ctx.body = fs.createReadStream(filePath)

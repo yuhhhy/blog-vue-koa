@@ -23,6 +23,7 @@ import AdminPage from '@/components/admin/AdminPage.vue'
 import AdminSegmented from '@/components/admin/AdminSegmented.vue'
 import {
     apiDeleteLargeFile,
+    apiDownloadLargeFile,
     apiGetLargeFileList,
     apiInitLargeUpload,
     apiMergeLargeFile,
@@ -82,9 +83,11 @@ const hashProgress = ref(0)
 const currentFileHash = ref('')
 const isPaused = ref(false)
 const uploadedBytes = ref(0)
-const startTime = ref(0)
 const uploadControllers = ref(new Set())
 const hashWorker = ref(null)
+const speedSampleWindow = 1500
+let transferredBytes = 0
+let speedSamples = []
 const typeOptions = [
     { label: '全部', value: 'all' }, { label: '视频', value: 'video' },
     { label: '音频', value: 'audio' }, { label: '文档', value: 'doc' },
@@ -156,11 +159,6 @@ const resolveFileUrl = (url) => {
     return `${base}${encodeUrlPath(url)}`
 }
 
-const resolveDownloadUrl = (row) => {
-    const base = staticBase || window.location.origin
-    return `${base}/download${encodeUrlPath(row.url)}`
-}
-
 const fetchLargeFiles = async () => {
     loading.value = true
     try {
@@ -230,7 +228,6 @@ const calculateHash = async (file) => {
 
             if (type === 'progress') {
                 hashProgress.value = nextProgress
-                progress.value = Math.min(99, nextProgress)
                 return
             }
 
@@ -266,9 +263,34 @@ const getChunkRange = (index, totalSize) => {
     return { start, end, size: end - start }
 }
 
-const updateSpeed = () => {
-    const elapsedSeconds = Math.max((Date.now() - startTime.value) / 1000, 1)
-    speedText.value = `${formatSize(uploadedBytes.value / elapsedSeconds)}/s`
+const updateUploadProgress = (loadedBytes, totalBytes) => {
+    const nextProgress = Math.min(99, (loadedBytes / totalBytes) * 100)
+    progress.value = Math.max(progress.value, nextProgress)
+}
+
+const resetSpeedTracker = () => {
+    transferredBytes = 0
+    speedSamples = [{ time: performance.now(), bytes: 0 }]
+    speedText.value = '0 B/s'
+}
+
+const recordTransferredBytes = (bytes) => {
+    if (bytes <= 0) return
+
+    transferredBytes += bytes
+    const now = performance.now()
+    speedSamples.push({ time: now, bytes: transferredBytes })
+
+    const cutoff = now - speedSampleWindow
+    while (speedSamples.length > 2 && speedSamples[1].time <= cutoff) {
+        speedSamples.shift()
+    }
+
+    const firstSample = speedSamples[0]
+    const elapsedSeconds = (now - firstSample.time) / 1000
+    if (elapsedSeconds <= 0) return
+
+    speedText.value = `${formatSize((transferredBytes - firstSample.bytes) / elapsedSeconds)}/s`
 }
 
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
@@ -314,23 +336,28 @@ const uploadChunk = async (file, fileHash, chunkIndex, chunkTotal, onChunkProgre
     const timeoutTimer = setTimeout(() => {
         controller.abort()
     }, chunkUploadTimeout)
+    let lastLoaded = 0
 
     try {
         await apiUploadLargeChunk(
             formData,
             (event) => {
-                onChunkProgress?.(chunkIndex, event.loaded || 0)
+                const loaded = event.loaded || 0
+                const transferred = Math.max(0, loaded - lastLoaded)
+                lastLoaded = loaded
+                onChunkProgress?.(chunkIndex, Math.min(loaded, chunk.size), transferred)
             },
             controller.signal,
         )
+
+        const remainingBytes = Math.max(0, chunk.size - Math.min(lastLoaded, chunk.size))
+        onChunkProgress?.(chunkIndex, chunk.size, remainingBytes)
     } finally {
         clearTimeout(timeoutTimer)
         uploadControllers.value.delete(controller)
     }
 
     uploadedBytes.value += chunk.size
-    progress.value = Math.min(99, (uploadedBytes.value / file.size) * 100)
-    updateSpeed()
 }
 
 const uploadChunkWithRetry = async (file, fileHash, chunkIndex, chunkTotal, onChunkProgress) => {
@@ -356,10 +383,11 @@ const uploadAllChunks = async (chunks, file, fileHash, chunkTotal) => {
     let pointer = 0
     let failed = null
     const activeChunkLoaded = new Map()
-    const onChunkProgress = (chunkIndex, loaded) => {
+    const onChunkProgress = (chunkIndex, loaded, transferred) => {
         activeChunkLoaded.set(chunkIndex, loaded)
+        recordTransferredBytes(transferred)
         const activeLoaded = Array.from(activeChunkLoaded.values()).reduce((total, size) => total + size, 0)
-        progress.value = Math.min(99, ((uploadedBytes.value + activeLoaded) / file.size) * 100)
+        updateUploadProgress(uploadedBytes.value + activeLoaded, file.size)
     }
 
     const worker = async () => {
@@ -372,6 +400,7 @@ const uploadAllChunks = async (chunks, file, fileHash, chunkTotal) => {
             try {
                 await uploadChunkWithRetry(file, fileHash, chunkIndex, chunkTotal, onChunkProgress)
                 activeChunkLoaded.delete(chunkIndex)
+                updateUploadProgress(uploadedBytes.value, file.size)
             } catch (error) {
                 activeChunkLoaded.delete(chunkIndex)
                 failed = error
@@ -396,7 +425,6 @@ const startUpload = async () => {
 
     try {
         isPaused.value = false
-        startTime.value = Date.now()
         uploadStatus.value = currentFileHash.value ? 'uploading' : 'hashing'
 
         const fileHash = currentFileHash.value || await calculateHash(file)
@@ -416,7 +444,7 @@ const startUpload = async () => {
             progress.value = 100
             uploadStatus.value = 'success'
             speedText.value = '秒传'
-            ElMessage.success(`文件 "${initRes.file?.filename || file.name}" 秒传成功`)
+            ElMessage.success(`文件 "${initRes.file?.name || file.name}" 秒传成功`)
             await fetchLargeFiles()
             return
         }
@@ -427,6 +455,7 @@ const startUpload = async () => {
             return total + getChunkRange(index, file.size).size
         }, 0)
         progress.value = Math.min(99, (uploadedBytes.value / file.size) * 100)
+        resetSpeedTracker()
         uploadStatus.value = 'uploading'
 
         const pendingChunks = []
@@ -453,7 +482,7 @@ const startUpload = async () => {
 
         progress.value = 100
         uploadStatus.value = 'success'
-        ElMessage.success(`文件 "${res.filename}" 上传完成`)
+        ElMessage.success(`文件 "${res.name || file.name}" 上传完成`)
         await fetchLargeFiles()
     } catch (error) {
         if (isPaused.value) {
@@ -485,7 +514,10 @@ const confirmDelete = async () => {
     if (!pendingDelete.value || deleting.value) return
     deleting.value = true
     try {
-        await apiDeleteLargeFile(pendingDelete.value.type, pendingDelete.value.name)
+        await apiDeleteLargeFile(
+            pendingDelete.value.type,
+            pendingDelete.value.filename || pendingDelete.value.name,
+        )
         await fetchLargeFiles()
         deleteDialogVisible.value = false
         pendingDelete.value = null
@@ -495,14 +527,17 @@ const confirmDelete = async () => {
     }
 }
 
-const handleDownload = (row) => {
+const handleDownload = async (row) => {
+    const blob = await apiDownloadLargeFile(row.type, row.filename || row.name)
+    const objectUrl = URL.createObjectURL(blob)
     const link = document.createElement('a')
 
-    link.href = resolveDownloadUrl(row)
+    link.href = objectUrl
     link.download = row.name
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    URL.revokeObjectURL(objectUrl)
     ElMessage.success(`已交给浏览器下载 "${row.name}"`)
 }
 

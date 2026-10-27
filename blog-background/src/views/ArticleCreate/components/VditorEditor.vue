@@ -67,6 +67,7 @@ const uploadImages = async (files) => {
         for (const file of images) {
             const formData = new FormData()
             formData.append('file', file, file.name)
+            formData.append('convertToAvif', 'true')
             const response = await fetch(`${cfg.baseApi}/upload/image`, {
                 method: 'POST',
                 headers: {
