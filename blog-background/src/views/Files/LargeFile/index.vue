@@ -230,7 +230,6 @@ const calculateHash = async (file) => {
 
             if (type === 'progress') {
                 hashProgress.value = nextProgress
-                progress.value = Math.min(99, nextProgress)
                 return
             }
 
@@ -264,6 +263,11 @@ const getChunkRange = (index, totalSize) => {
     const end = Math.min(start + chunkSize, totalSize)
 
     return { start, end, size: end - start }
+}
+
+const updateUploadProgress = (loadedBytes, totalBytes) => {
+    const nextProgress = Math.min(99, (loadedBytes / totalBytes) * 100)
+    progress.value = Math.max(progress.value, nextProgress)
 }
 
 const updateSpeed = () => {
@@ -329,7 +333,6 @@ const uploadChunk = async (file, fileHash, chunkIndex, chunkTotal, onChunkProgre
     }
 
     uploadedBytes.value += chunk.size
-    progress.value = Math.min(99, (uploadedBytes.value / file.size) * 100)
     updateSpeed()
 }
 
@@ -359,7 +362,7 @@ const uploadAllChunks = async (chunks, file, fileHash, chunkTotal) => {
     const onChunkProgress = (chunkIndex, loaded) => {
         activeChunkLoaded.set(chunkIndex, loaded)
         const activeLoaded = Array.from(activeChunkLoaded.values()).reduce((total, size) => total + size, 0)
-        progress.value = Math.min(99, ((uploadedBytes.value + activeLoaded) / file.size) * 100)
+        updateUploadProgress(uploadedBytes.value + activeLoaded, file.size)
     }
 
     const worker = async () => {
@@ -372,6 +375,7 @@ const uploadAllChunks = async (chunks, file, fileHash, chunkTotal) => {
             try {
                 await uploadChunkWithRetry(file, fileHash, chunkIndex, chunkTotal, onChunkProgress)
                 activeChunkLoaded.delete(chunkIndex)
+                updateUploadProgress(uploadedBytes.value, file.size)
             } catch (error) {
                 activeChunkLoaded.delete(chunkIndex)
                 failed = error
