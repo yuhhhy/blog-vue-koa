@@ -5,7 +5,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "analyze": "vite build --mode analyze"
+    "analyze": "vite build --mode analyze",
+    "test": "node --test src/utils/*.test.js"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",

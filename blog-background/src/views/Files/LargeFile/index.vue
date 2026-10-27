@@ -31,6 +31,7 @@ import {
     apiUploadLargeChunk,
 } from '@/api/files.js'
 import cfg from '@/config/index.js'
+import { calculateUploadProgress, createUploadSpeedTracker, getChunkRange as resolveChunkRange } from '@/utils/uploadMetrics.js'
 
 const chunkSize = 5 * 1024 * 1024
 const uploadConcurrency = 6
@@ -86,9 +87,7 @@ const isPaused = ref(false)
 const uploadedBytes = ref(0)
 const uploadControllers = ref(new Set())
 const hashWorker = ref(null)
-const speedSampleWindow = 1500
-let transferredBytes = 0
-let speedSamples = []
+const speedTracker = createUploadSpeedTracker()
 const typeOptions = [
     { label: '全部', value: 'all' }, { label: '视频', value: 'video' },
     { label: '音频', value: 'audio' }, { label: '文档', value: 'doc' },
@@ -258,40 +257,23 @@ const calculateHash = async (file) => {
 }
 
 const getChunkRange = (index, totalSize) => {
-    const start = index * chunkSize
-    const end = Math.min(start + chunkSize, totalSize)
-
-    return { start, end, size: end - start }
+    return resolveChunkRange(index, totalSize, chunkSize)
 }
 
 const updateUploadProgress = (loadedBytes, totalBytes) => {
-    const nextProgress = Math.min(99, (loadedBytes / totalBytes) * 100)
-    progress.value = Math.max(progress.value, nextProgress)
+    progress.value = calculateUploadProgress(progress.value, loadedBytes, totalBytes)
 }
 
 const resetSpeedTracker = () => {
-    transferredBytes = 0
-    speedSamples = [{ time: performance.now(), bytes: 0 }]
+    speedTracker.reset()
     speedText.value = '0 B/s'
 }
 
 const recordTransferredBytes = (bytes) => {
-    if (bytes <= 0) return
+    const bytesPerSecond = speedTracker.record(bytes)
+    if (bytesPerSecond === null) return
 
-    transferredBytes += bytes
-    const now = performance.now()
-    speedSamples.push({ time: now, bytes: transferredBytes })
-
-    const cutoff = now - speedSampleWindow
-    while (speedSamples.length > 2 && speedSamples[1].time <= cutoff) {
-        speedSamples.shift()
-    }
-
-    const firstSample = speedSamples[0]
-    const elapsedSeconds = (now - firstSample.time) / 1000
-    if (elapsedSeconds <= 0) return
-
-    speedText.value = `${formatSize((transferredBytes - firstSample.bytes) / elapsedSeconds)}/s`
+    speedText.value = `${formatSize(bytesPerSecond)}/s`
 }
 
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))

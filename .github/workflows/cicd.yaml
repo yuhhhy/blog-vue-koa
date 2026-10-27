@@ -100,6 +100,10 @@ jobs:
         if: steps.changes.outputs.admin == 'true'
         run: pnpm --filter blog-background build
 
+      - name: Test admin upload behavior
+        if: steps.changes.outputs.admin == 'true'
+        run: pnpm --filter blog-background test
+
       - name: Verify backend
         if: steps.changes.outputs.server == 'true'
         working-directory: blog-server
