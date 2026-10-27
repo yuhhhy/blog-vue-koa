@@ -4,6 +4,7 @@ dist/
 dist-ssr/
 /release/
 /server/
+/reports/
 
 # 日志文件
 logs

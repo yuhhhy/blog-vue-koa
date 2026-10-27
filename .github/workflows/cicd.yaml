@@ -94,11 +94,15 @@ jobs:
 
       - name: Build frontend
         if: steps.changes.outputs.frontend == 'true'
-        run: pnpm --filter frontend build
+        run: |
+          pnpm --filter frontend build
+          node scripts/report-bundle-size.js frontend | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Build admin
         if: steps.changes.outputs.admin == 'true'
-        run: pnpm --filter blog-background build
+        run: |
+          pnpm --filter blog-background build
+          node scripts/report-bundle-size.js admin | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Test admin upload behavior
         if: steps.changes.outputs.admin == 'true'

@@ -6,6 +6,8 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import ElementPlus from 'unplugin-element-plus/vite'
+import { visualizer } from 'rollup-plugin-visualizer'
+import { bundleReportPath, bundleSizeBudget } from '../scripts/vite-bundle-tools.js'
 
 const backendTarget = 'http://localhost:3000'
 const backendProxy = {
@@ -23,6 +25,14 @@ const backendProxy = {
 export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
+    bundleSizeBudget('admin'),
+    mode === 'analyze' && visualizer({
+      filename: bundleReportPath('admin'),
+      template: 'treemap',
+      gzipSize: true,
+      brotliSize: true,
+      open: false,
+    }),
     ElementPlus(),
     // Gzip 压缩插件
     viteCompression({
@@ -40,9 +50,6 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src'),
       '~': path.resolve(__dirname, './node_modules')
     }
-  },
-  build: {
-    sourcemap: mode === 'analyze'
   },
   css: {
     preprocessorOptions: {
