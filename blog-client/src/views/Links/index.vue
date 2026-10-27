@@ -29,14 +29,14 @@ onMounted(async () => {
                 <!-- 友链展示区域 -->
                 <div class="links-display">
                     <!-- 一条友链 -->
-                    <div class="link-item" v-for="link in links">
+                    <div v-for="link in links" :key="link.site" class="link-item">
                         <div class="link-avatar">
-                            <a :href="link.site" target="_blank">
-                                <img :src="link.avatar" alt="link-avatar">
+                            <a :href="link.site" target="_blank" rel="noopener noreferrer">
+                                <img :src="link.avatar" :alt="`${link.name} 的头像`">
                             </a>
                         </div>
                         <div class="link-info">
-                            <a :href="link.site" target="_blank" style="color: var(--light-dark);">
+                            <a :href="link.site" target="_blank" rel="noopener noreferrer" style="color: var(--light-dark);">
                                 <div class="link-title">{{ link.name }}</div>
 
                             </a>

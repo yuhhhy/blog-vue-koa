@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { apiCreateVisitor } from '@/api/visitor.js'
 import { apiUpdateWebsiteView } from "@/api/websiteData.js"
 import Layout from '@/views/Layout/index.vue'
+import HomePage from '@/views/Home/index.vue'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import { recordHostedPage } from '@/utils/hostedAnalytics.js'
 
@@ -12,16 +13,23 @@ const routes = [
         children: [
             {
                 path: '',
-                name: 'Redirect',
-                redirect: '/home'
-            },
-            {
-                path: '/home',
                 name: 'Home',
-                component: () => import('@/views/Home/index.vue'),
+                component: HomePage,
                 meta: {
                     title: '一曝十寒'
                 }
+            },
+            {
+                path: 'explore',
+                name: 'Explore',
+                component: HomePage,
+                meta: {
+                    title: '探索 | 一曝十寒'
+                }
+            },
+            {
+                path: 'home',
+                redirect: '/'
             },
             {
                 path: 'about',
@@ -64,11 +72,7 @@ const routes = [
             },
             {
                 path: 'links',
-                name: 'Links',
-                component: () => import('@/views/Links/index.vue'),
-                meta: {
-                    title: '友链 | 一曝十寒'
-                }
+                redirect: '/explore#links'
             },
             {
                 path: 'info',

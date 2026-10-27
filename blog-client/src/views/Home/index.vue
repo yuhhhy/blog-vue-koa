@@ -1,21 +1,52 @@
 <script setup>
-import { nextTick, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, nextTick, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AboutPage from '@/views/About/index.vue'
 import EssaysPage from '@/views/Essays/index.vue'
 import ArchivePage from '@/views/Archive/index.vue'
+import ExplorePage from '@/views/Explore/index.vue'
 
 const router = useRouter()
+const route = useRoute()
 const homeSections = ref(null)
 const hoveredSection = ref('')
 const selectedSection = ref('')
 const animationSettled = ref(false)
+const isExploreOpen = computed(() => route.name === 'Explore')
+const exploreScroller = ref(null)
+const exploreScrollTop = ref(0)
 
 const sectionRoutes = {
     about: '/about',
     essays: '/essays',
     archive: '/archive',
 }
+
+const openExplore = () => router.push('/explore')
+const closeExplore = () => {
+    exploreScrollTop.value = exploreScroller.value?.scrollTop ?? exploreScrollTop.value
+    router.push('/')
+}
+
+const rememberExploreScroll = (event) => {
+    exploreScrollTop.value = event.currentTarget.scrollTop
+}
+
+watch(
+    () => [isExploreOpen.value, route.hash],
+    async ([isOpen, hash]) => {
+        if (!isOpen) return
+        await nextTick()
+        if (!hash) {
+            exploreScroller.value?.scrollTo({ top: exploreScrollTop.value, behavior: 'auto' })
+            return
+        }
+        document.getElementById(hash.slice(1))?.scrollIntoView({
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        })
+    },
+    { immediate: true },
+)
 
 const previewSection = (section) => {
     if (!selectedSection.value) hoveredSection.value = section
@@ -99,88 +130,259 @@ const openSection = async (section) => {
 </script>
 
 <template>
-    <main
-        ref="homeSections"
-        class="home-sections"
-        :class="[
-            selectedSection ? `home-sections--${selectedSection}` : '',
-            { 'is-settled': animationSettled },
-        ]"
-        aria-label="首页分区"
-    >
-        <section
-            class="home-section home-section--about"
-            :class="sectionState('about')"
-            aria-labelledby="home-about-title"
-            role="link"
-            tabindex="0"
-            @mouseenter="previewSection('about')"
-            @mouseleave="clearPreview('about')"
-            @focus="previewSection('about')"
-            @blur="clearPreview('about')"
-            @click="openSection('about')"
-            @keydown.enter.prevent="openSection('about')"
-            @keydown.space.prevent="openSection('about')"
-        >
-            <h1 id="home-about-title">
-                <span>关于</span>
-            </h1>
-            <div class="home-content-preview" aria-hidden="true" inert>
-                <div class="home-content-preview__layout">
-                    <AboutPage preview />
+    <div class="home-viewport">
+        <div class="home-track" :class="{ 'is-explore-open': isExploreOpen }">
+            <section
+                class="explore-screen"
+                aria-label="探索页"
+                :aria-hidden="!isExploreOpen"
+                :inert="!isExploreOpen"
+            >
+                <div ref="exploreScroller" class="explore-scroll" @scroll="rememberExploreScroll">
+                    <ExplorePage />
                 </div>
-            </div>
-        </section>
-        <section
-            class="home-section home-section--essays"
-            :class="sectionState('essays')"
-            aria-labelledby="home-essays-title"
-            role="link"
-            tabindex="0"
-            @mouseenter="previewSection('essays')"
-            @mouseleave="clearPreview('essays')"
-            @focus="previewSection('essays')"
-            @blur="clearPreview('essays')"
-            @click="openSection('essays')"
-            @keydown.enter.prevent="openSection('essays')"
-            @keydown.space.prevent="openSection('essays')"
-        >
-            <h1 id="home-essays-title">
-                <span>随笔</span>
-            </h1>
-            <div class="home-content-preview" aria-hidden="true" inert>
-                <div class="home-content-preview__layout">
-                    <EssaysPage />
-                </div>
-            </div>
-        </section>
-        <section
-            class="home-section home-section--archive"
-            :class="sectionState('archive')"
-            aria-labelledby="home-archive-title"
-            role="link"
-            tabindex="0"
-            @mouseenter="previewSection('archive')"
-            @mouseleave="clearPreview('archive')"
-            @focus="previewSection('archive')"
-            @blur="clearPreview('archive')"
-            @click="openSection('archive')"
-            @keydown.enter.prevent="openSection('archive')"
-            @keydown.space.prevent="openSection('archive')"
-        >
-            <h1 id="home-archive-title">
-                <span>归档</span>
-            </h1>
-            <div class="home-content-preview" aria-hidden="true" inert>
-                <div class="home-content-preview__layout">
-                    <ArchivePage />
-                </div>
-            </div>
-        </section>
-    </main>
+                <button
+                    class="screen-toggle screen-toggle--return"
+                    type="button"
+                    aria-label="返回首页"
+                    @click="closeExplore"
+                >
+                    <svg class="screen-toggle__arrow screen-toggle__arrow--right" viewBox="0 0 24 24" aria-hidden="true">
+                        <line class="screen-toggle__shaft" x1="5" y1="12" x2="19" y2="12" />
+                        <polyline class="screen-toggle__head" points="12 5 19 12 12 19" />
+                    </svg>
+                </button>
+            </section>
+            <main
+                ref="homeSections"
+                class="home-sections"
+                :class="[
+                    selectedSection ? `home-sections--${selectedSection}` : '',
+                    { 'is-settled': animationSettled },
+                ]"
+                aria-label="首页分区"
+                :aria-hidden="isExploreOpen"
+                :inert="isExploreOpen"
+            >
+                <section
+                    class="home-section home-section--about"
+                    :class="sectionState('about')"
+                    aria-labelledby="home-about-title"
+                    role="link"
+                    tabindex="0"
+                    @mouseenter="previewSection('about')"
+                    @mouseleave="clearPreview('about')"
+                    @focus="previewSection('about')"
+                    @blur="clearPreview('about')"
+                    @click="openSection('about')"
+                    @keydown.enter.prevent="openSection('about')"
+                    @keydown.space.prevent="openSection('about')"
+                >
+                    <h1 id="home-about-title">
+                        <span>关于</span>
+                    </h1>
+                    <div class="home-content-preview" aria-hidden="true" inert>
+                        <div class="home-content-preview__layout">
+                            <AboutPage preview />
+                        </div>
+                    </div>
+                </section>
+                <section
+                    class="home-section home-section--essays"
+                    :class="sectionState('essays')"
+                    aria-labelledby="home-essays-title"
+                    role="link"
+                    tabindex="0"
+                    @mouseenter="previewSection('essays')"
+                    @mouseleave="clearPreview('essays')"
+                    @focus="previewSection('essays')"
+                    @blur="clearPreview('essays')"
+                    @click="openSection('essays')"
+                    @keydown.enter.prevent="openSection('essays')"
+                    @keydown.space.prevent="openSection('essays')"
+                >
+                    <h1 id="home-essays-title">
+                        <span>随笔</span>
+                    </h1>
+                    <div class="home-content-preview" aria-hidden="true" inert>
+                        <div class="home-content-preview__layout">
+                            <EssaysPage />
+                        </div>
+                    </div>
+                </section>
+                <section
+                    class="home-section home-section--archive"
+                    :class="sectionState('archive')"
+                    aria-labelledby="home-archive-title"
+                    role="link"
+                    tabindex="0"
+                    @mouseenter="previewSection('archive')"
+                    @mouseleave="clearPreview('archive')"
+                    @focus="previewSection('archive')"
+                    @blur="clearPreview('archive')"
+                    @click="openSection('archive')"
+                    @keydown.enter.prevent="openSection('archive')"
+                    @keydown.space.prevent="openSection('archive')"
+                >
+                    <h1 id="home-archive-title">
+                        <span>归档</span>
+                    </h1>
+                    <div class="home-content-preview" aria-hidden="true" inert>
+                        <div class="home-content-preview__layout">
+                            <ArchivePage />
+                        </div>
+                    </div>
+                </section>
+                <button
+                    v-if="!selectedSection"
+                    class="screen-toggle screen-toggle--explore"
+                    type="button"
+                    aria-label="前往探索页"
+                    @click="openExplore"
+                >
+                    <svg class="screen-toggle__arrow screen-toggle__arrow--left" viewBox="0 0 24 24" aria-hidden="true">
+                        <line class="screen-toggle__shaft" x1="19" y1="12" x2="5" y2="12" />
+                        <polyline class="screen-toggle__head" points="12 5 5 12 12 19" />
+                    </svg>
+                </button>
+            </main>
+        </div>
+    </div>
 </template>
 
 <style scoped>
+.home-viewport {
+    position: fixed;
+    z-index: 0;
+    inset: 0;
+    overflow: hidden;
+    background: #fafcf9;
+}
+
+.home-track {
+    display: flex;
+    width: 200vw;
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100vw);
+    transition: transform 950ms cubic-bezier(0.76, 0, 0.24, 1);
+    will-change: transform;
+}
+
+.home-track.is-explore-open {
+    transform: translateX(0);
+}
+
+.explore-screen,
+.home-sections {
+    flex: 0 0 100vw;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+}
+
+.explore-screen {
+    position: relative;
+    overflow: hidden;
+    color: var(--black);
+    background: var(--white);
+    overscroll-behavior: contain;
+}
+
+.explore-scroll {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.screen-toggle {
+    position: absolute;
+    z-index: 10;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: clamp(42px, 3.5vw, 48px);
+    aspect-ratio: 1;
+    padding: 0;
+    overflow: visible;
+    color: #ffffff;
+    background: #263846;
+    border: 1px solid #263846;
+    border-radius: 0;
+    cursor: pointer;
+}
+
+.screen-toggle--explore {
+    left: 0;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.screen-toggle--return {
+    right: 0;
+    transform: translate(50%, -50%) rotate(45deg);
+}
+
+.screen-toggle svg {
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.screen-toggle__arrow {
+    position: absolute;
+    width: 21px;
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.screen-toggle__arrow--left {
+    top: calc(50% - 7px);
+    left: calc(50% + 7px);
+}
+
+.screen-toggle__arrow--right {
+    top: calc(50% + 7px);
+    left: calc(50% - 7px);
+}
+
+.screen-toggle__shaft,
+.screen-toggle__head {
+    transition: transform 300ms ease-in-out;
+}
+
+.screen-toggle__arrow--right .screen-toggle__shaft {
+    transform: translateX(16px) scaleX(0);
+    transform-origin: right center;
+}
+
+.screen-toggle__arrow--left .screen-toggle__shaft {
+    transform: translateX(-16px) scaleX(0);
+    transform-origin: left center;
+}
+
+.screen-toggle:hover .screen-toggle__arrow--right .screen-toggle__shaft,
+.screen-toggle:focus-visible .screen-toggle__arrow--right .screen-toggle__shaft,
+.screen-toggle:hover .screen-toggle__arrow--right .screen-toggle__head,
+.screen-toggle:focus-visible .screen-toggle__arrow--right .screen-toggle__head {
+    transform: translateX(4px) scaleX(1);
+}
+
+.screen-toggle:hover .screen-toggle__arrow--left .screen-toggle__shaft,
+.screen-toggle:focus-visible .screen-toggle__arrow--left .screen-toggle__shaft,
+.screen-toggle:hover .screen-toggle__arrow--left .screen-toggle__head,
+.screen-toggle:focus-visible .screen-toggle__arrow--left .screen-toggle__head {
+    transform: translateX(-4px) scaleX(1);
+}
+
+.screen-toggle:focus-visible {
+    outline: 2px solid #263846;
+    outline-offset: 3px;
+}
+
 .home-sections {
     --about-block: #f3d2dd;
     --essays-block: #c8e4f3;
@@ -195,7 +397,7 @@ const openSection = async (section) => {
     --page-title-left: calc(max(0px, 50vw - 540px) + clamp(20px, 4vw, 48px));
     --page-title-top: calc(clamp(48px, 8vw, 96px) + 20px);
 
-    position: fixed;
+    position: relative;
     isolation: isolate;
     top: 0;
     left: 0;
@@ -498,6 +700,14 @@ const openSection = async (section) => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .home-track,
+    .screen-toggle,
+    .screen-toggle__shaft,
+    .screen-toggle__head {
+        transition-duration: 1ms;
+        animation-duration: 1ms;
+    }
+
     .home-sections,
     .home-section,
     .home-section > h1,

@@ -12,8 +12,8 @@ const route = useRoute()
 const navItems = [
     {
         label: '主页',
-        to: '/home',
-        activePaths: ['/home', '/essays', '/archive', '/blog']
+        to: '/',
+        activePaths: ['/', '/essays', '/archive', '/blog']
     },
     {
         label: '关于',
@@ -21,9 +21,9 @@ const navItems = [
         activePaths: ['/about']
     },
     {
-        label: '友链',
-        to: '/links',
-        activePaths: ['/links']
+        label: '探索',
+        to: '/explore',
+        activePaths: ['/explore']
     },
     {
         label: '信息',
