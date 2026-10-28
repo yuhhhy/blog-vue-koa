@@ -1,5 +1,11 @@
+<script setup>
+defineProps({
+    ariaLabel: { type: String, default: '返回首页' },
+})
+</script>
+
 <template>
-    <button class="home-corner-return" type="button" aria-label="返回首页">
+    <button class="home-corner-return" type="button" :aria-label="ariaLabel">
         <svg viewBox="0 0 24 24" aria-hidden="true">
             <line class="home-corner-return__shaft" x1="19" y1="12" x2="5" y2="12" />
             <polyline class="home-corner-return__head" points="12 5 5 12 12 19" />

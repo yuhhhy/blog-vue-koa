@@ -1,6 +1,6 @@
 import Router from '@koa/router'
 import multer from '@koa/multer'
-import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
+import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { createArticleDraft, deleteArticleDraft, getArticleDraft, getArticleDrafts, publishArticleDraft, updateArticleDraft } from '../controllers/ArticleDraftController.js'
 import { getWebsiteData, getWebsiteDataCount, updateWebsiteVisit, updateWebsiteView, updateWebsiteComment, updateWebsiteArticle, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
@@ -63,12 +63,6 @@ router.delete('/blog', requireAdmin, deleteAllBlogs)
 
 // 更新博客
 router.put('/blog/:id', requireAdmin, updateBlog)
-
-// 获取上一篇博客
-router.get('/blog/prev/:id', getPrevBlog)
-
-// 获取下一篇博客
-router.get('/blog/next/:id', getNextBlog)
 
 /**
  * Blog Content API

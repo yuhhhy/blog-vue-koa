@@ -8,6 +8,62 @@ const mockCovers = {
 
 const cover = (name) => mockCovers[name]
 
+const archiveMockTopics = [
+    ['dev-vue-transition', 'Vue 页面切换动画的状态管理', '2026-08-24T08:20:00.000Z', ['Vue', '动画']],
+    ['dev-css-clip-path', '用 clip-path 设计有方向感的页面过渡', '2026-07-12T04:40:00.000Z', ['CSS', '动效']],
+    ['dev-koa-middleware', 'Koa 中间件的执行顺序与错误处理', '2026-06-03T10:15:00.000Z', ['Koa', '后端']],
+    ['dev-image-pipeline', '博客图片压缩与响应式格式实践', '2026-05-18T02:30:00.000Z', ['图片', '性能优化']],
+    ['dev-vue-composable', '把页面逻辑整理成可复用的 Composable', '2026-04-07T12:05:00.000Z', ['Vue', '工程化']],
+    ['dev-accessibility', '给个人博客补上可访问性细节', '2026-03-21T06:50:00.000Z', ['无障碍', '前端']],
+    ['dev-api-design', '从博客接口重构 REST API 的边界', '2026-02-11T09:10:00.000Z', ['API', '架构']],
+    ['dev-design-tokens', '用设计变量统一博客的视觉语言', '2026-01-05T03:25:00.000Z', ['CSS', '设计系统']],
+    ['dev-year-review-2025', '2025 年度开发与写作复盘', '2025-12-28T13:00:00.000Z', ['复盘', '写作']],
+    ['dev-web-fonts', '中文博客字体加载策略', '2025-10-16T07:35:00.000Z', ['字体', '性能优化']],
+    ['dev-mongodb-migration', '一次 MongoDB 数据迁移记录', '2025-08-09T01:45:00.000Z', ['MongoDB', '数据']],
+    ['dev-vite-chunks', '拆解 Vite 构建产物与分包策略', '2025-06-22T11:20:00.000Z', ['Vite', '工程化']],
+    ['dev-comment-system', '从零实现一套树形评论系统', '2025-04-14T05:55:00.000Z', ['评论', '全栈']],
+    ['dev-theme-switch', '深浅色主题切换的实现细节', '2025-02-02T09:40:00.000Z', ['主题', 'CSS']],
+    ['dev-year-review-2024', '2024 年度个人项目复盘', '2024-12-26T08:00:00.000Z', ['复盘', '个人项目']],
+    ['dev-deploy-nginx', '使用 Nginx 部署 Vue 与 Koa 应用', '2024-10-19T03:15:00.000Z', ['部署', 'Nginx']],
+    ['dev-error-boundary', '前端异常监控与错误边界', '2024-08-08T12:30:00.000Z', ['监控', '前端']],
+    ['dev-auth-jwt', 'JWT 登录鉴权的完整链路', '2024-06-17T06:10:00.000Z', ['JWT', '安全']],
+    ['dev-markdown-render', 'Markdown 渲染、安全过滤与代码高亮', '2024-04-06T10:45:00.000Z', ['Markdown', '安全']],
+    ['dev-first-post', '为什么决定重新做一个个人博客', '2024-02-10T02:20:00.000Z', ['博客', '随笔']],
+]
+
+const archiveCoverNames = ['vue-koa', 'sage-green', 'vite', 'mongodb', 'writing']
+
+const createArchiveMockPost = ([id, title, createTime, tags], index) => ({
+    id,
+    title,
+    author: 'Yuhhhy',
+    coverImage: cover(archiveCoverNames[index % archiveCoverNames.length]),
+    createTime,
+    updateTime: createTime,
+    tags,
+    viewCount: 96 + index * 17,
+    likeCount: 8 + (index * 3) % 29,
+    content: `# ${title}
+
+这是一篇用于展示博客归档长列表表现的示例文章。内容保留了真实文章的标题、摘要和正文层级，因此可以正常进入文章详情页检查阅读体验。
+
+## 背景
+
+项目在持续迭代时，文章数量会逐渐增加。归档页需要在不同年份、不同标题长度和较长滚动距离下保持清晰的阅读节奏。
+
+## 实践记录
+
+- 保持列表日期对齐
+- 让长标题能够自然换行
+- 使用年份划分内容层级
+- 确保文章详情与返回操作正常工作
+
+## 小结
+
+先用接近真实规模的数据观察页面，再决定间距、字号和动画细节，会比只看少量示例更可靠。
+`,
+})
+
 export const mockPosts = [
     {
         id: 'dev-vue-koa',
@@ -162,6 +218,7 @@ app.mount('#app')
 技术内容也可以有温度。哪些地方最困惑、为什么改变方案、最后有什么遗憾，这些都是读者无法从文档里直接获得的部分。
 `,
     },
+    ...archiveMockTopics.map(createArchiveMockPost),
 ]
 
 export const mockComments = [

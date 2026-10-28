@@ -89,7 +89,9 @@ const routes = [
                 component: () => import('@/views/Blog/index.vue'),
                 meta: {
                     title: '文章详情 | 一曝十寒',
-                    dynamicTitle: true
+                    dynamicTitle: true,
+                    backgroundColor: '#fafcf9',
+                    backgroundShape: 'blog'
                 }
             },
             {
@@ -123,6 +125,15 @@ const router = createRouter({
         if (
             (to.name === 'Home' && from.name === 'Explore')
             || (to.name === 'Explore' && from.name === 'Home')
+        ) {
+            return false
+        }
+
+        // 归档页退出动画需要保留用户点击文章时的可视区域；
+        // 文章页会在动画完成后再无缝回到顶部。
+        if (
+            (to.name === 'Blog' && from.name === 'Archive')
+            || (to.name === 'Archive' && from.name === 'Blog')
         ) {
             return false
         }

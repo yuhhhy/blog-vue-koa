@@ -1,7 +1,6 @@
 <script setup>
-import ArticleHeader from './components/ArticleHeader.vue'
 import ArticleContent from './components/ArticleContent.vue'
-import ArticleRecommended from './components/ArticleRecommended.vue'
+import ArticleLike from './components/ArticleLike.vue'
 import ArticleFooter from './components/ArticleFooter.vue'
 
 import MarkdownIt from 'markdown-it'
@@ -9,15 +8,16 @@ import DOMPurify from 'dompurify'
 import { ref, watch, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useRoute, useRouter } from 'vue-router'
-import { apiGetBlogContent, apiUpdateBlogViewCount } from '@/api/blogContent.js'
+import { apiGetBlogContent, apiUpdateBlogViewCount, getCachedBlogContent } from '@/api/blogContent.js'
 import { getFormatDate } from '@/utils/date.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import config from '@/config/index.js'
 
 const route = useRoute()
 const router = useRouter()
+const initialBlogData = getCachedBlogContent(route.params.id)
 let htmlContent = ref('') // html格式文章内容
-let blogData = ref({}) // data/posts.json
+let blogData = ref(initialBlogData || {}) // data/posts.json
 
 const md = new MarkdownIt({
     html: true,
@@ -75,6 +75,8 @@ const renderBlogContent = () => {
         ADD_ATTR: ['data-animation', 'data-props']
     })
 }
+
+if (initialBlogData) renderBlogContent()
 
 // 获取文章内容
 async function getBlogContent() {
@@ -171,32 +173,27 @@ useHead({
 
 <template>
     <div class="blog-container">
-        <!-- 博客头部banner区域 -->
-        <div class="blog-header">
-            <div class="banner" :style="{ backgroundImage: `url(${blogData.coverImage})` }"></div>
-            <!-- 遮罩层 -->
-            <div class="mask"></div>
-            <!-- 相关信息 -->
-            <div class="blog-title">{{ blogData.title }}</div>
-            <div class="blog-info">
-                <span>创建时间 {{ getFormatDate(blogData.createTime) }} </span>
-                <div class="blog-word-count">字数 {{ blogData.wordCount }}</div>
-            </div>
-        </div>
+        <div class="blog-surface">
+            <header class="blog-heading">
+                <p>ARTICLE</p>
+                <h1>{{ blogData.title }}</h1>
+                <div class="blog-meta">
+                    <time :datetime="blogData.createTime">{{ getFormatDate(blogData.createTime) }}</time>
+                    <span aria-hidden="true">·</span>
+                    <span>{{ blogData.wordCount }} 字</span>
+                    <template v-if="blogData.createTime !== blogData.updateTime">
+                        <span aria-hidden="true">·</span>
+                        <span>更新于 {{ getFormatDate(blogData.updateTime) }}</span>
+                    </template>
+                </div>
+            </header>
 
-        <!-- 文章上部分交互区域 -->
-        <ArticleHeader :blogData="blogData" class="blog-action-bar"></ArticleHeader>
-
-        <!-- 除了头部banner的主体区域 -->
-        <div class="blog-main">
-            <!-- 博客页面文章主体 -->
-            <div class="blog-aritcle">
-                <!-- 文章主体内容区域 -->
-                <ArticleContent :htmlContent="htmlContent" class="blog-aritcle-item"></ArticleContent>
-                <!-- 文章底部相关信息和评论区域 -->
-                <ArticleFooter class="blog-aritcle-item"></ArticleFooter>
-                <!-- 上一篇、下一篇、推荐文章 -->
-                <ArticleRecommended class="blog-aritcle-item"></ArticleRecommended>
+            <div class="blog-main">
+                <div class="blog-article">
+                    <ArticleContent :htmlContent="htmlContent" class="blog-article-item" />
+                    <ArticleLike :blogData="blogData" class="blog-article-item" />
+                    <ArticleFooter class="blog-article-item" />
+                </div>
             </div>
         </div>
     </div>
@@ -213,83 +210,59 @@ img {
 
 <style lang="scss" scoped>
 .blog-container {
-    background-color: var(--white);
+    position: relative;
     min-height: calc(100vh - 75px);
     width: 100%;
 
-    .blog-header {
+    .blog-surface {
         position: relative;
-        color: #fff;
+        z-index: 3;
+    }
+
+    .blog-heading {
+        padding-block: clamp(64px, 10vw, 120px) clamp(42px, 6vw, 72px);
         font-family: var(--font-serif);
 
-        .banner {
-            width: 100%;
-            height: 500px;
-            background-attachment: fixed;
-            background-size: contain;
-
-            @media (max-width: 768px) {
-                background-attachment: scroll;
-            }
+        > p {
+            color: var(--quote-color);
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            letter-spacing: 0.24em;
+            line-height: 1;
         }
 
-        .mask {
-            width: 100%;
-            height: 500px;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.8));
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .blog-title {
-            font-size: 3.125rem;
-            font-weight: bold;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 120px;
-            text-align: center;
-            width: 80%;
-        }
-
-        .blog-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 80%;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 25px;
-            font-size: 0.875rem;
-
-            >span,
-            >div {
-                height: 30px;
-                line-height: 30px;
-            }
+        h1 {
+            max-width: 860px;
+            margin-top: 12px;
+            color: var(--black);
+            font-size: clamp(1.875rem, 3.8vw, 3.25rem);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            line-height: 1.25;
+            text-wrap: balance;
         }
     }
 
-    .blog-action-bar {
-        margin: 25px 0 30px;
+    .blog-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 24px;
+        color: var(--quote-color);
+        font-family: var(--font-sans);
+        font-size: 0.8125rem;
     }
 
     .blog-main {
-        padding: 0 0 40px;
+        padding-bottom: clamp(48px, 8vw, 96px);
         height: 100%;
 
-        .blog-aritcle {
-            min-width: 0;          // 允许 flex 项目收缩
+        .blog-article {
+            min-width: 0;
             overflow-x: hidden;
 
-            .blog-aritcle-item {
-                margin-bottom: 30px;
+            .blog-article-item {
+                margin-bottom: clamp(32px, 5vw, 56px);
                 max-width: 100%;
             }
         }
@@ -298,45 +271,16 @@ img {
 
 @media screen and (max-width: 768px) {
     .blog-container {
-        .blog-header {
-            .banner {
-                height: 200px;
-                background-attachment: scroll; // 移动端取消fixed效果
+        .blog-heading {
+            padding-block: 72px 44px;
+
+            h1 {
+                font-size: clamp(1.75rem, 8vw, 2.4rem);
             }
-
-            .mask {
-                height: 200px;
-            }
-
-            .blog-title {
-                font-size: 1.875rem;
-                bottom: 80px;
-            }
-
-            .blog-info {
-                bottom: 10px;
-                width: calc(100% - 30px);
-                font-size: 0.75rem;
-
-                >span,
-                >div {
-                    height: 20px;
-                    line-height: 20px;
-                }
-
-            }
-        }
-
-        .blog-action-bar {
-            margin: 15px 0 20px;
         }
 
         .blog-main {
-            padding: 0 0 20px;
-
-            .blog-aritcle {
-                margin-bottom: 20px;
-            }
+            padding-bottom: 48px;
         }
     }
 }

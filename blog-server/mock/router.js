@@ -103,13 +103,6 @@ const publicComments = (blogId) => {
     return buildTree()
 }
 
-const getAdjacentBlog = (id, direction) => {
-    const sorted = [...state.blogs].sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
-    const index = sorted.findIndex((blog) => blog.id === id)
-    if (index < 0) return null
-    return direction === 'prev' ? sorted[index - 1] : sorted[index + 1]
-}
-
 router.get('/health', (ctx) => {
     ctx.body = { status: 'ok', dataSource: 'mock' }
 })
@@ -161,20 +154,6 @@ router.delete('/essays/:id', requireAdmin, (ctx) => {
     if (!findById(state.essays, ctx.params.id)) return notFound(ctx, '随笔不存在')
     state.essays = state.essays.filter((essay) => essay.id !== ctx.params.id)
     setNoContent(ctx)
-})
-
-router.get('/blog/prev/:id', (ctx) => {
-    const blog = getAdjacentBlog(ctx.params.id, 'prev')
-    ctx.body = blog
-        ? { found: true, message: '找到上一篇博客', prevBlog: clone(blog) }
-        : { found: false, message: '已经是最新一篇博客' }
-})
-
-router.get('/blog/next/:id', (ctx) => {
-    const blog = getAdjacentBlog(ctx.params.id, 'next')
-    ctx.body = blog
-        ? { found: true, message: '找到下一篇博客', nextBlog: clone(blog) }
-        : { found: false, message: '已经是最后一篇博客' }
 })
 
 router.get('/blog/:id', (ctx) => {

@@ -1,8 +1,31 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useBlogList } from '@/composables/useBlogList.js'
+import { apiPrefetchBlogContent } from '@/api/blogContent.js'
 
 const { blogList, fetchBlogList } = useBlogList()
+const router = useRouter()
+const openingBlogId = ref('')
+
+const warmBlogContent = (blogId) => {
+    apiPrefetchBlogContent(blogId).catch(() => {})
+}
+
+const openBlog = async (blog) => {
+    if (openingBlogId.value) return
+    openingBlogId.value = blog.id
+
+    try {
+        await apiPrefetchBlogContent(blog.id)
+    }
+    catch (error) {
+        console.error('预加载文章失败', error)
+    }
+
+    await router.push(`/blog/${blog.id}`)
+    openingBlogId.value = ''
+}
 
 const archiveGroups = computed(() => {
     const groups = new Map()
@@ -36,7 +59,15 @@ onMounted(fetchBlogList)
             <ol>
                 <li v-for="blog in blogs" :key="blog.id">
                     <time :datetime="blog.createTime">{{ formatDate(blog.createTime) }}</time>
-                    <RouterLink :to="`/blog/${blog.id}`">{{ blog.title }}</RouterLink>
+                    <RouterLink
+                        :to="`/blog/${blog.id}`"
+                        :class="{ 'is-opening': openingBlogId === blog.id }"
+                        @pointerenter="warmBlogContent(blog.id)"
+                        @focus="warmBlogContent(blog.id)"
+                        @click.prevent="openBlog(blog)"
+                    >
+                        {{ blog.title }}
+                    </RouterLink>
                 </li>
             </ol>
         </section>
@@ -108,6 +139,11 @@ onMounted(fetchBlogList)
 
 .archive-year a {
     overflow-wrap: anywhere;
+    transition: opacity 160ms ease;
+}
+
+.archive-year a.is-opening {
+    opacity: 0.55;
 }
 
 @media (max-width: 600px) {

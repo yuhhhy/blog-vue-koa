@@ -163,6 +163,10 @@ watch(() => route.params.id || props.pageId, (pageId) => {
       padding: 15px 20px;
       border-top: 1px solid rgba(0, 0, 0, 0.05);
 
+      &:first-child {
+        border-top: 0;
+      }
+
       a {
         color: var(--skyblue);
       }
