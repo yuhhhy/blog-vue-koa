@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto'
 import KEY from '../config/key.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { normalizeEssayInput } from '../utils/essay.js'
+import { parseBrowserAndOS } from '../utils/index.js'
 import {
     createMockWebsiteData,
     mockComments,
@@ -263,6 +264,7 @@ router.get('/comment/:id', (ctx) => {
 })
 
 router.post('/comment', (ctx) => {
+    const environment = parseBrowserAndOS(ctx.get('user-agent'))
     const comment = {
         id: ctx.request.body.id || randomUUID(),
         blogId: ctx.request.body.blogId,
@@ -271,6 +273,8 @@ router.post('/comment', (ctx) => {
         username: ctx.request.body.username || '匿名读者',
         email: ctx.request.body.email || 'anonymous@example.com',
         website: ctx.request.body.website || '',
+        ...environment,
+        timezone: ctx.request.body.timezone || 'Asia/Shanghai',
         content: ctx.request.body.content || '',
         createTime: ctx.request.body.createTime || new Date().toISOString(),
         showForm: false,

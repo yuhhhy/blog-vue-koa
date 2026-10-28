@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { getIp } from './index.js'
+import { getIp, parseBrowserAndOS } from './index.js'
 
 test('normalizes the client address forwarded by the edge proxy', () => {
     const ctx = {
@@ -23,4 +23,13 @@ test('keeps loopback addresses honest and normalizes mapped IPv4 addresses', () 
         req: { headers: {}, socket: { remoteAddress: '::ffff:127.0.0.1' } },
         request: {},
     }), '127.0.0.1')
+})
+
+test('parses browser and operating system names and versions from a user agent', () => {
+    assert.deepEqual(parseBrowserAndOS(
+        'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36'
+    ), {
+        browser: 'Mobile Chrome 138.0.0.0',
+        os: 'Android 10',
+    })
 })

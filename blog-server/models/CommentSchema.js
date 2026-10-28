@@ -8,6 +8,9 @@ const CommentSchema = new mongoose.Schema({
     username: { type: String, required: true },
     email: { type: String, required: true },
     website: { type: String, required: false },
+    browser: { type: String, default: '' },
+    os: { type: String, default: '' },
+    timezone: { type: String, default: 'Asia/Shanghai' },
     content: { type: String, required: true },
     createTime: { type: Date, default: Date.now },
     showForm: { type: Boolean, required: true }, // 是否显示回复表单
