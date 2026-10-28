@@ -71,7 +71,9 @@ const unlockArticleTransitionScroll = () => {
 }
 const finishRouteTransition = async () => {
     const completedTransition = routeTransition.value
-    if (completedTransition === 'archive-article') applyRouteBackground()
+    if (completedTransition === 'archive-article') {
+        applyRouteBackground()
+    }
     routeTransition.value = ''
     await nextTick()
     window.scrollTo(0, completedTransition === 'article-archive' ? archiveScrollPosition : 0)
@@ -131,6 +133,7 @@ onMounted(() => {
             {
                 'layout--explore': route.name === 'Explore',
                 'layout--article-opening': routeTransition === 'archive-article',
+                'layout--article-returning': routeTransition === 'article-archive',
                 'is-scene-active': sceneActive,
             },
         ]"
@@ -222,6 +225,11 @@ onMounted(() => {
     pointer-events: none;
     transition: clip-path 900ms cubic-bezier(0.76, 0, 0.24, 1);
     will-change: clip-path;
+}
+
+.layout--article-returning::before {
+    transition-duration: 1250ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .layout--about::after,
@@ -394,15 +402,7 @@ onMounted(() => {
 }
 
 .article-archive-enter-active .archive-year {
-    transition-delay: 90ms, 60ms;
-}
-
-.article-archive-enter-active .archive-year:nth-of-type(2) {
-    transition-delay: 140ms, 100ms;
-}
-
-.article-archive-enter-active .archive-year:nth-of-type(3) {
-    transition-delay: 190ms, 140ms;
+    transition-delay: 0ms, 0ms;
 }
 
 .article-archive-enter-to .page-heading,

@@ -49,7 +49,7 @@ onBeforeUnmount(() => clearTimeout(burstTimer))
             :class="{ 'is-liked': liked, 'is-bursting': isBursting }"
             type="button"
             :aria-pressed="liked"
-            :disabled="liked || isSubmitting"
+            :disabled="isSubmitting"
             @click="handleLike"
         >
             <span class="like-button__halo" aria-hidden="true"></span>
@@ -107,7 +107,7 @@ onBeforeUnmount(() => clearTimeout(burstTimer))
     }
 
     &:disabled {
-        cursor: default;
+        cursor: wait;
     }
 
     &.is-liked {
