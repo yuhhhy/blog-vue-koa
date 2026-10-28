@@ -1,4 +1,5 @@
 import request from "@/utils/request.js"
+import { isAdminVisitorMode } from '@/utils/adminVisitorMode.js'
 
 /**
  * Website Data API
@@ -15,6 +16,8 @@ export function apiGetWebsiteData() {
 
 // 更新网站访问量
 export function apiUpdateWebsiteVisit() {
+    if (isAdminVisitorMode()) return Promise.resolve()
+
     return request({
         url: '/website/visit',
         method: 'PUT',
@@ -23,6 +26,8 @@ export function apiUpdateWebsiteVisit() {
 
 // 更新网站浏览量
 export function apiUpdateWebsiteView() {
+    if (isAdminVisitorMode()) return Promise.resolve()
+
     return request({
         url: '/website/view',
         method: 'PUT',

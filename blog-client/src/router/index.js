@@ -6,6 +6,7 @@ import HomePage from '@/views/Home/index.vue'
 import ExplorePage from '@/views/Explore/index.vue'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import { recordHostedPage } from '@/utils/hostedAnalytics.js'
+import { getAdminVisitorRedirect, isAdminVisitorMode } from '@/utils/adminVisitorMode.js'
 
 let isExploreScrollRangePreserved = false
 let previousBodyMinHeight = ''
@@ -149,6 +150,9 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from) => {
+    const adminVisitorRedirect = getAdminVisitorRedirect(to)
+    if (adminVisitorRedirect) return adminVisitorRedirect
+
     if (from.name === 'Explore' && to.name === 'Home') {
         preserveExploreScrollRange()
         return
@@ -175,9 +179,7 @@ router.afterEach((to, from, failure) => {
 router.afterEach((to, from, failure) => {
     if (failure) return
     // 如果是锚点导航，不做处理
-    if (to.hash) {
-        return
-    }
+    if (to.hash || isAdminVisitorMode()) return
 
     recordHostedPage(to)
 

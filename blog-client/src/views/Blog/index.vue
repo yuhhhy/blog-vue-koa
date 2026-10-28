@@ -93,7 +93,7 @@ async function getBlogContent() {
 
 async function updateBlogViewCount() {
     const data = await apiUpdateBlogViewCount(route.params.id)
-    blogData.value.viewCount = data.viewCount
+    if (data?.viewCount !== undefined) blogData.value.viewCount = data.viewCount
 }
 
 function reportBlogView() {

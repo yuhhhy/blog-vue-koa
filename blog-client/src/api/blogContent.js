@@ -1,4 +1,5 @@
 import request from "@/utils/request.js"
+import { isAdminVisitorMode } from '@/utils/adminVisitorMode.js'
 
 const blogContentCache = new Map()
 const blogContentRequests = new Map()
@@ -53,6 +54,8 @@ export function apiGetBlogContentSearchIndex() {
 
 // 更新博客的浏览量
 export function apiUpdateBlogViewCount(blogId) {
+    if (isAdminVisitorMode()) return Promise.resolve(null)
+
     return request({
         url: `/blogcontent/view/${blogId}`,
         method: 'PUT',
