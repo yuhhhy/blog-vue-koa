@@ -11,8 +11,8 @@ export const getLinks = async (ctx) => {
 export const createLink = async (ctx) => {
     console.log(ctx.request.body)
     
-    const { id, name, description, site, avatar } = ctx.request.body
-    const link = new Links({ id, name, description, site, avatar })
+    const { id, name, description, site, avatar, category = 'friend' } = ctx.request.body
+    const link = new Links({ id, name, description, site, avatar, category })
     await link.save()
     ctx.status = 201
     ctx.body = link
@@ -28,8 +28,8 @@ export const deleteLink = async (ctx) => {
 // 更新友链
 export const updateLink = async (ctx) => {
     const { id } = ctx.params
-    const { name, description, site, avatar } = ctx.request.body
-    const updatedLink = await Links.findOneAndUpdate({ id }, { name, description, site, avatar })
+    const { name, description, site, avatar, category = 'friend' } = ctx.request.body
+    const updatedLink = await Links.findOneAndUpdate({ id }, { name, description, site, avatar, category })
     ctx.status = 200
     ctx.body = updatedLink
 }

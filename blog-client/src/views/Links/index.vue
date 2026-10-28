@@ -1,13 +1,27 @@
 <script setup>
 import ArticleFooter from "../Blog/components/ArticleFooter.vue"
 import { getLinks } from "@/api/links.js"
-import { ref, onMounted } from "vue"
+import { computed, ref, onMounted } from "vue"
 
 const links = ref([])
+const linkGroups = computed(() => [
+    {
+        key: 'friend',
+        title: '朋友们',
+        description: '以下是目前与我互相陪伴的站点，点击头像即可探索他们的世界～ 如果你也想出现在这里，请继续往下看规则',
+        links: links.value.filter((link) => link.category !== 'recommended'),
+    },
+    {
+        key: 'recommended',
+        title: '推荐站点',
+        description: '这些是我单向推荐、值得一看的站点，不要求对方回链。',
+        links: links.value.filter((link) => link.category === 'recommended'),
+    },
+].filter((group) => group.links.length))
 
 onMounted(async () => {
     const res = await getLinks()
-    links.value = res
+    links.value = res.map((link) => ({ ...link, category: link.category || 'friend' }))
 })
 
 </script>
@@ -24,26 +38,25 @@ onMounted(async () => {
                 <p>我珍视真诚的分享、独特的见解和持续创作的坚持。如果你也建立了一个小小的精神角落，记录生活、表达思考、分享热爱，并且你觉得我们有某种契合，欢迎留言和互加友链。</p>
                 <p>我会认真拜访你的“空间”，如果感觉有缘分，就会将你加入我的友链列表。即使暂时不互相加为友链，也期待与你成为朋友或交流想法！感谢每一位愿意分享小站的朋友！</p>
 
-                <h4>朋友们</h4>
-                <p>以下是目前与我互相陪伴的站点，点击头像即可探索他们的世界～ 如果你也想出现在这里，请继续往下看规则</p>
-                <!-- 友链展示区域 -->
-                <div class="links-display">
-                    <!-- 一条友链 -->
-                    <div v-for="link in links" :key="link.site" class="link-item">
-                        <div class="link-avatar">
-                            <a :href="link.site" target="_blank" rel="noopener noreferrer">
-                                <img :src="link.avatar" :alt="`${link.name} 的头像`">
-                            </a>
-                        </div>
-                        <div class="link-info">
-                            <a :href="link.site" target="_blank" rel="noopener noreferrer" style="color: var(--light-dark);">
-                                <div class="link-title">{{ link.name }}</div>
-
-                            </a>
-                            <div class="link-motto">{{ link.description }}</div>
+                <section v-for="group in linkGroups" :key="group.key" class="link-group">
+                    <h4>{{ group.title }}</h4>
+                    <p>{{ group.description }}</p>
+                    <div class="links-display">
+                        <div v-for="link in group.links" :key="link.site" class="link-item">
+                            <div class="link-avatar">
+                                <a :href="link.site" target="_blank" rel="noopener noreferrer">
+                                    <img :src="link.avatar" :alt="`${link.name} 的头像`">
+                                </a>
+                            </div>
+                            <div class="link-info">
+                                <a :href="link.site" target="_blank" rel="noopener noreferrer" style="color: var(--light-dark);">
+                                    <div class="link-title">{{ link.name }}</div>
+                                </a>
+                                <div class="link-motto">{{ link.description }}</div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
                 <h4>友链申请规则</h4>
                 <ul>

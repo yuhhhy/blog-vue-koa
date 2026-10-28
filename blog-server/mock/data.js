@@ -244,6 +244,38 @@ export const mockComments = [
 
 export const mockLinks = [
     {
+        id: '20250701222025',
+        name: '石樱灯笼',
+        description: '灵魂沉为石樱，灯笼映出暗影 一介社畜，妄自菲薄。',
+        site: 'https://www.catscarlet.com/',
+        avatar: 'https://www.catscarlet.com/avatar/qmcd-0008x350.jpg',
+        category: 'recommended',
+    },
+    {
+        id: '20261028200821',
+        name: '枸杞加水',
+        description: '分享知识与生活',
+        site: 'https://blog.fiveth.cc/',
+        avatar: 'https://blog.gochi.cn/logo/icon.ico',
+        category: 'recommended',
+    },
+    {
+        id: '20261028210000',
+        name: "I don't wanna go",
+        description: "WELCOME TO idontwannago's site",
+        site: 'https://www.idontwannago.top/',
+        avatar: 'https://www.idontwannago.top/img/fluid.png',
+        category: 'recommended',
+    },
+    {
+        id: '20261028211556',
+        name: '25020jason1728',
+        description: '抖音个人主页',
+        site: 'https://v.douyin.com/h-Lzt62UbIQ/',
+        avatar: 'https://www.douyin.com/favicon.ico',
+        category: 'recommended',
+    },
+    {
         id: '1001',
         name: 'Vue.js',
         description: '渐进式 JavaScript 框架',

@@ -95,16 +95,6 @@ defineProps({
                         </li>
                     </ul>
 
-                    <h4>朋友</h4>
-                    <ul>
-                        <li><a href="https://v.douyin.com/h-Lzt62UbIQ/ 3@9.com :3pm" target="_blank">25020jason1728</a></li>
-                        <li><a href="https://www.idontwannago.cn/" target="_blank">idontwannago</a></li>
-                    </ul>
-                    <h4>可能对我有启发的博客</h4>
-                    <ul>
-                        <li><a href="https://idealclover.top/" target="_blank">idealclover</a></li>
-                        <li><a href="https://blog.fiveth.cc/" target="_blank">fiveth</a></li>
-                    </ul>
                 </div>
                 <!-- 评论区域 -->
                 <ArticleFooter v-if="!preview" :pageId="'-1'"></ArticleFooter>
