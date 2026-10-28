@@ -5,16 +5,6 @@ import Layout from '@/views/Layout/index.vue'
 import HomePage from '@/views/Home/index.vue'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import { recordHostedPage } from '@/utils/hostedAnalytics.js'
-import {
-    queueHomeReturnAnimation,
-    runHomeSectionAnimation,
-} from '@/utils/sectionRouteTransition.js'
-
-const sectionByRouteName = {
-    About: 'about',
-    Essays: 'essays',
-    Archive: 'archive',
-}
 
 const routes = [
     {
@@ -118,33 +108,18 @@ const router = createRouter({
     }
 })
 
-router.beforeEach(async (to, from) => {
+router.afterEach((to, from, failure) => {
+    if (failure) return
     // 设置页面标题
     if (to.meta?.title && !to.meta.dynamicTitle) {
         document.title = to.meta.title
     }
 
-    const fromSection = sectionByRouteName[from.name]
-    const toSection = sectionByRouteName[to.name]
-
-    if (from.name === 'Home' && toSection) {
-        await runHomeSectionAnimation(toSection)
-        return
-    }
-
-    if (fromSection && to.name === 'Home') {
-        queueHomeReturnAnimation(fromSection)
-        return
-    }
-
-    if (fromSection && toSection && fromSection !== toSection) {
-        queueHomeReturnAnimation(fromSection, to.fullPath)
-        return { name: 'Home' }
-    }
 })
 
 // 在路由导航完成后执行统计，不会阻塞页面渲染
-router.afterEach((to, from) => {
+router.afterEach((to, from, failure) => {
+    if (failure) return
     // 如果是锚点导航，不做处理
     if (to.hash) {
         return

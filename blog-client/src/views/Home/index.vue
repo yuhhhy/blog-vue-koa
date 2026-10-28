@@ -1,52 +1,54 @@
 <script setup>
-import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AboutPage from '@/views/About/index.vue'
 import EssaysPage from '@/views/Essays/index.vue'
 import ArchivePage from '@/views/Archive/index.vue'
 import ExplorePage from '@/views/Explore/index.vue'
 import {
-    consumeHomeReturnAnimation,
-    registerHomeSectionAnimator,
+    createSectionTransitionController,
+    sectionByRouteName,
+    waitForVisualWork,
 } from '@/utils/sectionRouteTransition.js'
 
+const emit = defineEmits(['scene-active'])
 const router = useRouter()
 const route = useRoute()
-const pendingReturnAnimation = consumeHomeReturnAnimation()
-const historyReturnSection = window.history.state?.returnFromSection
-const initialReturnSection = pendingReturnAnimation?.section
-    || (['about', 'essays', 'archive'].includes(historyReturnSection) ? historyReturnSection : '')
-const returnSourceSection = ref(initialReturnSection)
-const returnTarget = ref(pendingReturnAnimation?.target || '')
 const homeSections = ref(null)
+const sceneVisible = ref(['Home', 'Explore'].includes(route.name))
 const hoveredSection = ref('')
-const selectedSection = ref(initialReturnSection)
+const selectedSection = ref(sectionByRouteName[route.name] || '')
 const returningSection = ref('')
 const colorRestoringSection = ref('')
 const isColorRestoreActive = ref(false)
-const animationSettled = ref(Boolean(initialReturnSection))
-const isReturnStaged = ref(Boolean(initialReturnSection))
+const animationSettled = ref(Boolean(selectedSection.value))
+const isReturnStaged = ref(false)
+const titleStyles = ref({})
+const colorFrozen = ref(false)
+const sectionNames = ['about', 'essays', 'archive']
+const colorOpacities = ref(Object.fromEntries(
+    sectionNames.map((section) => [section, selectedSection.value === section ? 1 : 0]),
+))
+const sectionStyle = (section) => ({
+    ...titleStyles.value[section],
+    '--section-white-opacity': colorOpacities.value[section],
+})
 const isExploreOpen = computed(() => route.name === 'Explore')
+const isPageReturn = computed(() => Boolean(
+    selectedSection.value || returningSection.value || sectionByRouteName[route.name],
+))
 const exploreScroller = ref(null)
 const exploreScrollTop = ref(0)
-let returnAnimationTimer
-let returnAnimationRun = 0
-let colorRestoreRun = 0
-let cancelColorRestoreWait
-let unregisterHomeSectionAnimator
+let pressedSection = null
 
-const sectionRoutes = {
-    about: '/about',
-    essays: '/essays',
-    archive: '/archive',
-}
-
+const sectionRoutes = { about: '/about', essays: '/essays', archive: '/archive' }
 const openExplore = () => router.push('/explore')
+const returnHome = () => router.push('/')
+const toggleHome = () => isPageReturn.value ? returnHome() : openExplore()
 const closeExplore = () => {
     exploreScrollTop.value = exploreScroller.value?.scrollTop ?? exploreScrollTop.value
-    router.push('/')
+    returnHome()
 }
-
 const rememberExploreScroll = (event) => {
     exploreScrollTop.value = event.currentTarget.scrollTop
 }
@@ -68,236 +70,200 @@ watch(
 )
 
 const previewSection = (section) => {
-    if (!selectedSection.value && !returningSection.value && !colorRestoringSection.value) {
+    if (!colorFrozen.value && !selectedSection.value && !returningSection.value && !colorRestoringSection.value) {
         hoveredSection.value = section
+        colorOpacities.value[section] = 1
     }
 }
-
 const clearPreview = (section) => {
-    if (!selectedSection.value && hoveredSection.value === section) hoveredSection.value = ''
+    if (!selectedSection.value && hoveredSection.value === section) {
+        hoveredSection.value = ''
+        colorOpacities.value[section] = 0
+    }
 }
-
 const sectionState = (section) => ({
-    'is-hovered': !selectedSection.value
-        && !returningSection.value
-        && !colorRestoringSection.value
-        && hoveredSection.value === section,
+    'is-hovered': !selectedSection.value && !returningSection.value
+        && !colorRestoringSection.value && hoveredSection.value === section,
     'is-selected': selectedSection.value === section,
     'is-returning': returningSection.value === section,
     'is-color-restoring': colorRestoringSection.value === section,
     'is-color-restoring-active': colorRestoringSection.value === section && isColorRestoreActive.value,
 })
 
-const waitForNextPaint = () => new Promise((resolve) => {
-    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve))
-})
-
-const waitForPanelAnimation = (section, reduceMotion) => {
-    if (reduceMotion) return Promise.resolve()
-
-    const panel = homeSections.value?.querySelector(`.home-section--${section}`)
-    if (!panel) return Promise.resolve()
-
-    const eventName = section === 'essays' ? 'animationend' : 'transitionend'
-
-    return new Promise((resolve) => {
-        let timeoutId
-
-        const finish = () => {
-            window.clearTimeout(timeoutId)
-            panel.removeEventListener(eventName, handleEnd)
-            resolve()
-        }
-
-        const handleEnd = (event) => {
-            if (event.target !== panel) return
-            if (eventName === 'transitionend' && event.propertyName !== 'clip-path') return
-            finish()
-        }
-
-        panel.addEventListener(eventName, handleEnd)
-        timeoutId = window.setTimeout(finish, 1100)
-    })
+// Capture the pressed panel: clip-paths can move beneath the pointer before
+// release. A gesture cannot become a click on a different moving panel.
+const pressSection = (section, event) => {
+    if (!event.isPrimary || event.button !== 0) return
+    pressedSection = { section, x: event.clientX, y: event.clientY }
+    event.currentTarget.setPointerCapture(event.pointerId)
 }
-
-const animateSectionOpen = async (section) => {
-    if (selectedSection.value || returningSection.value) return
-
-    selectedSection.value = section
-    hoveredSection.value = section
-    await nextTick()
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    await waitForPanelAnimation(section, reduceMotion)
-    animationSettled.value = true
-    await nextTick()
-    await waitForNextPaint()
-}
-
-const navigateToSection = async (target, { replace = false } = {}) => {
-    const navigate = async () => {
-        const navigation = replace ? router.replace(target) : router.push(target)
-        await navigation
-        await nextTick()
+const openSection = (section, event) => {
+    if (event?.type === 'click' && event.detail !== 0) {
+        const press = pressedSection
+        pressedSection = null
+        if (!press || press.section !== section
+            || Math.hypot(event.clientX - press.x, event.clientY - press.y) > 8) return
     }
+    // Submit the intent immediately. There are no delayed router.push callbacks.
+    return router.push(sectionRoutes[section])
+}
 
-    if (!document.startViewTransition) {
-        await navigate()
+const setSceneVisible = (visible) => {
+    sceneVisible.value = visible
+    emit('scene-active', visible)
+}
+const nextPaint = (signal) => waitForVisualWork(new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+}), signal)
+
+const waitForGeometry = async (signal) => {
+    await waitForVisualWork(nextTick(), signal)
+    // getAnimations flushes styles and returns the *current* transitions, including
+    // their shortened reverse durations. Aborting work leaves CSS at its live pose.
+    const animations = homeSections.value?.getAnimations({ subtree: true }).filter(
+        (animation) => ['clip-path', 'transform', 'top', 'left', 'width', 'font-size']
+            .includes(animation.transitionProperty),
+    ) || []
+    await waitForVisualWork(Promise.allSettled(animations.map((a) => a.finished)), signal)
+}
+
+const alignPageTitle = (section) => {
+    const heading = document.querySelector('[data-route-content] .page-heading h1')
+    if (!heading || !section) return
+    const bounds = heading.getBoundingClientRect()
+    titleStyles.value[section] = {
+        '--page-title-left': `${bounds.left}px`,
+        '--page-title-top': `${bounds.top + window.scrollY}px`,
+        '--page-title-size': getComputedStyle(heading).fontSize,
+    }
+}
+
+const freezeSectionColors = () => {
+    for (const section of sectionNames) {
+        const panel = homeSections.value?.querySelector(`.home-section--${section}`)
+        if (panel) colorOpacities.value[section] = Number(getComputedStyle(panel, '::before').opacity)
+    }
+    colorFrozen.value = true
+}
+
+const finishSectionColors = async (target, source, signal) => {
+    colorRestoringSection.value = source || target
+    isColorRestoreActive.value = false
+    colorFrozen.value = false
+    await waitForVisualWork(nextTick(), signal)
+    await nextPaint(signal)
+    // The caller has awaited all geometric motion. Only now change color.
+    isColorRestoreActive.value = true
+    for (const section of sectionNames) colorOpacities.value[section] = section === target ? 1 : 0
+    await waitForVisualWork(nextTick(), signal)
+    const animations = homeSections.value?.getAnimations({ subtree: true }).filter(
+        (animation) => animation.transitionProperty === 'opacity',
+    ) || []
+    await waitForVisualWork(Promise.allSettled(animations.map((a) => a.finished)), signal)
+    colorRestoringSection.value = ''
+    isColorRestoreActive.value = false
+}
+
+const renderRoute = async (targetName, sourceName, signal) => {
+    const target = sectionByRouteName[targetName] || ''
+    const source = sectionByRouteName[sourceName] || ''
+    const isSceneRoute = (name) => name === 'Home' || name === 'Explore' || sectionByRouteName[name]
+
+    // Preserve even a partially-hovered/fading color while redirecting motion.
+    freezeSectionColors()
+    hoveredSection.value = ''
+    colorRestoringSection.value = ''
+    isColorRestoreActive.value = false
+
+    // Full document loads and navigation from unrelated pages land directly.
+    if (!isSceneRoute(targetName) || !isSceneRoute(sourceName)) {
+        selectedSection.value = target
+        returningSection.value = ''
+        animationSettled.value = Boolean(target)
+        for (const section of sectionNames) colorOpacities.value[section] = section === target ? 1 : 0
+        colorFrozen.value = false
+        isReturnStaged.value = false
+        setSceneVisible(targetName === 'Home' || targetName === 'Explore')
         return
     }
 
-    document.documentElement.dataset.routeTransition = 'section'
-
-    try {
-        const transition = document.startViewTransition(navigate)
-        await transition.finished
-    } finally {
-        delete document.documentElement.dataset.routeTransition
+    if (!sceneVisible.value) {
+        // Restore the last stable section before painting a return. This scene
+        // stays mounted, so no KeepAlive activation or pending-return queue exists.
+        selectedSection.value = source
+        returningSection.value = ''
+        animationSettled.value = Boolean(source)
+        isReturnStaged.value = true
+        setSceneVisible(true)
+        await waitForVisualWork(nextTick(), signal)
+        await nextPaint(signal)
+    } else {
+        setSceneVisible(true)
     }
-}
 
-const openSection = async (section) => {
-    if (selectedSection.value || returningSection.value) return
-
-    await animateSectionOpen(section)
-    await navigateToSection(sectionRoutes[section])
-}
-
-const waitForColorRestore = (section) => {
-    const panel = homeSections.value?.querySelector(`.home-section--${section}`)
-    if (!panel) return Promise.resolve()
-
-    return new Promise((resolve) => {
-        let timeoutId
-
-        const finish = () => {
-            window.clearTimeout(timeoutId)
-            panel.removeEventListener('animationend', handleEnd)
-            if (cancelColorRestoreWait === finish) cancelColorRestoreWait = null
-            resolve()
-        }
-
-        const handleEnd = (event) => {
-            if (event.target !== panel || event.animationName !== 'section-color-restore') return
-            finish()
-        }
-
-        cancelColorRestoreWait = finish
-        panel.addEventListener('animationend', handleEnd)
-        timeoutId = window.setTimeout(finish, 650)
-    })
-}
-
-const restoreSectionColor = async (section) => {
-    cancelColorRestoreWait?.()
-    const run = ++colorRestoreRun
-    colorRestoringSection.value = section
-    isColorRestoreActive.value = false
-
-    await nextTick()
-    await waitForNextPaint()
-    isColorRestoreActive.value = true
-    await waitForColorRestore(section)
-    await nextTick()
-    await waitForNextPaint()
-
-    if (run !== colorRestoreRun) return
-    colorRestoringSection.value = ''
-    isColorRestoreActive.value = false
-}
-
-const beginReturnAnimation = async () => {
-    if (!isReturnStaged.value) return
-
-    returningSection.value = returnSourceSection.value
     isReturnStaged.value = false
     animationSettled.value = false
-    hoveredSection.value = ''
-    selectedSection.value = ''
-    colorRestoringSection.value = ''
-    isColorRestoreActive.value = false
-    colorRestoreRun += 1
-    cancelColorRestoreWait?.()
+    await waitForVisualWork(nextTick(), signal)
+    alignPageTitle(target)
 
-    const nextHistoryState = { ...window.history.state }
-    delete nextHistoryState.returnFromSection
-    window.history.replaceState(nextHistoryState, '')
-
-    window.clearTimeout(returnAnimationTimer)
-    returnAnimationTimer = window.setTimeout(async () => {
-        returningSection.value = ''
-        if (!returnTarget.value) {
-            await restoreSectionColor(returnSourceSection.value)
+    const previous = selectedSection.value || returningSection.value
+    if (previous && previous !== target) {
+        returningSection.value = previous
+        selectedSection.value = ''
+        await waitForGeometry(signal)
+        if (!target) {
+            returningSection.value = ''
+            await finishSectionColors('', previous, signal)
             return
         }
+        returningSection.value = ''
+    }
 
-        await nextTick()
-        await waitForNextPaint()
+    if (!target) {
+        selectedSection.value = ''
+        returningSection.value = ''
+        await finishSectionColors('', '', signal)
+        return
+    }
 
-        const target = returnTarget.value
-        const targetSection = Object.entries(sectionRoutes)
-            .find(([, path]) => router.resolve(target).path === path)?.[0]
-
-        if (targetSection) await animateSectionOpen(targetSection)
-        await navigateToSection(target, { replace: true })
-    }, 950)
-}
-
-const runPendingReturnAnimation = async () => {
-    if (!stagePendingReturnAnimation()) return
-
-    const run = ++returnAnimationRun
-    await nextTick()
-    // Let the staged, fully-open section reach the screen before switching
-    // classes to the returning state. A single rAF still runs before paint,
-    // so the browser would otherwise merge both states and skip the animation.
-    await waitForNextPaint()
-
-    // KeepAlive activation and route reactivity do not have a guaranteed order.
-    // Only the latest attempt may start the animation, once Home is actually active.
-    if (run !== returnAnimationRun || route.name !== 'Home') return
-    beginReturnAnimation()
-}
-
-const stagePendingReturnAnimation = () => {
-    const pendingAnimation = consumeHomeReturnAnimation()
-    if (!pendingAnimation) return isReturnStaged.value
-
-    returnSourceSection.value = pendingAnimation.section
-    returnTarget.value = pendingAnimation.target || ''
-    selectedSection.value = pendingAnimation.section
-    hoveredSection.value = pendingAnimation.section
+    // Re-selecting the returning section reverses the live CSS transition.
     returningSection.value = ''
+    selectedSection.value = target
+    // Leaving the home page starts the white overlay with the panel motion.
+    // Returning to home keeps the existing end-of-motion color restore above.
+    if (target && !previous) {
+        const colorTransition = finishSectionColors(target, previous, signal)
+        await waitForGeometry(signal)
+        await colorTransition
+    } else {
+        await waitForGeometry(signal)
+        await finishSectionColors(target, previous, signal)
+    }
     animationSettled.value = true
-    isReturnStaged.value = true
-    return true
+    await waitForVisualWork(nextTick(), signal)
+    await nextPaint(signal)
+    // Only this request can hand over to the already-confirmed RouterView.
+    setSceneVisible(false)
 }
 
-onMounted(() => {
-    unregisterHomeSectionAnimator = registerHomeSectionAnimator(animateSectionOpen)
+const transitions = createSectionTransitionController(renderRoute, (error) => {
+    console.error('Section transition failed', error)
+    selectedSection.value = sectionByRouteName[route.name] || ''
+    returningSection.value = ''
+    isReturnStaged.value = false
+    animationSettled.value = Boolean(selectedSection.value)
+    colorFrozen.value = false
+    for (const section of sectionNames) colorOpacities.value[section] = selectedSection.value === section ? 1 : 0
+    setSceneVisible(['Home', 'Explore'].includes(route.name))
 })
 
-onActivated(async () => {
-    await runPendingReturnAnimation()
-})
-
-watch(
-    () => route.name,
-    (routeName) => {
-        if (routeName === 'Home') runPendingReturnAnimation()
-    },
-)
-
-onBeforeUnmount(() => {
-    returnAnimationRun += 1
-    colorRestoreRun += 1
-    cancelColorRestoreWait?.()
-    unregisterHomeSectionAnimator?.()
-    window.clearTimeout(returnAnimationTimer)
-})
+watch(() => route.name, (target, source) => transitions.run(target, source))
+onMounted(() => alignPageTitle(selectedSection.value))
+onBeforeUnmount(() => transitions.cancel())
 </script>
 
 <template>
-    <div class="home-viewport">
+    <div v-show="sceneVisible" class="home-viewport" :data-scene-target="route.name">
         <div class="home-track" :class="{ 'is-explore-open': isExploreOpen }">
             <section
                 class="explore-screen"
@@ -329,6 +295,7 @@ onBeforeUnmount(() => {
                     {
                         'is-settled': animationSettled,
                         'is-return-staged': isReturnStaged,
+                        'is-color-frozen': colorFrozen,
                     },
                 ]"
                 aria-label="首页分区"
@@ -338,6 +305,7 @@ onBeforeUnmount(() => {
                 <section
                     class="home-section home-section--about"
                     :class="sectionState('about')"
+                    :style="sectionStyle('about')"
                     aria-labelledby="home-about-title"
                     role="link"
                     tabindex="0"
@@ -345,7 +313,9 @@ onBeforeUnmount(() => {
                     @mouseleave="clearPreview('about')"
                     @focus="previewSection('about')"
                     @blur="clearPreview('about')"
-                    @click="openSection('about')"
+                    @pointerdown="pressSection('about', $event)"
+                    @pointercancel="pressedSection = null"
+                    @click="openSection('about', $event)"
                     @keydown.enter.prevent="openSection('about')"
                     @keydown.space.prevent="openSection('about')"
                 >
@@ -361,6 +331,7 @@ onBeforeUnmount(() => {
                 <section
                     class="home-section home-section--essays"
                     :class="sectionState('essays')"
+                    :style="sectionStyle('essays')"
                     aria-labelledby="home-essays-title"
                     role="link"
                     tabindex="0"
@@ -368,7 +339,9 @@ onBeforeUnmount(() => {
                     @mouseleave="clearPreview('essays')"
                     @focus="previewSection('essays')"
                     @blur="clearPreview('essays')"
-                    @click="openSection('essays')"
+                    @pointerdown="pressSection('essays', $event)"
+                    @pointercancel="pressedSection = null"
+                    @click="openSection('essays', $event)"
                     @keydown.enter.prevent="openSection('essays')"
                     @keydown.space.prevent="openSection('essays')"
                 >
@@ -384,6 +357,7 @@ onBeforeUnmount(() => {
                 <section
                     class="home-section home-section--archive"
                     :class="sectionState('archive')"
+                    :style="sectionStyle('archive')"
                     aria-labelledby="home-archive-title"
                     role="link"
                     tabindex="0"
@@ -391,7 +365,9 @@ onBeforeUnmount(() => {
                     @mouseleave="clearPreview('archive')"
                     @focus="previewSection('archive')"
                     @blur="clearPreview('archive')"
-                    @click="openSection('archive')"
+                    @pointerdown="pressSection('archive', $event)"
+                    @pointercancel="pressedSection = null"
+                    @click="openSection('archive', $event)"
                     @keydown.enter.prevent="openSection('archive')"
                     @keydown.space.prevent="openSection('archive')"
                 >
@@ -408,9 +384,8 @@ onBeforeUnmount(() => {
                     class="screen-toggle screen-toggle--explore"
                     :class="{ 'is-page-return': selectedSection }"
                     type="button"
-                    :aria-label="selectedSection ? '返回首页' : '前往探索页'"
-                    :disabled="Boolean(selectedSection || returningSection)"
-                    @click="openExplore"
+                    :aria-label="isPageReturn ? '返回首页' : '前往探索页'"
+                    @click.stop="toggleHome"
                 >
                     <svg class="screen-toggle__arrow screen-toggle__arrow--left" viewBox="0 0 24 24" aria-hidden="true">
                         <line class="screen-toggle__shaft" x1="19" y1="12" x2="5" y2="12" />
@@ -425,7 +400,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .home-viewport {
     position: fixed;
-    z-index: 0;
+    z-index: 30;
     inset: 0;
     overflow: hidden;
     background: #fafcf9;
@@ -499,7 +474,6 @@ onBeforeUnmount(() => {
 .screen-toggle--explore.is-page-return {
     top: 0;
     width: clamp(59.4px, 4.95vw, 67.9px);
-    pointer-events: none;
     transform: translate(-50%, -50%) rotate(405deg);
     view-transition-name: home-corner-return;
 }
@@ -635,7 +609,6 @@ onBeforeUnmount(() => {
 }
 
 .home-section.is-hovered {
-    background-color: #fafcf9;
     filter: none;
 }
 
@@ -664,43 +637,36 @@ onBeforeUnmount(() => {
         opacity 300ms ease;
 }
 
-.home-section.is-selected::before,
-.home-section.is-returning::before,
-.home-section.is-color-restoring::before {
+.home-section::before {
     content: "";
     position: absolute;
     z-index: 1;
     inset: 0;
     background-color: #fafcf9;
     background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
+    opacity: var(--section-white-opacity, 0);
+    transition: opacity 500ms ease;
     pointer-events: none;
 }
 
-.home-section.is-returning::before {
-    opacity: 1;
+.home-sections.is-color-frozen .home-section::before,
+.home-sections.is-return-staged .home-section::before {
+    transition: none;
 }
 
-.home-section.is-color-restoring::before {
-    opacity: 1;
-}
-
-.home-section.is-color-restoring-active::before {
-    animation: section-color-restore 500ms ease forwards;
-}
-
-.home-section:is(.is-selected, .is-returning, .is-color-restoring)::after {
+.home-section::after {
     z-index: 1;
 }
 
-.home-section--about:is(.is-selected, .is-returning)::before {
+.home-section--about::before {
     clip-path: polygon(0 0, 100% 0, 100% 0, 0 50%);
 }
 
-.home-section--essays:is(.is-selected, .is-returning)::before {
+.home-section--essays::before {
     clip-path: polygon(100% 0, 0 50%, 0 50%, 100% 100%);
 }
 
-.home-section--archive:is(.is-selected, .is-returning)::before {
+.home-section--archive::before {
     clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
 }
 
@@ -718,7 +684,10 @@ onBeforeUnmount(() => {
 .home-section--essays {
     --pattern-image: url('/textures/cloud-weave.webp');
     background-color: var(--essays-block);
-    clip-path: polygon(100% 0, 0 50%, 0 50%, 100% 100%);
+    /* Duplicate the bottom-right vertex, as in the original essays-expand
+       keyframe. Its travel along the bottom edge creates the rotating reveal;
+       duplicating the left vertex instead makes both edges widen symmetrically. */
+    clip-path: polygon(100% 0, 0 50%, 100% 100%, 100% 100%);
 }
 
 .home-section--essays > h1 {
@@ -741,12 +710,13 @@ onBeforeUnmount(() => {
     top: var(--page-title-top);
     left: var(--page-title-left);
     color: var(--dark);
+    font-size: var(--page-title-size, clamp(1.75rem, 4vw, 3.5rem));
     transform: translate(0, 0);
     view-transition-name: section-title;
 }
 
 .home-section--about.is-selected > h1 {
-    top: 60px;
+    top: var(--page-title-top, 60px);
 }
 
 .home-sections--about .home-section--about {
@@ -754,7 +724,7 @@ onBeforeUnmount(() => {
 }
 
 .home-sections--about .home-section--essays {
-    clip-path: polygon(100% 100%, 0 100%, 0 100%, 100% 100%);
+    clip-path: polygon(100% 100%, 0 100%, 100% 100%, 100% 100%);
 }
 
 .home-sections--about .home-section--archive {
@@ -763,17 +733,26 @@ onBeforeUnmount(() => {
 
 .home-sections--essays .home-section--about {
     z-index: 1;
-    animation: essays-about-follow 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
 }
 
 .home-sections--essays .home-section--essays {
     z-index: 2;
-    animation: essays-expand 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+    clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
 }
 
 .home-sections--essays .home-section--archive {
     z-index: 1;
-    animation: essays-archive-follow 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+    clip-path: polygon(0 0, 0 100%, 100% 100%, 0 100%);
+}
+
+.home-sections--essays-returning .home-section--essays {
+    z-index: 2;
+}
+
+.home-sections--essays-returning .home-section--about,
+.home-sections--essays-returning .home-section--archive {
+    z-index: 1;
 }
 
 .home-sections--essays.is-return-staged .home-section--about {
@@ -793,19 +772,11 @@ onBeforeUnmount(() => {
     transition: none;
 }
 
-.home-sections--essays-returning .home-section--about {
-    z-index: 1;
-    animation: essays-about-return 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
-}
-
-.home-sections--essays-returning .home-section--essays {
-    z-index: 2;
-    animation: essays-collapse 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
-}
-
-.home-sections--essays-returning .home-section--archive {
-    z-index: 1;
-    animation: essays-archive-return 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+.home-sections.is-return-staged .home-section > h1,
+.home-sections.is-return-staged .home-content-preview,
+.home-sections.is-return-staged .screen-toggle,
+.home-sections.is-return-staged .screen-toggle__arrow {
+    transition: none;
 }
 
 .home-sections--archive .home-section--about {
@@ -813,7 +784,7 @@ onBeforeUnmount(() => {
 }
 
 .home-sections--archive .home-section--essays {
-    clip-path: polygon(100% 0, 0 0, 0 0, 100% 0);
+    clip-path: polygon(100% 0, 0 0, 100% 0, 100% 0);
 }
 
 .home-sections--archive .home-section--archive {
@@ -872,76 +843,6 @@ onBeforeUnmount(() => {
 
 .home-content-preview :deep(.page-heading h1) {
     view-transition-name: none;
-}
-
-@keyframes essays-about-follow {
-    from {
-        clip-path: polygon(0 0, 100% 0, 100% 0, 0 50%);
-    }
-
-    to {
-        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-    }
-}
-
-@keyframes essays-expand {
-    from {
-        clip-path: polygon(100% 0, 0 50%, 100% 100%, 100% 100%);
-    }
-
-    to {
-        clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
-    }
-}
-
-@keyframes essays-archive-follow {
-    from {
-        clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
-    }
-
-    to {
-        clip-path: polygon(0 0, 0 100%, 100% 100%, 0 100%);
-    }
-}
-
-@keyframes essays-about-return {
-    from {
-        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-    }
-
-    to {
-        clip-path: polygon(0 0, 100% 0, 100% 0, 0 50%);
-    }
-}
-
-@keyframes essays-collapse {
-    from {
-        clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
-    }
-
-    to {
-        clip-path: polygon(100% 0, 0 50%, 0 50%, 100% 100%);
-    }
-}
-
-@keyframes essays-archive-return {
-    from {
-        clip-path: polygon(0 0, 0 100%, 100% 100%, 0 100%);
-    }
-
-    to {
-        clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
-    }
-}
-
-@keyframes section-color-restore {
-    from {
-        opacity: 1;
-    }
-
-    to {
-        opacity: 0;
-    }
 }
 
 @media (max-width: 600px) {

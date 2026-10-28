@@ -1,14 +1,16 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import HomeCornerReturn from '@/components/HomeCornerReturn.vue'
+import HomePage from '@/views/Home/index.vue'
 
 const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
+const sceneActive = ref(['Home', 'Explore'].includes(route.name))
 const pageBackground = computed(() => route.meta.backgroundColor || 'var(--white)')
 const pageBackgroundShape = computed(() => route.meta.backgroundShape || '')
 const showHomeReturn = computed(() => ['About', 'Essays', 'Archive'].includes(route.name))
@@ -25,20 +27,20 @@ onMounted(() => {
 </script>
 
 <template>
-    <HomeCornerReturn v-if="showHomeReturn" @click="returnHome" />
+    <HomePage @scene-active="sceneActive = $event" />
+    <HomeCornerReturn v-if="showHomeReturn && !sceneActive" @click="returnHome" />
     <div
         class="layout"
-        :class="pageBackgroundShape ? `layout--${pageBackgroundShape}` : ''"
+        :class="[pageBackgroundShape ? `layout--${pageBackgroundShape}` : '', { 'is-scene-active': sceneActive }]"
         :style="{ backgroundColor: pageBackground }"
+        :inert="sceneActive"
+        :aria-hidden="sceneActive"
     >
         <div class="layout-page">
             <main class="layout-main">
-                <div class="layout-content">
+                <div class="layout-content" data-route-content>
                     <RouterView v-slot="{ Component, route: currentRoute }">
-                        <KeepAlive>
-                            <component :is="Component" v-if="currentRoute.meta.keepAlive" />
-                        </KeepAlive>
-                        <component :is="Component" v-if="!currentRoute.meta.keepAlive" />
+                        <component :is="Component" v-if="!['Home', 'Explore'].includes(currentRoute.name)" />
                     </RouterView>
                 </div>
             </main>
@@ -52,6 +54,12 @@ onMounted(() => {
     isolation: isolate;
     min-height: 100vh;
     background-color: var(--white);
+}
+
+.layout.is-scene-active {
+    visibility: hidden;
+    height: 100dvh;
+    overflow: hidden;
 }
 
 .layout--about,
