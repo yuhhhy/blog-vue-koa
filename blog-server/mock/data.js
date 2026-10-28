@@ -66,6 +66,81 @@ const createArchiveMockPost = ([id, title, createTime, tags], index) => ({
 
 export const mockPosts = [
     {
+        id: 'dev-markdown-comments-test',
+        title: 'Markdown 与多级评论测试',
+        author: 'Yuhhhy',
+        coverImage: cover('vue-koa'),
+        createTime: '2026-10-28T11:00:00.000Z',
+        updateTime: '2026-10-28T11:00:00.000Z',
+        tags: ['Markdown', '评论测试', 'UI'],
+        viewCount: 0,
+        likeCount: 0,
+        content: `# 一级标题：Markdown 展示测试
+
+这篇文章用于检查博客正文的 **Markdown 排版**、中文与 English 混排，以及评论区不同层级的显示。这里有 *斜体*、**粗体**、~~删除线~~、\`行内代码\` 和一个[普通链接](https://example.com)。
+
+## 二级标题：段落与列表
+
+普通段落用于观察行距、字重和长文本换行。Lorem ipsum dolor sit amet, consectetur adipiscing elit. 这是一段中英文混排内容，适合检查字体回退和标点间距。
+
+无序列表：
+
+- 第一项
+- 第二项，包含 **强调文字**
+  - 嵌套项目 A
+  - 嵌套项目 B
+- 第三项
+
+有序列表：
+
+1. 准备内容
+2. 检查显示
+3. 提交评论
+
+### 三级标题：引用
+
+> 这是一个引用块，用于检查边线、缩进和文字颜色。
+>
+> 引用也可以包含 **强调** 和 \`inline code\`。
+
+#### 四级标题：代码块
+
+\`\`\`js
+const comment = {
+  level: 4,
+  text: '中文与 English',
+  visible: true,
+}
+
+console.log('Markdown rendering test', comment)
+\`\`\`
+
+\`\`\`json
+{
+  "article": "dev-markdown-comments-test",
+  "markdown": true,
+  "commentLevels": [1, 2, 3, 4]
+}
+\`\`\`
+
+##### 五级标题：表格与分隔线
+
+| Markdown | 测试内容 | 状态 |
+| --- | --- | --- |
+| 标题 | H1 到 H6 | 正常 |
+| 列表 | 有序、无序、嵌套 | 正常 |
+| 代码 | 行内与代码块 | 正常 |
+
+---
+
+###### 六级标题：图片
+
+![代码编辑器桌面](https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&h=720&q=82)
+
+图片之后的文字，用来确认图片与后续段落之间的间距正常。
+`,
+    },
+    {
         id: 'dev-vue-koa',
         title: 'Vue 3 + Koa：从零搭建个人博客',
         author: 'Yuhhhy',
@@ -222,6 +297,96 @@ app.mount('#app')
 ]
 
 export const mockComments = [
+    {
+        id: 'md-test-comment-1',
+        blogId: 'dev-markdown-comments-test',
+        parentId: '-1',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=MarkdownReader',
+        username: 'Markdown 读者',
+        email: 'markdown-reader@example.com',
+        website: 'https://example.com',
+        browser: 'Chrome 138.0.0.0',
+        os: 'Android 10',
+        content: '一级评论：昵称带网址链接。代码块背景和标题层级看起来是否正常？',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-27T17:30:00.000Z',
+        showForm: false,
+        hasParent: false,
+        replies: ['md-test-comment-2'],
+        reviewed: true,
+        reviewPassed: true,
+    },
+    {
+        id: 'md-test-comment-2',
+        blogId: 'dev-markdown-comments-test',
+        parentId: 'md-test-comment-1',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=ReplyOne',
+        username: '一级回复',
+        email: 'reply-one@example.com',
+        browser: 'Safari 18.0',
+        os: 'iOS 18.0',
+        content: '二级评论：没有网址，昵称应与正文同色、同字重。',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-27T22:30:00.000Z',
+        showForm: false,
+        hasParent: true,
+        replies: ['md-test-comment-3'],
+        reviewed: true,
+        reviewPassed: true,
+    },
+    {
+        id: 'md-test-comment-3',
+        blogId: 'dev-markdown-comments-test',
+        parentId: 'md-test-comment-2',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=ReplyTwo',
+        username: '二级回复',
+        email: 'reply-two@example.com',
+        website: 'https://example.org',
+        browser: 'Firefox 132.0',
+        os: 'Windows 11',
+        content: '三级评论：继续测试递归缩进、连接线和右侧回复按钮。',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-28T04:30:00.000Z',
+        showForm: false,
+        hasParent: true,
+        replies: ['md-test-comment-4'],
+        reviewed: true,
+        reviewPassed: true,
+    },
+    {
+        id: 'md-test-comment-4',
+        blogId: 'dev-markdown-comments-test',
+        parentId: 'md-test-comment-3',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=ReplyThree',
+        username: '三级回复',
+        email: 'reply-three@example.com',
+        browser: 'Edge 130.0',
+        os: 'macOS 15.0',
+        content: '四级评论：最深这一层仍然可以继续回复。',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-28T10:30:00.000Z',
+        showForm: false,
+        hasParent: true,
+        replies: [],
+        reviewed: true,
+        reviewPassed: true,
+    },
+    {
+        id: 'md-test-comment-5',
+        blogId: 'dev-markdown-comments-test',
+        parentId: '-1',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=Standalone',
+        username: '独立评论',
+        email: 'standalone@example.com',
+        content: '另一条没有回复的一级评论，用于观察评论之间的间距。',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-28T14:30:00.000Z',
+        showForm: false,
+        hasParent: false,
+        replies: [],
+        reviewed: true,
+        reviewPassed: true,
+    },
     {
         id: 'comment-001',
         blogId: 'dev-vue-koa',
