@@ -7,6 +7,24 @@ import ExplorePage from '@/views/Explore/index.vue'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import { recordHostedPage } from '@/utils/hostedAnalytics.js'
 
+let isExploreScrollRangePreserved = false
+let previousBodyMinHeight = ''
+
+const preserveExploreScrollRange = () => {
+    if (!isExploreScrollRangePreserved) {
+        previousBodyMinHeight = document.body.style.minHeight
+    }
+    document.body.style.minHeight = `${document.documentElement.scrollHeight}px`
+    isExploreScrollRangePreserved = true
+}
+
+const releaseExploreScrollRange = () => {
+    if (!isExploreScrollRangePreserved) return
+    document.body.style.minHeight = previousBodyMinHeight
+    previousBodyMinHeight = ''
+    isExploreScrollRangePreserved = false
+}
+
 const routes = [
     {
         path: '/',
@@ -101,6 +119,13 @@ const router = createRouter({
             }
         }
 
+        if (
+            (to.name === 'Home' && from.name === 'Explore')
+            || (to.name === 'Explore' && from.name === 'Home')
+        ) {
+            return false
+        }
+
         // 如果有保存的位置，优先使用
         if (savedPosition) {
             return savedPosition
@@ -111,8 +136,22 @@ const router = createRouter({
     }
 })
 
+router.beforeEach((to, from) => {
+    if (from.name === 'Explore' && to.name === 'Home') {
+        preserveExploreScrollRange()
+        return
+    }
+
+    if (!(from.name === 'Home' && to.name === 'Explore')) {
+        releaseExploreScrollRange()
+    }
+})
+
 router.afterEach((to, from, failure) => {
-    if (failure) return
+    if (failure) {
+        releaseExploreScrollRange()
+        return
+    }
     // 设置页面标题
     if (to.meta?.title && !to.meta.dynamicTitle) {
         document.title = to.meta.title

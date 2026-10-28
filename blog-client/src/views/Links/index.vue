@@ -41,19 +41,36 @@ onMounted(async () => {
                     <h4>{{ group.title }}</h4>
                     <p>{{ group.description }}</p>
                     <div class="links-display">
-                        <div v-for="link in group.links" :key="link.site" class="link-item">
-                            <div class="link-avatar">
-                                <a :href="link.site" target="_blank" rel="noopener noreferrer">
-                                    <img :src="link.avatar" :alt="`${link.name} 的头像`">
-                                </a>
-                            </div>
-                            <div class="link-info">
-                                <a :href="link.site" target="_blank" rel="noopener noreferrer" style="color: var(--light-dark);">
+                        <a
+                            v-for="link in group.links"
+                            :key="link.site"
+                            :href="link.site"
+                            :aria-label="`访问 ${link.name}`"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="link-item"
+                        >
+                            <img
+                                class="link-background-image"
+                                :src="link.avatar"
+                                alt=""
+                                aria-hidden="true"
+                                loading="lazy"
+                                decoding="async"
+                            >
+                            <div class="link-motion-track">
+                                <span class="link-arrow-panel" aria-hidden="true">
+                                    <svg class="link-arrow" viewBox="0 0 24 24">
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                        <polyline points="12 5 19 12 12 19" />
+                                    </svg>
+                                </span>
+                                <div class="link-info">
                                     <div class="link-title">{{ link.name }}</div>
-                                </a>
-                                <div class="link-motto">{{ link.description }}</div>
+                                    <div class="link-motto">{{ link.description }}</div>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 </section>
 
@@ -67,20 +84,18 @@ onMounted(async () => {
                 </ul>
 
                 <p>友链申请格式与本站信息如下：</p>
-                <blockquote>
                 <ul>
-                    <li>名称：一曝十寒</li>
-                    <li>简介：纵使不安彷徨，即便茫然无措，也依然迈步前行</li>
-                    <li>网站：https://yuhhhy.cn/</li>
-                    <li>头像：https://yuhhhy.cn/images/avatar.jpg</li>
+                    <li>Name：一曝十寒</li>
+                    <li>Desc：纵使不安彷徨，即便茫然无措，也依然迈步前行</li>
+                    <li>Link：https://yuhhhy.cn/</li>
+                    <li>Avatar：https://yuhhhy.cn/images/avatar.jpg</li>
                 </ul>
-                </blockquote>
 
                 <h4>申请方式</h4>
                 <ol>
                     <li>在当前页面评论区评论</li>
                     <address>
-                        <li>或者你也可以给<a href="mailto:yuhhhy109@163.com">我的邮箱</a>发送邮件</li>
+                        <li>发送邮件至：<a href="mailto:281423846@qq.com">我的邮箱</a></li>
                     </address>
                 </ol>
             </div>
@@ -113,54 +128,126 @@ onMounted(async () => {
                     gap: 20px;
                     
                     .link-item {
-                        border-radius: 8px;
+                        position: relative;
+                        isolation: isolate;
+                        display: block;
+                        min-height: 92px;
+                        overflow: hidden;
                         background-color: var(--links-background);
-                        display: flex;
-                        flex-direction: row;
+                        border: 1px solid var(--border-color);
+                        border-radius: 16px;
+                        color: var(--light-dark);
+                        text-decoration: none;
+                        cursor: pointer;
+                        transition: border-color 0.35s ease, box-shadow 0.35s ease;
 
+                        &:focus-visible {
+                            outline: 2px solid var(--blue);
+                            outline-offset: 3px;
+                        }
 
-                        .link-avatar {
-                            background: linear-gradient(to right, var(--white), var(--links-background));
-                            height: 75px;
-                            width: 75px;
+                        &::before {
+                            content: "";
+                            position: absolute;
+                            z-index: 0;
+                            inset: 0;
+                            background: linear-gradient(
+                                90deg,
+                                color-mix(in srgb, var(--white) 24%, transparent) 0%,
+                                color-mix(in srgb, var(--white) 52%, transparent) 34%,
+                                color-mix(in srgb, var(--white) 90%, transparent) 64%,
+                                var(--white) 88%
+                            );
+                            pointer-events: none;
+                        }
 
-                            img {
-                                border-radius: 50%;
-                                height: 75px;
-                                width: 75px;
-                                min-width: 75px;
-                                margin: 0;
+                        .link-background-image {
+                            position: absolute;
+                            z-index: 0;
+                            bottom: -1%;
+                            left: 0;
+                            width: 36%;
+                            max-width: 150px;
+                            height: 102%;
+                            margin: 0;
+                            object-fit: cover;
+                            object-position: center center;
+                            opacity: 0.22;
+                            mask-image: linear-gradient(
+                                to right,
+                                #000 0%,
+                                rgba(0, 0, 0, 0.92) 34%,
+                                rgba(0, 0, 0, 0.5) 68%,
+                                transparent 100%
+                            );
+                            pointer-events: none;
+                        }
 
-                                // 旋转效果，离开时反向
-                                &:hover {
-                                    transform: rotate(720deg);
-                                    transition: transform 0.5s ease-in-out;
+                        .link-motion-track {
+                            position: absolute;
+                            z-index: 2;
+                            inset: 0;
+                            display: flex;
+                            width: 200%;
+                            transform: translateX(-50%);
+                            transition: transform 720ms cubic-bezier(0.76, 0, 0.24, 1);
+                            pointer-events: none;
+
+                            .link-arrow-panel,
+                            .link-info {
+                                flex: 0 0 50%;
+                                width: 50%;
+                            }
+
+                            .link-arrow-panel {
+                                display: flex;
+                                align-items: center;
+                                justify-content: flex-end;
+                                padding-right: 24px;
+
+                                .link-arrow {
+                                    width: 28px;
+                                    overflow: visible;
+                                    fill: none;
+                                    stroke: var(--blue);
+                                    stroke-width: 2.5;
+                                    stroke-linecap: round;
+                                    stroke-linejoin: round;
                                 }
-                                transition: transform 0.5s ease-in-out;
+                            }
+
+                            .link-info {
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                min-width: 0;
+                                padding: 14px 18px;
+
+                                .link-title {
+                                    font-size: 1.1rem;
+                                    font-weight: bold;
+                                    margin-bottom: 0.1em;
+                                }
+                                .link-motto {
+                                    color: var(--light-dark);
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    display: -webkit-box;
+                                    line-clamp: 2;  // 限制显示两行，多余部分用省略号
+                                    -webkit-box-orient: vertical;
+                                    line-height: 1.3;
+                                }
                             }
                         }
 
-                        .link-info {
-                            padding-left: 15px;
+                        @media (hover: hover) and (pointer: fine) {
+                            &:hover {
+                                box-shadow: 0 8px 22px color-mix(in srgb, var(--blue) 10%, transparent);
 
-                            .link-title {
-                                font-size: 1.1rem;
-                                font-weight: bold;
-                                margin-bottom: 0.1em;
-                                &:hover {
-                                    color: var(--blue);
+                                .link-motion-track {
+                                    transform: translateX(0);
                                 }
                             }
-                            .link-motto {
-                                color: var(--light-dark);
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                                display: -webkit-box;
-                                line-clamp: 2;  // 限制显示两行，多余部分用省略号
-                                -webkit-box-orient: vertical;
-                                line-height: 1.3;
-                            }
-
                         }
 
                     }

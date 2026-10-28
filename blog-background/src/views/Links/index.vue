@@ -41,7 +41,7 @@ const form = reactive({
   category: 'friend'
 })
 const categoryLabels = {
-  friend: '互相友链',
+  friend: '友链',
   recommended: '推荐站点'
 }
 const sortedLinks = computed(() => {
@@ -181,7 +181,7 @@ async function handleConfirm() {
     <label class="link-category-field">
       <span>分类</span>
       <select v-model="form.category">
-        <option value="friend">互相友链</option>
+        <option value="friend">友链</option>
         <option value="recommended">推荐站点</option>
       </select>
     </label>

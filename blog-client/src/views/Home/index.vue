@@ -16,6 +16,7 @@ const router = useRouter()
 const route = useRoute()
 const homeSections = ref(null)
 const homeTrack = ref(null)
+const explorePreviewScrollTop = ref(0)
 const sceneVisible = ref(route.name === 'Home')
 const exploreTrackOpen = ref(route.name === 'Explore')
 const hoveredSection = ref('')
@@ -131,6 +132,10 @@ const waitForTrackTransition = async (signal) => {
     await nextPaint(signal)
 }
 
+const syncExplorePreviewScroll = () => {
+    explorePreviewScrollTop.value = window.scrollY
+}
+
 const alignPageTitle = (section) => {
     const heading = document.querySelector('[data-route-content] .page-heading h1')
     if (!heading || !section) return
@@ -204,9 +209,15 @@ const renderRoute = async (targetName, sourceName, signal) => {
         exploreTrackOpen.value = sourceExplore
         setSceneVisible(true)
         await waitForVisualWork(nextTick(), signal)
+        if (targetExplore || sourceExplore) {
+            syncExplorePreviewScroll()
+        }
         await nextPaint(signal)
     } else {
         setSceneVisible(true)
+        if (targetExplore || sourceExplore) {
+            syncExplorePreviewScroll()
+        }
     }
 
     isReturnStaged.value = false
@@ -299,7 +310,10 @@ onBeforeUnmount(() => transitions.cancel())
                 :aria-hidden="!isExploreOpen"
                 :inert="!isExploreOpen"
             >
-                <div class="explore-preview">
+                <div
+                    class="explore-preview"
+                    :style="{ '--explore-preview-scroll-top': `${explorePreviewScrollTop}px` }"
+                >
                     <ExplorePage preview />
                 </div>
                 <button
@@ -468,6 +482,10 @@ onBeforeUnmount(() => transitions.cancel())
     width: 100%;
     height: 100%;
     overflow: hidden;
+}
+
+.explore-preview :deep(.explore-page) {
+    transform: translateY(calc(-1 * var(--explore-preview-scroll-top)));
 }
 
 .screen-toggle {
