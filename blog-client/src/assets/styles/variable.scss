@@ -1,3 +1,7 @@
+:root {
+    --page-inline-padding: clamp(36px, 6vw, 88px);
+}
+
 :root.light {
     --white: #FFFFFF;
     --light: #FAFAFA;

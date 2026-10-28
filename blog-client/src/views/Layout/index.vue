@@ -306,7 +306,7 @@ onMounted(() => {
     position: relative;
     width: min(100%, 1080px);
     margin: 0 auto;
-    padding-inline: clamp(20px, 4vw, 48px);
+    padding-inline: var(--page-inline-padding);
 }
 
 .layout-content--explore {
