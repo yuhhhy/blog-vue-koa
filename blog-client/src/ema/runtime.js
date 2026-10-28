@@ -227,6 +227,7 @@ export async function createEmaRuntime(canvas, controller) {
             row.items.forEach(sync)
             const ready = row.items.every((record) => record.loaded)
             element.dataset.rendered = ready ? 'true' : 'false'
+            element.setAttribute('aria-busy', String(!ready))
             if (!ready || rect.bottom <= 0 || rect.top >= height) continue
             renderer.setViewport(0, 0, width, height)
             // During page transitions only clip to the moving exploration page,
