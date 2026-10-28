@@ -1,4 +1,5 @@
 import cfg from '@/config/index.js'
+import { isAdminVisitorMode } from '@/utils/adminVisitorMode.js'
 
 let loaded = false
 
@@ -15,7 +16,7 @@ const ensureQueue = () => {
 }
 
 export const loadHostedAnalytics = () => {
-    if (!enabled || typeof document === 'undefined') return
+    if (!enabled || isAdminVisitorMode() || typeof document === 'undefined') return
     ensureQueue()
     window.blogAnalytics('init', {
         siteId: cfg.analyticsSiteId,
@@ -33,7 +34,7 @@ export const loadHostedAnalytics = () => {
 }
 
 export const recordHostedPage = (route) => {
-    if (!enabled || typeof window === 'undefined') return
+    if (!enabled || isAdminVisitorMode() || typeof window === 'undefined') return
     ensureQueue()
     window.blogAnalytics('page', {
         path: route.fullPath,
