@@ -1,11 +1,18 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, provide, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import HomeCornerReturn from '@/components/HomeCornerReturn.vue'
 import HomePage from '@/views/Home/index.vue'
+
+import EmaScene from '@/components/ema/EmaScene.vue'
+import { createEmaController } from '@/ema/controller.js'
+import { emaContextKey } from '@/ema/context.js'
+
+const ema = createEmaController()
+provide(emaContextKey, ema)
 
 const themeStore = useThemeStore()
 const route = useRoute()
@@ -33,6 +40,7 @@ onMounted(() => {
 
 <template>
     <HomePage @scene-active="setSceneActive" />
+    <EmaScene :controller="ema" :preview-active="sceneActive" :route-name="route.name" />
     <HomeCornerReturn v-if="showHomeReturn && !sceneActive" @click="returnHome" />
     <div
         class="layout"

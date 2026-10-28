@@ -1,27 +1,35 @@
 <script setup>
 import ArticleFooter from "../Blog/components/ArticleFooter.vue"
-import { computed, onMounted } from "vue"
+import { computed, onMounted, ref } from "vue"
 import { useLinks } from "@/composables/useLinks.js"
 
+import EmaRack from '@/components/ema/EmaRack.vue'
+defineProps({ preview: Boolean })
+const loadError = ref(false)
+const loading = ref(true)
 const { links, loadLinks } = useLinks()
 const linkGroups = computed(() => [
     {
         key: 'friend',
         title: '朋友们',
-        description: '以下是目前与我互相陪伴的站点，点击头像即可探索他们的世界～ 如果你也想出现在这里，请继续往下看规则',
+        description: '以下是目前与我互相陪伴的站点，点击绘马即可探索他们的世界～ 如果你也想出现在这里，请继续往下看规则',
         links: links.value.filter((link) => link.category !== 'recommended'),
     },
     {
         key: 'recommended',
         title: '推荐站点',
-        description: '这些是我单向推荐、值得一看的站点，不要求对方回链。',
+        description: '这些是我单向推荐、值得一看的站点。',
         links: links.value.filter((link) => link.category === 'recommended'),
     },
 ].filter((group) => group.links.length))
 
-onMounted(async () => {
-    await loadLinks()
-})
+const fetchLinks = async (force = false) => {
+    loading.value = true
+    loadError.value = false
+    try { await loadLinks({ force }) } catch { loadError.value = true }
+    finally { loading.value = false }
+}
+onMounted(() => fetchLinks())
 
 </script>
 
@@ -37,41 +45,13 @@ onMounted(async () => {
                 <p>我珍视真诚的分享、独特的见解和持续创作的坚持。如果你也建立了一个小小的精神角落，记录生活、表达思考、分享热爱，并且你觉得我们有某种契合，欢迎留言和互加友链。</p>
                 <p>我会认真拜访你的“空间”，如果感觉有缘分，就会将你加入我的友链列表。即使暂时不互相加为友链，也期待与你成为朋友或交流想法！感谢每一位愿意分享小站的朋友！</p>
 
+                <p v-if="loading" role="status">正在挂上朋友们的绘马…</p>
+                <p v-else-if="loadError" role="alert">友链暂时没有加载成功。<button type="button" @click="fetchLinks(true)">重新加载</button></p>
+                <p v-else-if="!links.length">木架已备好，静候有缘的小站。</p>
                 <section v-for="group in linkGroups" :key="group.key" class="link-group">
                     <h4>{{ group.title }}</h4>
                     <p>{{ group.description }}</p>
-                    <div class="links-display">
-                        <a
-                            v-for="link in group.links"
-                            :key="link.site"
-                            :href="link.site"
-                            :aria-label="`访问 ${link.name}`"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="link-item"
-                        >
-                            <img
-                                class="link-background-image"
-                                :src="link.avatar"
-                                alt=""
-                                aria-hidden="true"
-                                loading="lazy"
-                                decoding="async"
-                            >
-                            <div class="link-motion-track">
-                                <span class="link-arrow-panel" aria-hidden="true">
-                                    <svg class="link-arrow" viewBox="0 0 24 24">
-                                        <line x1="5" y1="12" x2="19" y2="12" />
-                                        <polyline points="12 5 19 12 12 19" />
-                                    </svg>
-                                </span>
-                                <div class="link-info">
-                                    <div class="link-title">{{ link.name }}</div>
-                                    <div class="link-motto">{{ link.description }}</div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
+                    <EmaRack :links="group.links" :group="group.key" :preview="preview" />
                 </section>
 
                 <h4>友链申请规则</h4>
@@ -121,138 +101,6 @@ onMounted(async () => {
                 line-height: 1.8;
                 font-family: var(--font-serif);
                 color: var(--light-dark);
-
-                .links-display {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 20px;
-                    
-                    .link-item {
-                        position: relative;
-                        isolation: isolate;
-                        display: block;
-                        min-height: 92px;
-                        overflow: hidden;
-                        background-color: var(--links-background);
-                        border: 1px solid var(--border-color);
-                        border-radius: 16px;
-                        color: var(--light-dark);
-                        text-decoration: none;
-                        cursor: pointer;
-                        transition: border-color 0.35s ease, box-shadow 0.35s ease;
-
-                        &:focus-visible {
-                            outline: 2px solid var(--blue);
-                            outline-offset: 3px;
-                        }
-
-                        &::before {
-                            content: "";
-                            position: absolute;
-                            z-index: var(--link-mask-z, 0);
-                            inset: 0;
-                            background: linear-gradient(
-                                90deg,
-                                var(--link-mask-start, color-mix(in srgb, var(--white) 24%, transparent)) 0%,
-                                var(--link-mask-soft, color-mix(in srgb, var(--white) 52%, transparent)) 34%,
-                                var(--link-mask-middle, color-mix(in srgb, var(--white) 90%, transparent)) 64%,
-                                var(--link-mask-end, var(--white)) 88%
-                            );
-                            pointer-events: none;
-                        }
-
-                        .link-background-image {
-                            position: absolute;
-                            z-index: var(--link-image-z, 0);
-                            bottom: -1%;
-                            left: 0;
-                            width: 36%;
-                            max-width: 150px;
-                            height: 102%;
-                            margin: 0;
-                            object-fit: cover;
-                            object-position: center center;
-                            opacity: var(--link-image-opacity, 0.22);
-                            mask-image: linear-gradient(
-                                to right,
-                                #000 0%,
-                                rgba(0, 0, 0, 0.92) 34%,
-                                rgba(0, 0, 0, 0.5) 68%,
-                                transparent 100%
-                            );
-                            pointer-events: none;
-                        }
-
-                        .link-motion-track {
-                            position: absolute;
-                            z-index: var(--link-motion-z, 2);
-                            inset: 0;
-                            display: flex;
-                            width: 200%;
-                            transform: translateX(-50%);
-                            transition: transform 720ms cubic-bezier(0.76, 0, 0.24, 1);
-                            pointer-events: none;
-
-                            .link-arrow-panel,
-                            .link-info {
-                                flex: 0 0 50%;
-                                width: 50%;
-                            }
-
-                            .link-arrow-panel {
-                                display: flex;
-                                align-items: center;
-                                justify-content: flex-end;
-                                padding-right: 24px;
-
-                                .link-arrow {
-                                    width: 28px;
-                                    overflow: visible;
-                                    fill: none;
-                                    stroke: var(--blue);
-                                    stroke-width: 2.5;
-                                    stroke-linecap: round;
-                                    stroke-linejoin: round;
-                                }
-                            }
-
-                            .link-info {
-                                display: flex;
-                                flex-direction: column;
-                                justify-content: center;
-                                min-width: 0;
-                                padding: 14px 18px;
-
-                                .link-title {
-                                    font-size: 1.1rem;
-                                    font-weight: bold;
-                                    margin-bottom: 0.1em;
-                                }
-                                .link-motto {
-                                    color: var(--light-dark);
-                                    overflow: hidden;
-                                    text-overflow: ellipsis;
-                                    display: -webkit-box;
-                                    line-clamp: 2;  // 限制显示两行，多余部分用省略号
-                                    -webkit-box-orient: vertical;
-                                    line-height: 1.3;
-                                }
-                            }
-                        }
-
-                        @media (hover: hover) and (pointer: fine) {
-                            &:hover {
-                                box-shadow: 0 8px 22px color-mix(in srgb, var(--blue) 10%, transparent);
-
-                                .link-motion-track {
-                                    transform: translateX(0);
-                                }
-                            }
-                        }
-
-                    }
-
-                }
 
                 h1 {
                     font-size: 2em;
@@ -351,9 +199,7 @@ onMounted(async () => {
                 .links-article-content {
                     padding-bottom: 30px;
 
-                    .links-display {
-                        grid-template-columns: repeat(1, 1fr);
-                    }
+
                 }
             }
         }
