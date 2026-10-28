@@ -45,6 +45,7 @@ const routes = [
                 component: ExplorePage,
                 meta: {
                     title: '探索 | 一曝十寒',
+                    backgroundColor: '#e7d3ad',
                     keepAlive: true
                 }
             },

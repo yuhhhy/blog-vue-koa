@@ -36,7 +36,13 @@ onMounted(() => {
     <HomeCornerReturn v-if="showHomeReturn && !sceneActive" @click="returnHome" />
     <div
         class="layout"
-        :class="[pageBackgroundShape ? `layout--${pageBackgroundShape}` : '', { 'is-scene-active': sceneActive }]"
+        :class="[
+            pageBackgroundShape ? `layout--${pageBackgroundShape}` : '',
+            {
+                'layout--explore': route.name === 'Explore',
+                'is-scene-active': sceneActive,
+            },
+        ]"
         :style="{ backgroundColor: pageBackground }"
         :inert="sceneActive"
         :aria-hidden="sceneActive"
@@ -69,6 +75,15 @@ onMounted(() => {
     visibility: hidden;
     height: 100dvh;
     overflow: hidden;
+}
+
+.layout--explore {
+    background-color: #e7d3ad;
+    background-image:
+        linear-gradient(rgba(255, 249, 232, 0.5), rgba(255, 249, 232, 0.5)),
+        url('/textures/kraft-paper.jpg');
+    background-size: cover, 920px 920px;
+    background-repeat: no-repeat, repeat;
 }
 
 .layout--about,

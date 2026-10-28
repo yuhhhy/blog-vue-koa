@@ -149,21 +149,21 @@ onMounted(async () => {
                         &::before {
                             content: "";
                             position: absolute;
-                            z-index: 0;
+                            z-index: var(--link-mask-z, 0);
                             inset: 0;
                             background: linear-gradient(
                                 90deg,
-                                color-mix(in srgb, var(--white) 24%, transparent) 0%,
-                                color-mix(in srgb, var(--white) 52%, transparent) 34%,
-                                color-mix(in srgb, var(--white) 90%, transparent) 64%,
-                                var(--white) 88%
+                                var(--link-mask-start, color-mix(in srgb, var(--white) 24%, transparent)) 0%,
+                                var(--link-mask-soft, color-mix(in srgb, var(--white) 52%, transparent)) 34%,
+                                var(--link-mask-middle, color-mix(in srgb, var(--white) 90%, transparent)) 64%,
+                                var(--link-mask-end, var(--white)) 88%
                             );
                             pointer-events: none;
                         }
 
                         .link-background-image {
                             position: absolute;
-                            z-index: 0;
+                            z-index: var(--link-image-z, 0);
                             bottom: -1%;
                             left: 0;
                             width: 36%;
@@ -172,7 +172,7 @@ onMounted(async () => {
                             margin: 0;
                             object-fit: cover;
                             object-position: center center;
-                            opacity: 0.22;
+                            opacity: var(--link-image-opacity, 0.22);
                             mask-image: linear-gradient(
                                 to right,
                                 #000 0%,
@@ -185,7 +185,7 @@ onMounted(async () => {
 
                         .link-motion-track {
                             position: absolute;
-                            z-index: 2;
+                            z-index: var(--link-motion-z, 2);
                             inset: 0;
                             display: flex;
                             width: 200%;

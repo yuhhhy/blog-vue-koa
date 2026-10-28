@@ -474,7 +474,12 @@ onBeforeUnmount(() => transitions.cancel())
     position: relative;
     overflow: hidden;
     color: var(--black);
-    background: var(--white);
+    background-color: #e7d3ad;
+    background-image:
+        linear-gradient(rgba(255, 249, 232, 0.5), rgba(255, 249, 232, 0.5)),
+        url('/textures/kraft-paper.jpg');
+    background-size: cover, 920px 920px;
+    background-repeat: no-repeat, repeat;
     overscroll-behavior: contain;
 }
 
