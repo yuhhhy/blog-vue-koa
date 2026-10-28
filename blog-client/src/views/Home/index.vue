@@ -22,12 +22,17 @@ const homeSections = ref(null)
 const hoveredSection = ref('')
 const selectedSection = ref(initialReturnSection)
 const returningSection = ref('')
+const colorRestoringSection = ref('')
+const isColorRestoreActive = ref(false)
 const animationSettled = ref(Boolean(initialReturnSection))
 const isReturnStaged = ref(Boolean(initialReturnSection))
 const isExploreOpen = computed(() => route.name === 'Explore')
 const exploreScroller = ref(null)
 const exploreScrollTop = ref(0)
 let returnAnimationTimer
+let returnAnimationRun = 0
+let colorRestoreRun = 0
+let cancelColorRestoreWait
 let unregisterHomeSectionAnimator
 
 const sectionRoutes = {
@@ -63,7 +68,9 @@ watch(
 )
 
 const previewSection = (section) => {
-    if (!selectedSection.value) hoveredSection.value = section
+    if (!selectedSection.value && !returningSection.value && !colorRestoringSection.value) {
+        hoveredSection.value = section
+    }
 }
 
 const clearPreview = (section) => {
@@ -71,17 +78,18 @@ const clearPreview = (section) => {
 }
 
 const sectionState = (section) => ({
-    'is-hovered': !selectedSection.value && hoveredSection.value === section,
+    'is-hovered': !selectedSection.value
+        && !returningSection.value
+        && !colorRestoringSection.value
+        && hoveredSection.value === section,
     'is-selected': selectedSection.value === section,
     'is-returning': returningSection.value === section,
+    'is-color-restoring': colorRestoringSection.value === section,
+    'is-color-restoring-active': colorRestoringSection.value === section && isColorRestoreActive.value,
 })
 
 const waitForNextPaint = () => new Promise((resolve) => {
     window.requestAnimationFrame(() => window.requestAnimationFrame(resolve))
-})
-
-const waitForAnimationFrame = () => new Promise((resolve) => {
-    window.requestAnimationFrame(resolve)
 })
 
 const waitForPanelAnimation = (section, reduceMotion) => {
@@ -125,9 +133,76 @@ const animateSectionOpen = async (section) => {
     await waitForNextPaint()
 }
 
-const openSection = (section) => {
+const navigateToSection = async (target, { replace = false } = {}) => {
+    const navigate = async () => {
+        const navigation = replace ? router.replace(target) : router.push(target)
+        await navigation
+        await nextTick()
+    }
+
+    if (!document.startViewTransition) {
+        await navigate()
+        return
+    }
+
+    document.documentElement.dataset.routeTransition = 'section'
+
+    try {
+        const transition = document.startViewTransition(navigate)
+        await transition.finished
+    } finally {
+        delete document.documentElement.dataset.routeTransition
+    }
+}
+
+const openSection = async (section) => {
     if (selectedSection.value || returningSection.value) return
-    router.push(sectionRoutes[section])
+
+    await animateSectionOpen(section)
+    await navigateToSection(sectionRoutes[section])
+}
+
+const waitForColorRestore = (section) => {
+    const panel = homeSections.value?.querySelector(`.home-section--${section}`)
+    if (!panel) return Promise.resolve()
+
+    return new Promise((resolve) => {
+        let timeoutId
+
+        const finish = () => {
+            window.clearTimeout(timeoutId)
+            panel.removeEventListener('animationend', handleEnd)
+            if (cancelColorRestoreWait === finish) cancelColorRestoreWait = null
+            resolve()
+        }
+
+        const handleEnd = (event) => {
+            if (event.target !== panel || event.animationName !== 'section-color-restore') return
+            finish()
+        }
+
+        cancelColorRestoreWait = finish
+        panel.addEventListener('animationend', handleEnd)
+        timeoutId = window.setTimeout(finish, 650)
+    })
+}
+
+const restoreSectionColor = async (section) => {
+    cancelColorRestoreWait?.()
+    const run = ++colorRestoreRun
+    colorRestoringSection.value = section
+    isColorRestoreActive.value = false
+
+    await nextTick()
+    await waitForNextPaint()
+    isColorRestoreActive.value = true
+    await waitForColorRestore(section)
+    await nextTick()
+    await waitForNextPaint()
+
+    if (run !== colorRestoreRun) return
+    colorRestoringSection.value = ''
+    isColorRestoreActive.value = false
 }
 
 const beginReturnAnimation = async () => {
@@ -136,7 +211,12 @@ const beginReturnAnimation = async () => {
     returningSection.value = returnSourceSection.value
     isReturnStaged.value = false
     animationSettled.value = false
+    hoveredSection.value = ''
     selectedSection.value = ''
+    colorRestoringSection.value = ''
+    isColorRestoreActive.value = false
+    colorRestoreRun += 1
+    cancelColorRestoreWait?.()
 
     const nextHistoryState = { ...window.history.state }
     delete nextHistoryState.returnFromSection
@@ -145,12 +225,37 @@ const beginReturnAnimation = async () => {
     window.clearTimeout(returnAnimationTimer)
     returnAnimationTimer = window.setTimeout(async () => {
         returningSection.value = ''
-        if (!returnTarget.value) return
+        if (!returnTarget.value) {
+            await restoreSectionColor(returnSourceSection.value)
+            return
+        }
 
         await nextTick()
         await waitForNextPaint()
-        router.replace(returnTarget.value)
+
+        const target = returnTarget.value
+        const targetSection = Object.entries(sectionRoutes)
+            .find(([, path]) => router.resolve(target).path === path)?.[0]
+
+        if (targetSection) await animateSectionOpen(targetSection)
+        await navigateToSection(target, { replace: true })
     }, 950)
+}
+
+const runPendingReturnAnimation = async () => {
+    if (!stagePendingReturnAnimation()) return
+
+    const run = ++returnAnimationRun
+    await nextTick()
+    // Let the staged, fully-open section reach the screen before switching
+    // classes to the returning state. A single rAF still runs before paint,
+    // so the browser would otherwise merge both states and skip the animation.
+    await waitForNextPaint()
+
+    // KeepAlive activation and route reactivity do not have a guaranteed order.
+    // Only the latest attempt may start the animation, once Home is actually active.
+    if (run !== returnAnimationRun || route.name !== 'Home') return
+    beginReturnAnimation()
 }
 
 const stagePendingReturnAnimation = () => {
@@ -172,14 +277,20 @@ onMounted(() => {
 })
 
 onActivated(async () => {
-    if (!stagePendingReturnAnimation()) return
-
-    await nextTick()
-    await waitForAnimationFrame()
-    beginReturnAnimation()
+    await runPendingReturnAnimation()
 })
 
+watch(
+    () => route.name,
+    (routeName) => {
+        if (routeName === 'Home') runPendingReturnAnimation()
+    },
+)
+
 onBeforeUnmount(() => {
+    returnAnimationRun += 1
+    colorRestoreRun += 1
+    cancelColorRestoreWait?.()
     unregisterHomeSectionAnimator?.()
     window.clearTimeout(returnAnimationTimer)
 })
@@ -322,10 +433,10 @@ onBeforeUnmount(() => {
 
 .home-track {
     display: flex;
-    width: 200vw;
+    width: 200%;
     height: 100vh;
     height: 100dvh;
-    transform: translateX(-100vw);
+    transform: translateX(-50%);
     transition: transform 950ms cubic-bezier(0.76, 0, 0.24, 1);
     will-change: transform;
 }
@@ -336,8 +447,8 @@ onBeforeUnmount(() => {
 
 .explore-screen,
 .home-sections {
-    flex: 0 0 100vw;
-    width: 100vw;
+    flex: 0 0 50%;
+    width: 50%;
     height: 100vh;
     height: 100dvh;
 }
@@ -380,12 +491,14 @@ onBeforeUnmount(() => {
     overflow: hidden;
     transform: translate(-50%, -50%) rotate(45deg);
     transition:
+        width 900ms cubic-bezier(0.76, 0, 0.24, 1),
         top 900ms cubic-bezier(0.76, 0, 0.24, 1),
         transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 .screen-toggle--explore.is-page-return {
     top: 0;
+    width: clamp(59.4px, 4.95vw, 67.9px);
     pointer-events: none;
     transform: translate(-50%, -50%) rotate(405deg);
     view-transition-name: home-corner-return;
@@ -429,11 +542,6 @@ onBeforeUnmount(() => {
     top: 50%;
     left: 83.333%;
     transform: translate(-50%, -50%);
-}
-
-.screen-toggle--explore.is-page-return .screen-toggle__shaft,
-.screen-toggle--explore.is-page-return .screen-toggle__head {
-    transform: translateX(-2px) scaleX(1);
 }
 
 .screen-toggle__shaft,
@@ -488,7 +596,7 @@ onBeforeUnmount(() => {
     isolation: isolate;
     top: 0;
     left: 0;
-    width: 100vw;
+    width: 50%;
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
@@ -557,7 +665,8 @@ onBeforeUnmount(() => {
 }
 
 .home-section.is-selected::before,
-.home-section.is-returning::before {
+.home-section.is-returning::before,
+.home-section.is-color-restoring::before {
     content: "";
     position: absolute;
     z-index: 1;
@@ -568,11 +677,18 @@ onBeforeUnmount(() => {
 }
 
 .home-section.is-returning::before {
-    opacity: 0;
-    transition: opacity 900ms cubic-bezier(0.76, 0, 0.24, 1);
+    opacity: 1;
 }
 
-.home-section:is(.is-selected, .is-returning)::after {
+.home-section.is-color-restoring::before {
+    opacity: 1;
+}
+
+.home-section.is-color-restoring-active::before {
+    animation: section-color-restore 500ms ease forwards;
+}
+
+.home-section:is(.is-selected, .is-returning, .is-color-restoring)::after {
     z-index: 1;
 }
 
@@ -818,6 +934,16 @@ onBeforeUnmount(() => {
     }
 }
 
+@keyframes section-color-restore {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
 @media (max-width: 600px) {
     .home-section > h1 {
         font-size: clamp(1.5rem, 7vw, 2.25rem);
@@ -865,6 +991,7 @@ onBeforeUnmount(() => {
 
     .home-sections,
     .home-section,
+    .home-section::before,
     .home-section > h1,
     .home-content-preview {
         transition-duration: 1ms;

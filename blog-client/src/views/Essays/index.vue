@@ -1,22 +1,9 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { apiGetEssays } from '@/api/essays.js'
+import { onMounted } from 'vue'
+import { useEssays } from '@/composables/useEssays.js'
 
-const essays = ref([])
-const loading = ref(true)
-const loadError = ref(false)
-
-const loadEssays = async () => {
-    loading.value = true
-    loadError.value = false
-    try {
-        essays.value = await apiGetEssays()
-    } catch {
-        loadError.value = true
-    } finally {
-        loading.value = false
-    }
-}
+const { essays, loading, loadError, loadEssays } = useEssays()
+const retryLoadEssays = () => loadEssays({ force: true }).catch(() => {})
 
 const formatDate = (value) => new Intl.DateTimeFormat('zh-CN', {
     timeZone: 'Asia/Shanghai',
@@ -36,7 +23,7 @@ const isDateTitle = (essay) => {
     return essay.title === `${value('year')}年${value('month')}月${value('day')}日随笔`
 }
 
-onMounted(loadEssays)
+onMounted(() => loadEssays().catch(() => {}))
 </script>
 
 <template>
@@ -48,7 +35,7 @@ onMounted(loadEssays)
 
         <div v-if="loading" class="essay-status">正在加载随笔…</div>
         <div v-else-if="loadError" class="essay-status">
-            随笔加载失败，<button type="button" @click="loadEssays">点击重试</button>
+            随笔加载失败，<button type="button" @click="retryLoadEssays">点击重试</button>
         </div>
         <div v-else-if="!essays.length" class="essay-status">暂无随笔</div>
         <div v-else class="essay-list">

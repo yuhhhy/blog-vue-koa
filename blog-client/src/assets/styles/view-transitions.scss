@@ -18,10 +18,12 @@ html[data-route-transition]::view-transition-group(root) {
 
 html[data-route-transition]::view-transition-old(root) {
     animation: none;
+    opacity: 0;
 }
 
 html[data-route-transition]::view-transition-new(root) {
     animation: none;
+    opacity: 1;
 }
 
 html[data-route-transition]::view-transition-group(section-title) {

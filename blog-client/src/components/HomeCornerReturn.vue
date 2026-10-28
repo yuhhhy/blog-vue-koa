@@ -13,7 +13,10 @@
     z-index: 20;
     top: 0;
     left: 0;
-    width: clamp(42px, 3.5vw, 48px);
+    /* At a corner only one quarter of the rotated square is visible. Scaling
+       the square by sqrt(2) keeps that triangle congruent with the half-square
+       triangle shown on the left edge of Home. */
+    width: clamp(59.4px, 4.95vw, 67.9px);
     aspect-ratio: 1;
     padding: 0;
     overflow: hidden;
@@ -42,15 +45,19 @@
 
 .home-corner-return__shaft,
 .home-corner-return__head {
-    transform: translateX(-2px) scaleX(1);
     transition: transform 300ms ease-in-out;
+}
+
+.home-corner-return__shaft {
+    transform: translateX(-16px) scaleX(0);
+    transform-origin: left center;
 }
 
 .home-corner-return:hover .home-corner-return__shaft,
 .home-corner-return:focus-visible .home-corner-return__shaft,
 .home-corner-return:hover .home-corner-return__head,
 .home-corner-return:focus-visible .home-corner-return__head {
-    transform: translate(-5px, -1px) scaleX(1);
+    transform: translateX(-4px) scaleX(1);
 }
 
 .home-corner-return:focus-visible {
