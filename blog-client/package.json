@@ -9,8 +9,13 @@
     "analyze": "vite build --mode analyze"
   },
   "dependencies": {
+    "@browser-logos/edge": "^2.0.7",
+    "@browser-logos/firefox": "^3.0.10",
+    "@browser-logos/safari": "^2.1.0",
     "@dimforge/rapier3d": "^0.21.0",
     "@fontsource/noto-serif-sc": "^5.2.9",
+    "@iconify-icons/fluent-emoji-flat": "^2.0.0",
+    "@iconify-icons/logos": "^2.0.5",
     "@vueuse/head": "^0.9.8",
     "axios": "^1.8.4",
     "dompurify": "^3.2.6",
