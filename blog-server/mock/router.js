@@ -1,3 +1,4 @@
+import { respondLinkAvatar } from '../utils/linkAvatar.js'
 import Router from '@koa/router'
 import jwt from 'jsonwebtoken'
 import { randomUUID } from 'node:crypto'
@@ -426,6 +427,10 @@ router.put('/website/totalwordcount', (ctx) => {
 
 router.get('/links', (ctx) => {
     ctx.body = state.links.map(clone)
+})
+
+router.get('/links/:id/avatar', async (ctx) => {
+    await respondLinkAvatar(ctx, state.links.find(link => link.id === ctx.params.id))
 })
 
 router.post('/links', (ctx) => {

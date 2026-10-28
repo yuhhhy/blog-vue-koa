@@ -7,7 +7,7 @@ import { getWebsiteData, getWebsiteDataCount, updateWebsiteVisit, updateWebsiteV
 import { getAllComments, getComments, createComment, reviewComment, deleteComment, updateComment, getPendingComments, sendEmailNotification } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
-import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
+import { getLinks, createLink, deleteLink, updateLink, getLinkAvatar } from '../controllers/LinksController.js'
 import { getImageFiles, deleteImageFile, reuploadImageFile, generateImageFileVariants } from "../controllers/FilesController.js"
 import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus, initLargeUpload, mergeLargeFile, uploadLargeChunk, verifyLargeFile } from '../controllers/LargeFilesController.js'
 import { requireAdmin } from '../middlewares/auth.js'
@@ -213,6 +213,7 @@ router.delete('/visitor/:id', requireAdmin, deleteVisitor)
  */
 // 获取所有友链
 router.get('/links', getLinks)
+router.get('/links/:id/avatar', getLinkAvatar)
 
 // 创建友链
 router.post('/links', requireAdmin, createLink)

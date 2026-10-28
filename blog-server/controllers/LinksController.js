@@ -1,3 +1,4 @@
+import { respondLinkAvatar } from '../utils/linkAvatar.js'
 import { Links } from "../models/LinksSchema.js"
 
 // 获取所有友链
@@ -32,4 +33,9 @@ export const updateLink = async (ctx) => {
     const updatedLink = await Links.findOneAndUpdate({ id }, { name, description, site, avatar, category })
     ctx.status = 200
     ctx.body = updatedLink
+}
+
+// Only stored friend links are eligible; no arbitrary URL proxy.
+export const getLinkAvatar = async (ctx) => {
+    await respondLinkAvatar(ctx, await Links.findOne({ id: ctx.params.id }).lean())
 }
