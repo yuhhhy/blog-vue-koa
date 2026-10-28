@@ -5,6 +5,16 @@ import Layout from '@/views/Layout/index.vue'
 import HomePage from '@/views/Home/index.vue'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import { recordHostedPage } from '@/utils/hostedAnalytics.js'
+import {
+    queueHomeReturnAnimation,
+    runHomeSectionAnimation,
+} from '@/utils/sectionRouteTransition.js'
+
+const sectionByRouteName = {
+    About: 'about',
+    Essays: 'essays',
+    Archive: 'archive',
+}
 
 const routes = [
     {
@@ -16,7 +26,8 @@ const routes = [
                 name: 'Home',
                 component: HomePage,
                 meta: {
-                    title: '一曝十寒'
+                    title: '一曝十寒',
+                    keepAlive: true
                 }
             },
             {
@@ -24,7 +35,8 @@ const routes = [
                 name: 'Explore',
                 component: HomePage,
                 meta: {
-                    title: '探索 | 一曝十寒'
+                    title: '探索 | 一曝十寒',
+                    keepAlive: true
                 }
             },
             {
@@ -110,6 +122,24 @@ router.beforeEach(async (to, from) => {
     // 设置页面标题
     if (to.meta?.title && !to.meta.dynamicTitle) {
         document.title = to.meta.title
+    }
+
+    const fromSection = sectionByRouteName[from.name]
+    const toSection = sectionByRouteName[to.name]
+
+    if (from.name === 'Home' && toSection) {
+        await runHomeSectionAnimation(toSection)
+        return
+    }
+
+    if (fromSection && to.name === 'Home') {
+        queueHomeReturnAnimation(fromSection)
+        return
+    }
+
+    if (fromSection && toSection && fromSection !== toSection) {
+        queueHomeReturnAnimation(fromSection, to.fullPath)
+        return { name: 'Home' }
     }
 })
 

@@ -1,14 +1,18 @@
 <script setup>
 import { computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
+import HomeCornerReturn from '@/components/HomeCornerReturn.vue'
 
 const themeStore = useThemeStore()
 const route = useRoute()
+const router = useRouter()
 const pageBackground = computed(() => route.meta.backgroundColor || 'var(--white)')
 const pageBackgroundShape = computed(() => route.meta.backgroundShape || '')
+const showHomeReturn = computed(() => ['About', 'Essays', 'Archive'].includes(route.name))
+const returnHome = () => router.push('/')
 
 onMounted(() => {
     document.documentElement.classList.remove('light', 'dark')
@@ -21,6 +25,7 @@ onMounted(() => {
 </script>
 
 <template>
+    <HomeCornerReturn v-if="showHomeReturn" @click="returnHome" />
     <div
         class="layout"
         :class="pageBackgroundShape ? `layout--${pageBackgroundShape}` : ''"
@@ -29,7 +34,12 @@ onMounted(() => {
         <div class="layout-page">
             <main class="layout-main">
                 <div class="layout-content">
-                    <RouterView />
+                    <RouterView v-slot="{ Component, route: currentRoute }">
+                        <KeepAlive>
+                            <component :is="Component" v-if="currentRoute.meta.keepAlive" />
+                        </KeepAlive>
+                        <component :is="Component" v-if="!currentRoute.meta.keepAlive" />
+                    </RouterView>
                 </div>
             </main>
         </div>

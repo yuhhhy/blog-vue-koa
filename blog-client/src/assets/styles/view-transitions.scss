@@ -41,6 +41,22 @@ html[data-route-transition]::view-transition-old(section-title) {
     opacity: 0;
 }
 
+html[data-route-transition]::view-transition-group(home-corner-return) {
+    z-index: 3;
+    animation-duration: 600ms;
+    animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+html[data-route-transition]::view-transition-old(home-corner-return),
+html[data-route-transition]::view-transition-new(home-corner-return) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+html[data-route-transition]::view-transition-old(home-corner-return) {
+    opacity: 0;
+}
+
 @keyframes route-view-out {
     to {
         opacity: 0;
@@ -57,7 +73,8 @@ html[data-route-transition]::view-transition-old(section-title) {
     ::view-transition-group(root),
     ::view-transition-old(root),
     ::view-transition-new(root),
-    ::view-transition-group(section-title) {
+    ::view-transition-group(section-title),
+    ::view-transition-group(home-corner-return) {
         animation-duration: 1ms;
     }
 }

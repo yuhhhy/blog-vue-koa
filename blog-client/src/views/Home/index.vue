@@ -1,20 +1,34 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AboutPage from '@/views/About/index.vue'
 import EssaysPage from '@/views/Essays/index.vue'
 import ArchivePage from '@/views/Archive/index.vue'
 import ExplorePage from '@/views/Explore/index.vue'
+import {
+    consumeHomeReturnAnimation,
+    registerHomeSectionAnimator,
+} from '@/utils/sectionRouteTransition.js'
 
 const router = useRouter()
 const route = useRoute()
+const pendingReturnAnimation = consumeHomeReturnAnimation()
+const historyReturnSection = window.history.state?.returnFromSection
+const initialReturnSection = pendingReturnAnimation?.section
+    || (['about', 'essays', 'archive'].includes(historyReturnSection) ? historyReturnSection : '')
+const returnSourceSection = ref(initialReturnSection)
+const returnTarget = ref(pendingReturnAnimation?.target || '')
 const homeSections = ref(null)
 const hoveredSection = ref('')
-const selectedSection = ref('')
-const animationSettled = ref(false)
+const selectedSection = ref(initialReturnSection)
+const returningSection = ref('')
+const animationSettled = ref(Boolean(initialReturnSection))
+const isReturnStaged = ref(Boolean(initialReturnSection))
 const isExploreOpen = computed(() => route.name === 'Explore')
 const exploreScroller = ref(null)
 const exploreScrollTop = ref(0)
+let returnAnimationTimer
+let unregisterHomeSectionAnimator
 
 const sectionRoutes = {
     about: '/about',
@@ -59,10 +73,15 @@ const clearPreview = (section) => {
 const sectionState = (section) => ({
     'is-hovered': !selectedSection.value && hoveredSection.value === section,
     'is-selected': selectedSection.value === section,
+    'is-returning': returningSection.value === section,
 })
 
 const waitForNextPaint = () => new Promise((resolve) => {
     window.requestAnimationFrame(() => window.requestAnimationFrame(resolve))
+})
+
+const waitForAnimationFrame = () => new Promise((resolve) => {
+    window.requestAnimationFrame(resolve)
 })
 
 const waitForPanelAnimation = (section, reduceMotion) => {
@@ -93,29 +112,8 @@ const waitForPanelAnimation = (section, reduceMotion) => {
     })
 }
 
-const navigateToSection = async (section) => {
-    const navigate = async () => {
-        await router.push(sectionRoutes[section])
-        await nextTick()
-    }
-
-    if (!document.startViewTransition) {
-        await navigate()
-        return
-    }
-
-    document.documentElement.dataset.routeTransition = section
-
-    try {
-        const transition = document.startViewTransition(navigate)
-        await transition.finished
-    } finally {
-        delete document.documentElement.dataset.routeTransition
-    }
-}
-
-const openSection = async (section) => {
-    if (selectedSection.value) return
+const animateSectionOpen = async (section) => {
+    if (selectedSection.value || returningSection.value) return
 
     selectedSection.value = section
     hoveredSection.value = section
@@ -125,8 +123,66 @@ const openSection = async (section) => {
     animationSettled.value = true
     await nextTick()
     await waitForNextPaint()
-    await navigateToSection(section)
 }
+
+const openSection = (section) => {
+    if (selectedSection.value || returningSection.value) return
+    router.push(sectionRoutes[section])
+}
+
+const beginReturnAnimation = async () => {
+    if (!isReturnStaged.value) return
+
+    returningSection.value = returnSourceSection.value
+    isReturnStaged.value = false
+    animationSettled.value = false
+    selectedSection.value = ''
+
+    const nextHistoryState = { ...window.history.state }
+    delete nextHistoryState.returnFromSection
+    window.history.replaceState(nextHistoryState, '')
+
+    window.clearTimeout(returnAnimationTimer)
+    returnAnimationTimer = window.setTimeout(async () => {
+        returningSection.value = ''
+        if (!returnTarget.value) return
+
+        await nextTick()
+        await waitForNextPaint()
+        router.replace(returnTarget.value)
+    }, 950)
+}
+
+const stagePendingReturnAnimation = () => {
+    const pendingAnimation = consumeHomeReturnAnimation()
+    if (!pendingAnimation) return isReturnStaged.value
+
+    returnSourceSection.value = pendingAnimation.section
+    returnTarget.value = pendingAnimation.target || ''
+    selectedSection.value = pendingAnimation.section
+    hoveredSection.value = pendingAnimation.section
+    returningSection.value = ''
+    animationSettled.value = true
+    isReturnStaged.value = true
+    return true
+}
+
+onMounted(() => {
+    unregisterHomeSectionAnimator = registerHomeSectionAnimator(animateSectionOpen)
+})
+
+onActivated(async () => {
+    if (!stagePendingReturnAnimation()) return
+
+    await nextTick()
+    await waitForAnimationFrame()
+    beginReturnAnimation()
+})
+
+onBeforeUnmount(() => {
+    unregisterHomeSectionAnimator?.()
+    window.clearTimeout(returnAnimationTimer)
+})
 </script>
 
 <template>
@@ -158,7 +214,11 @@ const openSection = async (section) => {
                 class="home-sections"
                 :class="[
                     selectedSection ? `home-sections--${selectedSection}` : '',
-                    { 'is-settled': animationSettled },
+                    returningSection ? `home-sections--${returningSection}-returning` : '',
+                    {
+                        'is-settled': animationSettled,
+                        'is-return-staged': isReturnStaged,
+                    },
                 ]"
                 aria-label="首页分区"
                 :aria-hidden="isExploreOpen"
@@ -234,10 +294,11 @@ const openSection = async (section) => {
                     </div>
                 </section>
                 <button
-                    v-if="!selectedSection"
                     class="screen-toggle screen-toggle--explore"
+                    :class="{ 'is-page-return': selectedSection }"
                     type="button"
-                    aria-label="前往探索页"
+                    :aria-label="selectedSection ? '返回首页' : '前往探索页'"
+                    :disabled="Boolean(selectedSection || returningSection)"
                     @click="openExplore"
                 >
                     <svg class="screen-toggle__arrow screen-toggle__arrow--left" viewBox="0 0 24 24" aria-hidden="true">
@@ -316,7 +377,18 @@ const openSection = async (section) => {
 
 .screen-toggle--explore {
     left: 0;
+    overflow: hidden;
     transform: translate(-50%, -50%) rotate(45deg);
+    transition:
+        top 900ms cubic-bezier(0.76, 0, 0.24, 1),
+        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.screen-toggle--explore.is-page-return {
+    top: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) rotate(405deg);
+    view-transition-name: home-corner-return;
 }
 
 .screen-toggle--return {
@@ -337,6 +409,10 @@ const openSection = async (section) => {
     position: absolute;
     width: 21px;
     transform: translate(-50%, -50%) rotate(-45deg);
+    transition:
+        top 900ms cubic-bezier(0.76, 0, 0.24, 1),
+        left 900ms cubic-bezier(0.76, 0, 0.24, 1),
+        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 .screen-toggle__arrow--left {
@@ -347,6 +423,17 @@ const openSection = async (section) => {
 .screen-toggle__arrow--right {
     top: calc(50% + 7px);
     left: calc(50% - 7px);
+}
+
+.screen-toggle--explore.is-page-return .screen-toggle__arrow--left {
+    top: 50%;
+    left: 83.333%;
+    transform: translate(-50%, -50%);
+}
+
+.screen-toggle--explore.is-page-return .screen-toggle__shaft,
+.screen-toggle--explore.is-page-return .screen-toggle__head {
+    transform: translateX(-2px) scaleX(1);
 }
 
 .screen-toggle__shaft,
@@ -469,7 +556,8 @@ const openSection = async (section) => {
         opacity 300ms ease;
 }
 
-.home-section.is-selected::before {
+.home-section.is-selected::before,
+.home-section.is-returning::before {
     content: "";
     position: absolute;
     z-index: 1;
@@ -479,19 +567,24 @@ const openSection = async (section) => {
     pointer-events: none;
 }
 
-.home-section.is-selected::after {
+.home-section.is-returning::before {
+    opacity: 0;
+    transition: opacity 900ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.home-section:is(.is-selected, .is-returning)::after {
     z-index: 1;
 }
 
-.home-section--about.is-selected::before {
+.home-section--about:is(.is-selected, .is-returning)::before {
     clip-path: polygon(0 0, 100% 0, 100% 0, 0 50%);
 }
 
-.home-section--essays.is-selected::before {
+.home-section--essays:is(.is-selected, .is-returning)::before {
     clip-path: polygon(100% 0, 0 50%, 0 50%, 100% 100%);
 }
 
-.home-section--archive.is-selected::before {
+.home-section--archive:is(.is-selected, .is-returning)::before {
     clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
 }
 
@@ -567,6 +660,38 @@ const openSection = async (section) => {
     animation: essays-archive-follow 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
 
+.home-sections--essays.is-return-staged .home-section--about {
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+}
+
+.home-sections--essays.is-return-staged .home-section--essays {
+    clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
+}
+
+.home-sections--essays.is-return-staged .home-section--archive {
+    clip-path: polygon(0 0, 0 100%, 100% 100%, 0 100%);
+}
+
+.home-sections.is-return-staged .home-section {
+    animation: none;
+    transition: none;
+}
+
+.home-sections--essays-returning .home-section--about {
+    z-index: 1;
+    animation: essays-about-return 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+.home-sections--essays-returning .home-section--essays {
+    z-index: 2;
+    animation: essays-collapse 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+.home-sections--essays-returning .home-section--archive {
+    z-index: 1;
+    animation: essays-archive-return 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
 .home-sections--archive .home-section--about {
     clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
 }
@@ -579,7 +704,7 @@ const openSection = async (section) => {
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
 }
 
-.home-sections[class*="home-sections--"] .home-section:not(.is-selected) > h1 {
+.home-sections[class*="home-sections--"]:not([class*="-returning"]) .home-section:not(.is-selected) > h1 {
     opacity: 0;
 }
 
@@ -660,6 +785,36 @@ const openSection = async (section) => {
 
     to {
         clip-path: polygon(0 0, 0 100%, 100% 100%, 0 100%);
+    }
+}
+
+@keyframes essays-about-return {
+    from {
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+    }
+
+    to {
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 50%);
+    }
+}
+
+@keyframes essays-collapse {
+    from {
+        clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%);
+    }
+
+    to {
+        clip-path: polygon(100% 0, 0 50%, 0 50%, 100% 100%);
+    }
+}
+
+@keyframes essays-archive-return {
+    from {
+        clip-path: polygon(0 0, 0 100%, 100% 100%, 0 100%);
+    }
+
+    to {
+        clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
     }
 }
 
