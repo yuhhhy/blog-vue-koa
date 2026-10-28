@@ -21,9 +21,11 @@ const loading = ref(true)
 const dialogFormVisible = ref(false)
 const deleteDialogVisible = ref(false)
 const pendingDelete = ref(null)
-const formErrors = reactive({ name: '', description: '', site: '', avatar: '' })
-const sortBy = ref('recent')
+const formErrors = reactive({ name: '', description: '', site: '', avatar: '', sortOrder: '' })
+const sortBy = ref('category-order')
 const sortOptions = [
+  { label: '分类与排序', value: 'category-order' },
+  { label: '排序序号', value: 'order-asc' },
   { label: '最近添加', value: 'recent' },
   { label: '名称 A–Z', value: 'name-asc' },
   { label: '名称 Z–A', value: 'name-desc' }
@@ -38,15 +40,31 @@ const form = reactive({
   description: '',
   site: '',
   avatar: '',
-  category: 'friend'
+  category: 'friend',
+  sortOrder: '0'
 })
 const categoryLabels = {
-  friend: '友链',
+  friend: '双向友链',
   recommended: '推荐站点'
+}
+const categoryRank = {
+  friend: 0,
+  recommended: 1
+}
+const compareByOrder = (a, b) => {
+  const orderDifference = Number(a.sortOrder || 0) - Number(b.sortOrder || 0)
+  return orderDifference || Number(b.id) - Number(a.id)
 }
 const sortedLinks = computed(() => {
   const links = [...tableData.value]
 
+  if (sortBy.value === 'category-order') {
+    return links.sort((a, b) => {
+      const categoryDifference = (categoryRank[a.category || 'friend'] ?? 0) - (categoryRank[b.category || 'friend'] ?? 0)
+      return categoryDifference || compareByOrder(a, b)
+    })
+  }
+  if (sortBy.value === 'order-asc') return links.sort(compareByOrder)
   if (sortBy.value === 'name-asc') return links.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
   if (sortBy.value === 'name-desc') return links.sort((a, b) => b.name.localeCompare(a.name, 'zh-CN'))
   return links.sort((a, b) => Number(b.id) - Number(a.id))
@@ -100,6 +118,7 @@ function handleEdit(row) {
   form.site = row.site
   form.avatar = row.avatar
   form.category = row.category || 'friend'
+  form.sortOrder = String(row.sortOrder ?? 0)
 }
 
 function handleAddLink() {
@@ -111,6 +130,10 @@ function handleAddLink() {
   form.site = ''
   form.avatar = ''
   form.category = 'friend'
+  const friendOrders = tableData.value
+    .filter(item => (item.category || 'friend') === 'friend')
+    .map(item => Number(item.sortOrder || 0))
+  form.sortOrder = String((Math.max(0, ...friendOrders) || 0) + 10)
 }
 
 function clearFormErrors() {
@@ -122,16 +145,19 @@ async function handleConfirm() {
   formErrors.description = form.description.trim() ? '' : '请输入友链描述'
   formErrors.site = form.site.trim() ? '' : '请输入友链网址'
   formErrors.avatar = form.avatar.trim() ? '' : '请输入头像地址'
+  const sortOrder = Number(form.sortOrder)
+  formErrors.sortOrder = Number.isInteger(sortOrder) && sortOrder >= 0 ? '' : '请输入大于或等于 0 的整数'
   if (Object.values(formErrors).some(Boolean)) return
 
   try {
+    const payload = { ...form, sortOrder }
     if (form.id) {
-      await updateLink(form)
+      await updateLink(payload)
     } else {
       const now = new Date()
       const newId = getTimestampToSeconds(now)
-      form.id = newId
-      await createLink(form)
+      payload.id = newId
+      await createLink(payload)
     }
     
     showMessage(form.id ? '友链已更新' : '友链已添加', 'success')
@@ -161,6 +187,7 @@ async function handleConfirm() {
             </template>
             <template #supporting>
               <span class="link-category-badge">{{ categoryLabels[item.category || 'friend'] }}</span>
+              <span class="link-order">排序 {{ item.sortOrder ?? 0 }}</span>
               <span>{{ item.description }}</span>
               <a class="link-address" :href="item.site" target="_blank" rel="noreferrer">{{ item.site }}</a>
             </template>
@@ -178,10 +205,21 @@ async function handleConfirm() {
     <MaterialTextField v-model="form.description" label="描述" required :error-message="formErrors.description" @update:model-value="formErrors.description = ''" />
     <MaterialTextField v-model="form.site" label="网址" required :error-message="formErrors.site" @update:model-value="formErrors.site = ''" />
     <MaterialTextField v-model="form.avatar" label="头像地址" required :error-message="formErrors.avatar" @update:model-value="formErrors.avatar = ''" />
+    <MaterialTextField
+      v-model="form.sortOrder"
+      label="排序序号"
+      type="number"
+      min="0"
+      step="1"
+      required
+      supporting-text="序号越小越靠前；推荐站点始终排在双向友链之后"
+      :error-message="formErrors.sortOrder"
+      @update:model-value="formErrors.sortOrder = ''"
+    />
     <label class="link-category-field">
       <span>分类</span>
       <select v-model="form.category">
-        <option value="friend">友链</option>
+        <option value="friend">双向友链</option>
         <option value="recommended">推荐站点</option>
       </select>
     </label>
@@ -237,6 +275,15 @@ async function handleConfirm() {
   background: var(--md-sys-color-primary-container);
   border-radius: 999px;
   font-size: 12px;
+}
+
+.link-order {
+  display: inline-flex;
+  width: fit-content;
+  margin-right: 8px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }
 
 .link-category-field {
