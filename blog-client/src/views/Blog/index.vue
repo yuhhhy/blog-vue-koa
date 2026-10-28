@@ -221,11 +221,11 @@ img {
 
     .blog-heading {
         padding-block: clamp(64px, 10vw, 120px) clamp(42px, 6vw, 72px);
-        font-family: var(--font-serif);
+        font-family: var(--font-system-sans);
 
         > p {
             color: var(--quote-color);
-            font-family: var(--font-sans);
+            font-family: inherit;
             font-size: 0.75rem;
             letter-spacing: 0.24em;
             line-height: 1;
@@ -249,7 +249,7 @@ img {
         gap: 8px;
         margin-top: 24px;
         color: var(--quote-color);
-        font-family: var(--font-sans);
+        font-family: var(--font-system-sans);
         font-size: 0.8125rem;
     }
 

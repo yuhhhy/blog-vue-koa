@@ -130,26 +130,22 @@
     }
 }
 
-// 文章正文代码块：深色编辑器配色 + 透明玻璃质感。
+// Keep code blocks subtly distinct from the surrounding article surface.
 .markdown-content {
     pre,
     pre[class*="language-"] {
         position: relative;
         margin: 1.5em 0;
         padding: 1.25em 1.4em;
-        color: #e6edf3;
-        background:
-            linear-gradient(145deg, rgba(12, 15, 20, 0.76), rgba(2, 4, 8, 0.62));
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 14px;
-        box-shadow:
-            0 18px 42px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+        color: #f0f1f2;
+        background: #30363d;
+        border: 1px solid #5a6067;
+        border-radius: 8px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 
         code,
         code[class*="language-"] {
-            color: #e6edf3;
+            color: #f0f1f2;
             line-height: 1.7;
         }
 
@@ -177,7 +173,7 @@
     }
 
     .token.punctuation {
-        color: #c9d1d9;
+        color: #d8dce0;
     }
 
     .token.property,
