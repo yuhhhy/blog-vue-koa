@@ -3,6 +3,7 @@ import { apiCreateVisitor } from '@/api/visitor.js'
 import { apiUpdateWebsiteView } from "@/api/websiteData.js"
 import Layout from '@/views/Layout/index.vue'
 import HomePage from '@/views/Home/index.vue'
+import ExplorePage from '@/views/Explore/index.vue'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import { recordHostedPage } from '@/utils/hostedAnalytics.js'
 
@@ -23,7 +24,7 @@ const routes = [
             {
                 path: 'explore',
                 name: 'Explore',
-                component: HomePage,
+                component: ExplorePage,
                 meta: {
                     title: '探索 | 一曝十寒',
                     keepAlive: true
@@ -93,9 +94,11 @@ const router = createRouter({
     linkActiveClass: 'active', // 设置Vue Router模糊匹配类名
     routes,
     scrollBehavior(to, from, savedPosition) {
-        // 如果是锚点导航，不做处理
         if (to.hash) {
-            return
+            return {
+                el: to.hash,
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+            }
         }
 
         // 如果有保存的位置，优先使用

@@ -16,6 +16,11 @@ html {
     scrollbar-gutter: stable;
 }
 
+html.is-scene-transitioning,
+html.is-scene-transitioning body {
+    overflow: hidden;
+}
+
 a {
     text-decoration: none;
     color: inherit;

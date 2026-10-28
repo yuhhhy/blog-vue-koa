@@ -10,15 +10,20 @@ import HomePage from '@/views/Home/index.vue'
 const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
-const sceneActive = ref(['Home', 'Explore'].includes(route.name))
+const sceneActive = ref(route.name === 'Home')
 const pageBackground = computed(() => route.meta.backgroundColor || 'var(--white)')
 const pageBackgroundShape = computed(() => route.meta.backgroundShape || '')
 const showHomeReturn = computed(() => ['About', 'Essays', 'Archive'].includes(route.name))
 const returnHome = () => router.push('/')
+const setSceneActive = (active) => {
+    sceneActive.value = active
+    document.documentElement.classList.toggle('is-scene-transitioning', active)
+}
 
 onMounted(() => {
     document.documentElement.classList.remove('light', 'dark')
     document.documentElement.classList.add(themeStore.theme)
+    setSceneActive(sceneActive.value)
 
     runAfterPageIdle(() => {
         apiUpdateWebsiteVisit().catch(() => {})
@@ -27,7 +32,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <HomePage @scene-active="sceneActive = $event" />
+    <HomePage @scene-active="setSceneActive" />
     <HomeCornerReturn v-if="showHomeReturn && !sceneActive" @click="returnHome" />
     <div
         class="layout"
@@ -38,9 +43,13 @@ onMounted(() => {
     >
         <div class="layout-page">
             <main class="layout-main">
-                <div class="layout-content" data-route-content>
+                <div
+                    class="layout-content"
+                    :class="{ 'layout-content--explore': route.name === 'Explore' }"
+                    data-route-content
+                >
                     <RouterView v-slot="{ Component, route: currentRoute }">
-                        <component :is="Component" v-if="!['Home', 'Explore'].includes(currentRoute.name)" />
+                        <component :is="Component" v-if="currentRoute.name !== 'Home'" />
                     </RouterView>
                 </div>
             </main>
@@ -153,6 +162,10 @@ onMounted(() => {
     width: min(100%, 1080px);
     margin: 0 auto;
     padding-inline: clamp(20px, 4vw, 48px);
+}
+
+.layout-content--explore {
+    padding-inline: 0;
 }
 
 </style>

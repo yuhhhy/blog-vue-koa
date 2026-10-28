@@ -1,5 +1,15 @@
 <script setup>
 import LinksPage from '@/views/Links/index.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const returnHome = () => router.push('/')
+const props = defineProps({
+    preview: {
+        type: Boolean,
+        default: false,
+    },
+})
 </script>
 
 <template>
@@ -12,6 +22,18 @@ import LinksPage from '@/views/Links/index.vue'
             <LinksPage />
         </section>
     </section>
+    <button
+        v-if="!preview"
+        class="explore-return"
+        type="button"
+        aria-label="返回首页"
+        @click="returnHome"
+    >
+        <svg class="explore-return__arrow" viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+        </svg>
+    </button>
 </template>
 
 <style scoped>
@@ -53,5 +75,62 @@ import LinksPage from '@/views/Links/index.vue'
 
 .explore-links :deep(.links) {
     padding-top: 0;
+}
+
+.explore-return {
+    position: fixed;
+    z-index: 10;
+    top: 50%;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: clamp(42px, 3.5vw, 48px);
+    aspect-ratio: 1;
+    padding: 0;
+    overflow: visible;
+    color: #ffffff;
+    background: #263846;
+    border: 1px solid #263846;
+    border-radius: 0;
+    cursor: pointer;
+    transform: translate(50%, -50%) rotate(45deg);
+}
+
+.explore-return__arrow {
+    position: absolute;
+    top: calc(50% + 7px);
+    left: calc(50% - 7px);
+    width: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.explore-return__arrow line {
+    transform: translateX(16px) scaleX(0);
+    transform-origin: right center;
+    transition: transform 300ms ease-in-out;
+}
+
+.explore-return__arrow polyline {
+    transition: transform 300ms ease-in-out;
+}
+
+.explore-return:hover .explore-return__arrow line,
+.explore-return:focus-visible .explore-return__arrow line {
+    transform: translateX(4px) scaleX(1);
+}
+
+.explore-return:hover .explore-return__arrow polyline,
+.explore-return:focus-visible .explore-return__arrow polyline {
+    transform: translateX(4px);
+}
+
+.explore-return:focus-visible {
+    outline: 2px solid #263846;
+    outline-offset: 3px;
 }
 </style>

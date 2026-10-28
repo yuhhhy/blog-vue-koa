@@ -1,9 +1,9 @@
 <script setup>
 import ArticleFooter from "../Blog/components/ArticleFooter.vue"
-import { getLinks } from "@/api/links.js"
-import { computed, ref, onMounted } from "vue"
+import { computed, onMounted } from "vue"
+import { useLinks } from "@/composables/useLinks.js"
 
-const links = ref([])
+const { links, loadLinks } = useLinks()
 const linkGroups = computed(() => [
     {
         key: 'friend',
@@ -20,8 +20,7 @@ const linkGroups = computed(() => [
 ].filter((group) => group.links.length))
 
 onMounted(async () => {
-    const res = await getLinks()
-    links.value = res.map((link) => ({ ...link, category: link.category || 'friend' }))
+    await loadLinks()
 })
 
 </script>

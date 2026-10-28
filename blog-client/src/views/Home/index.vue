@@ -15,7 +15,9 @@ const emit = defineEmits(['scene-active'])
 const router = useRouter()
 const route = useRoute()
 const homeSections = ref(null)
-const sceneVisible = ref(['Home', 'Explore'].includes(route.name))
+const homeTrack = ref(null)
+const sceneVisible = ref(route.name === 'Home')
+const exploreTrackOpen = ref(route.name === 'Explore')
 const hoveredSection = ref('')
 const selectedSection = ref(sectionByRouteName[route.name] || '')
 const returningSection = ref('')
@@ -37,8 +39,6 @@ const isExploreOpen = computed(() => route.name === 'Explore')
 const isPageReturn = computed(() => Boolean(
     selectedSection.value || returningSection.value || sectionByRouteName[route.name],
 ))
-const exploreScroller = ref(null)
-const exploreScrollTop = ref(0)
 let pressedSection = null
 
 const sectionRoutes = { about: '/about', essays: '/essays', archive: '/archive' }
@@ -46,28 +46,8 @@ const openExplore = () => router.push('/explore')
 const returnHome = () => router.push('/')
 const toggleHome = () => isPageReturn.value ? returnHome() : openExplore()
 const closeExplore = () => {
-    exploreScrollTop.value = exploreScroller.value?.scrollTop ?? exploreScrollTop.value
     returnHome()
 }
-const rememberExploreScroll = (event) => {
-    exploreScrollTop.value = event.currentTarget.scrollTop
-}
-
-watch(
-    () => [isExploreOpen.value, route.hash],
-    async ([isOpen, hash]) => {
-        if (!isOpen) return
-        await nextTick()
-        if (!hash) {
-            exploreScroller.value?.scrollTo({ top: exploreScrollTop.value, behavior: 'auto' })
-            return
-        }
-        document.getElementById(hash.slice(1))?.scrollIntoView({
-            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-        })
-    },
-    { immediate: true },
-)
 
 const previewSection = (section) => {
     if (!colorFrozen.value && !selectedSection.value && !returningSection.value && !colorRestoringSection.value) {
@@ -109,8 +89,18 @@ const openSection = (section, event) => {
 }
 
 const setSceneVisible = (visible) => {
-    sceneVisible.value = visible
-    emit('scene-active', visible)
+    if (visible) {
+        emit('scene-active', true)
+        sceneVisible.value = true
+        return
+    }
+
+    // Hide the fixed proxy before restoring document scrolling. Otherwise the
+    // native scrollbar can resize the still-visible proxy for one frame.
+    sceneVisible.value = false
+    nextTick(() => {
+        if (!sceneVisible.value) emit('scene-active', false)
+    })
 }
 const nextPaint = (signal) => waitForVisualWork(new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(resolve))
@@ -125,6 +115,20 @@ const waitForGeometry = async (signal) => {
             .includes(animation.transitionProperty),
     ) || []
     await waitForVisualWork(Promise.allSettled(animations.map((a) => a.finished)), signal)
+}
+
+const waitForTrackTransition = async (signal) => {
+    await waitForVisualWork(nextTick(), signal)
+    const animation = homeTrack.value?.getAnimations().find(
+        (current) => current.transitionProperty === 'transform',
+    )
+    if (animation) {
+        await waitForVisualWork(animation.finished, signal)
+        return
+    }
+    // A transition can be absent when the browser has already settled the
+    // class change; still yield a paint before handing off the route content.
+    await nextPaint(signal)
 }
 
 const alignPageTitle = (section) => {
@@ -167,6 +171,8 @@ const finishSectionColors = async (target, source, signal) => {
 const renderRoute = async (targetName, sourceName, signal) => {
     const target = sectionByRouteName[targetName] || ''
     const source = sectionByRouteName[sourceName] || ''
+    const targetExplore = targetName === 'Explore'
+    const sourceExplore = sourceName === 'Explore'
     const isSceneRoute = (name) => name === 'Home' || name === 'Explore' || sectionByRouteName[name]
 
     // Preserve even a partially-hovered/fading color while redirecting motion.
@@ -183,7 +189,8 @@ const renderRoute = async (targetName, sourceName, signal) => {
         for (const section of sectionNames) colorOpacities.value[section] = section === target ? 1 : 0
         colorFrozen.value = false
         isReturnStaged.value = false
-        setSceneVisible(targetName === 'Home' || targetName === 'Explore')
+        exploreTrackOpen.value = targetExplore
+        setSceneVisible(targetName === 'Home')
         return
     }
 
@@ -194,6 +201,7 @@ const renderRoute = async (targetName, sourceName, signal) => {
         returningSection.value = ''
         animationSettled.value = Boolean(source)
         isReturnStaged.value = true
+        exploreTrackOpen.value = sourceExplore
         setSceneVisible(true)
         await waitForVisualWork(nextTick(), signal)
         await nextPaint(signal)
@@ -204,6 +212,8 @@ const renderRoute = async (targetName, sourceName, signal) => {
     isReturnStaged.value = false
     animationSettled.value = false
     await waitForVisualWork(nextTick(), signal)
+    exploreTrackOpen.value = targetExplore
+    await waitForVisualWork(nextTick(), signal)
     alignPageTitle(target)
 
     const previous = selectedSection.value || returningSection.value
@@ -213,7 +223,16 @@ const renderRoute = async (targetName, sourceName, signal) => {
         await waitForGeometry(signal)
         if (!target) {
             returningSection.value = ''
-            await finishSectionColors('', previous, signal)
+            await Promise.all([
+                waitForTrackTransition(signal),
+                finishSectionColors('', previous, signal),
+            ])
+            if (targetName === 'Explore') {
+                animationSettled.value = true
+                await waitForVisualWork(nextTick(), signal)
+                await nextPaint(signal)
+                setSceneVisible(false)
+            }
             return
         }
         returningSection.value = ''
@@ -222,7 +241,16 @@ const renderRoute = async (targetName, sourceName, signal) => {
     if (!target) {
         selectedSection.value = ''
         returningSection.value = ''
-        await finishSectionColors('', '', signal)
+        await Promise.all([
+            waitForTrackTransition(signal),
+            finishSectionColors('', '', signal),
+        ])
+        if (targetName === 'Explore') {
+            animationSettled.value = true
+            await waitForVisualWork(nextTick(), signal)
+            await nextPaint(signal)
+            setSceneVisible(false)
+        }
         return
     }
 
@@ -254,7 +282,7 @@ const transitions = createSectionTransitionController(renderRoute, (error) => {
     animationSettled.value = Boolean(selectedSection.value)
     colorFrozen.value = false
     for (const section of sectionNames) colorOpacities.value[section] = selectedSection.value === section ? 1 : 0
-    setSceneVisible(['Home', 'Explore'].includes(route.name))
+    setSceneVisible(route.name === 'Home')
 })
 
 watch(() => route.name, (target, source) => transitions.run(target, source))
@@ -264,15 +292,15 @@ onBeforeUnmount(() => transitions.cancel())
 
 <template>
     <div v-show="sceneVisible" class="home-viewport" :data-scene-target="route.name">
-        <div class="home-track" :class="{ 'is-explore-open': isExploreOpen }">
+        <div ref="homeTrack" class="home-track" :class="{ 'is-explore-open': exploreTrackOpen }">
             <section
                 class="explore-screen"
                 aria-label="探索页"
                 :aria-hidden="!isExploreOpen"
                 :inert="!isExploreOpen"
             >
-                <div ref="exploreScroller" class="explore-scroll" @scroll="rememberExploreScroll">
-                    <ExplorePage />
+                <div class="explore-preview">
+                    <ExplorePage preview />
                 </div>
                 <button
                     class="screen-toggle screen-toggle--return"
@@ -436,12 +464,10 @@ onBeforeUnmount(() => transitions.cancel())
     overscroll-behavior: contain;
 }
 
-.explore-scroll {
+.explore-preview {
     width: 100%;
     height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    overflow: hidden;
 }
 
 .screen-toggle {
