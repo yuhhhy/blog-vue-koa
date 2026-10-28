@@ -21,6 +21,10 @@ html.is-scene-transitioning body {
     overflow: hidden;
 }
 
+html.is-scene-transitioning {
+    scrollbar-gutter: auto;
+}
+
 html.is-article-transitioning,
 html.is-article-transitioning body {
     overflow: hidden;
