@@ -36,3 +36,13 @@ export const parseBrowser = (userAgent) => {
     const deviceType = device.is('mobile') ? 'mobile' : device.is('tablet') ? 'tablet' : 'desktop'
     return `${browser.name || 'unknown'} ${browser.version} ${deviceType}` // 这里可以根据需要返回更多信息
 }
+
+export const parseBrowserAndOS = (userAgent = '') => {
+    const { browser, os } = UAParser(userAgent)
+    const formatNameAndVersion = ({ name, version }) => [name, version].filter(Boolean).join(' ')
+
+    return {
+        browser: formatNameAndVersion(browser),
+        os: formatNameAndVersion(os),
+    }
+}

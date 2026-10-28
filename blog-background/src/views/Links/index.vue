@@ -37,8 +37,13 @@ const form = reactive({
   name: '',
   description: '',
   site: '',
-  avatar: ''
+  avatar: '',
+  category: 'friend'
 })
+const categoryLabels = {
+  friend: '友链',
+  recommended: '推荐站点'
+}
 const sortedLinks = computed(() => {
   const links = [...tableData.value]
 
@@ -94,6 +99,7 @@ function handleEdit(row) {
   form.description = row.description
   form.site = row.site
   form.avatar = row.avatar
+  form.category = row.category || 'friend'
 }
 
 function handleAddLink() {
@@ -104,6 +110,7 @@ function handleAddLink() {
   form.description = ''
   form.site = ''
   form.avatar = ''
+  form.category = 'friend'
 }
 
 function clearFormErrors() {
@@ -153,6 +160,7 @@ async function handleConfirm() {
               <AdminAvatar :src="item.avatar" :alt="`${item.name} 的头像`" />
             </template>
             <template #supporting>
+              <span class="link-category-badge">{{ categoryLabels[item.category || 'friend'] }}</span>
               <span>{{ item.description }}</span>
               <a class="link-address" :href="item.site" target="_blank" rel="noreferrer">{{ item.site }}</a>
             </template>
@@ -170,6 +178,13 @@ async function handleConfirm() {
     <MaterialTextField v-model="form.description" label="描述" required :error-message="formErrors.description" @update:model-value="formErrors.description = ''" />
     <MaterialTextField v-model="form.site" label="网址" required :error-message="formErrors.site" @update:model-value="formErrors.site = ''" />
     <MaterialTextField v-model="form.avatar" label="头像地址" required :error-message="formErrors.avatar" @update:model-value="formErrors.avatar = ''" />
+    <label class="link-category-field">
+      <span>分类</span>
+      <select v-model="form.category">
+        <option value="friend">友链</option>
+        <option value="recommended">推荐站点</option>
+      </select>
+    </label>
     <template #actions>
       <AdminButton variant="text" @click="dialogFormVisible = false">取消</AdminButton>
       <AdminButton tone="primary" @click="handleConfirm">{{ form.id ? '保存更改' : '添加友链' }}</AdminButton>
@@ -212,6 +227,41 @@ async function handleConfirm() {
 }
 
 .link-address:hover { text-decoration: underline; }
+
+.link-category-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-right: 8px;
+  padding: 2px 8px;
+  color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-primary-container);
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.link-category-field {
+  display: grid;
+  gap: 6px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+}
+
+.link-category-field select {
+  width: 100%;
+  height: 52px;
+  padding: 0 14px;
+  color: var(--md-sys-color-on-surface);
+  background: transparent;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 16px;
+}
+
+.link-category-field select:focus {
+  border-color: var(--md-sys-color-primary);
+  outline: 1px solid var(--md-sys-color-primary);
+}
 
 @media (max-width: 760px) {
   .list-toolbar { align-items: flex-start; flex-direction: column; }

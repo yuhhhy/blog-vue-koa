@@ -30,6 +30,14 @@ const routes = [
         },
       },
       {
+        path: "essays/manage",
+        name: "EssayManage",
+        component: () => import("../views/EssayManage/index.vue"),
+        meta: {
+          requiresAdmin: true,
+        },
+      },
+      {
         path: "user/manage",
         name: "UserManage",
         component: () => import("../views/UserManage/index.vue"),

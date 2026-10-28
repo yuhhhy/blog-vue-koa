@@ -6,6 +6,7 @@ const LinksSchema = new mongoose.Schema({
     description: { type: String, required: true },
     site: { type: String, required: true },
     avatar: { type: String, required: true },
+    category: { type: String, enum: ['friend', 'recommended'], default: 'friend' },
 })
 
 export const Links = mongoose.model('Links', LinksSchema)

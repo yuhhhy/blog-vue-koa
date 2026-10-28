@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus/es/components/message/index.mjs'
 import { apiCreateComment, apiSendEmailNotification } from '@/api/comment.js'
@@ -30,6 +30,10 @@ const props = defineProps({
   blogId: {
     type: String,
     required: true
+  },
+  replyTo: {
+    type: String,
+    default: ''
   }
 })
 
@@ -40,7 +44,6 @@ const form = reactive({
   email: '',
   website: '',
   content: '',
-  avatar: '',
 })
 // 表单校验规则、校验失败的ElMessage提示信息
 const rules = {
@@ -79,23 +82,14 @@ const onSubmit = () => {
 // 校验成功后的逻辑
 const doSubmit = async () => {
   try {
-    let avatarURL = '/images/user_default.png'
-    const hasCustomAvatar = form.avatar.trim().length > 0
-
-    // 在创建评论前确定头像，避免创建后调用仅管理员可用的评论更新接口
-    if (hasCustomAvatar) {
-      // 验证URL格式
-      try {
-        new URL(form.avatar) // 如果不是有效的URL会抛出错误
-        avatarURL = form.avatar
-      } catch (e) {
-        ElMessage.error('请输入有效的头像URL')
-        return
-      }
-    } else {
-      avatarURL = await getAvatar(form.email)
+    const customAvatar = customAvatarUrl.value.trim()
+    if (customAvatar && !isValidAvatarUrl(customAvatar)) {
+      ElMessage.error('请输入有效的头像地址')
+      return
     }
 
+    // Resolve the avatar before creating the comment so it is part of the initial payload.
+    const avatarURL = customAvatar || await getAvatar(form.email)
 
     // 生成评论
     let newComment = { 
@@ -104,6 +98,7 @@ const doSubmit = async () => {
         blogId: props.blogId,
         parentId: props.parentId,
         avatar: avatarURL,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai',
         createTime: new Date(),
         showForm: false,
         hasParent: props.hasParent,
@@ -118,8 +113,11 @@ const doSubmit = async () => {
     form.email = ''
     form.website = ''
     form.content = ''
-    form.avatar = ''
-    showAvatarOptions.value = false
+    customAvatarUrl.value = ''
+    showCustomAvatarInput.value = false
+    avatarRequestId += 1
+    avatarLoading.value = false
+    avatarResolved.value = false
     previewAvatar.value = '/images/user_default.png'
     // ElMessage提示信息
     ElMessage.success('评论成功！')
@@ -214,103 +212,150 @@ const switchEmojiType = (type) => {
 
 // 计算属性：根据是否有父评论决定占位符文本
 const placeholderText = computed(() => {
-  return props.hasParent ? '回复楼主...' : '写下你的评论...'
+  return props.hasParent ? `回复 @${props.replyTo || '用户'}...` : '写下你的评论...'
 })
 
 
-// 头像预览和自定义头像URL输入框
+// Avatar preview uses the email-derived avatar or the default image.
 const previewAvatar = ref('/images/user_default.png')
-const showAvatarOptions = ref(false)
-const hasEmail = computed(() => form.email.trim().length > 0)
+const avatarLoading = ref(false)
+const avatarResolved = ref(false)
+const customAvatarUrl = ref('')
+const showCustomAvatarInput = ref(false)
+const isValidEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+let avatarRequestId = 0
+let avatarRequestTimer
 
-const toggleAvatarOptions = () => {
-  showAvatarOptions.value = !showAvatarOptions.value
+const isValidAvatarUrl = (value) => {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
-watch(hasEmail, (value) => {
-  if (!value) {
-    showAvatarOptions.value = false
+const updateAvatarPreview = async (immediate = false) => {
+  const customUrl = customAvatarUrl.value.trim()
+  const email = form.email.trim()
+  const requestId = ++avatarRequestId
+  clearTimeout(avatarRequestTimer)
+  if (customUrl) {
+    avatarLoading.value = isValidAvatarUrl(customUrl)
+    avatarResolved.value = isValidAvatarUrl(customUrl)
+    previewAvatar.value = isValidAvatarUrl(customUrl) ? customUrl : '/images/user_default.png'
+    return
   }
-})
 
-// 监听input框的变化，自动更新头像URL
-const checkCostumAvatar = async () => {
-  if (form.avatar) {
-    previewAvatar.value = form.avatar
-  } else if (form.email) {
-    previewAvatar.value = await getAvatar(form.email)
-  } else {
+  if (!isValidEmail.value) {
     previewAvatar.value = '/images/user_default.png'
+    avatarLoading.value = false
+    avatarResolved.value = false
+    return
   }
+
+  avatarLoading.value = true
+  avatarResolved.value = false
+  const loadAvatar = async () => {
+    try {
+      const avatar = await getAvatar(email)
+      if (requestId === avatarRequestId && form.email.trim() === email) {
+        previewAvatar.value = avatar
+        avatarResolved.value = true
+      }
+    } catch {
+      if (requestId === avatarRequestId) {
+        previewAvatar.value = '/images/user_default.png'
+        avatarLoading.value = false
+      }
+    }
+  }
+
+  if (immediate) loadAvatar()
+  else avatarRequestTimer = setTimeout(loadAvatar, 250)
+}
+
+const finishAvatarLoading = () => {
+  if (avatarResolved.value) avatarLoading.value = false
+}
+
+const handleAvatarError = () => {
+  if (!avatarResolved.value) return
+  if (customAvatarUrl.value.trim()) previewAvatar.value = '/images/user_default.png'
+  avatarLoading.value = false
 }
 </script>
 
 <template>
 <!-- 评论表单 -->
-<el-form :model="form" :rules="rules" ref="formRef" class="comment-form">
+<el-form :model="form" :rules="rules" ref="formRef" class="comment-form comment-form--reply">
 
-    <div class="comment-form-input-row">
+    <div class="comment-editor">
+      <div class="comment-form-input-row">
       <!-- 昵称 -->
-      <el-form-item prop="username" :class="['comment-form-username', { 'has-avatar': hasEmail }]">
-        <el-input
-          v-model="form.username"
-          placeholder="昵称*"
-        />
-        <transition name="avatar-slide-fade">
-          <img
-            v-if="hasEmail"
-            :src="previewAvatar"
-            alt=""
-            class="input-icon"
-            role="button"
-            tabindex="0"
-            @click="toggleAvatarOptions"
-            @keydown.enter="toggleAvatarOptions"
-            @keydown.space.prevent="toggleAvatarOptions"
+      <el-form-item prop="username" class="comment-form-username">
+        <div class="username-input-wrap">
+          <el-input
+            v-model="form.username"
+            placeholder="昵称"
           />
-        </transition>
+          <el-popover
+            v-if="isValidEmail"
+            v-model:visible="showCustomAvatarInput"
+            placement="bottom-start"
+            :width="280"
+            trigger="click"
+            popper-class="avatar-customizer avatar-customizer--reply"
+          >
+            <template #reference>
+              <button type="button" class="avatar-trigger" title="设置自定义头像" aria-label="设置自定义头像">
+                <img
+                  :src="avatarResolved ? previewAvatar : '/images/user_default.png'"
+                  alt=""
+                  aria-hidden="true"
+                  @load="finishAvatarLoading"
+                  @error="handleAvatarError"
+                />
+                <span v-if="avatarLoading" class="avatar-loading-indicator" aria-hidden="true"></span>
+              </button>
+            </template>
+            <el-input
+              v-model="customAvatarUrl"
+              placeholder="自定义头像 URL"
+              clearable
+              @input="updateAvatarPreview(true)"
+            />
+          </el-popover>
+        </div>
       </el-form-item>
       <!-- 邮箱 -->
       <el-form-item prop="email">
         <el-input 
           v-model="form.email" 
-          placeholder="电子邮箱*" 
-          @blur="checkCostumAvatar"
+          placeholder="邮箱"
+          @input="updateAvatarPreview()"
+          @blur="updateAvatarPreview(true)"
         />
       </el-form-item>
       <!-- 网站 -->
       <el-form-item prop="website">
         <el-input
           v-model="form.website" 
-          placeholder="网站 http(s)://" 
+          placeholder="网址"
         />
       </el-form-item>
-      <!-- 自定义头像URL输入框 -->
-      <transition name="avatar-options-slide-fade">
-        <el-form-item v-if="hasEmail && showAvatarOptions">
-          <el-input
-            v-model="form.avatar"
-            placeholder="自定义头像URL"
-            @blur="checkCostumAvatar"
-          />
-        </el-form-item>
-      </transition>
+      </div>
 
-    </div>
-
-    <!-- 评论内容区域 - 修改这里的placeholder -->
-    <el-form-item prop="content">
-      <el-input
-        ref="textareaRef"
-        v-model="form.content"
-        type="textarea"
-        :autosize="{ minRows: 2 }"
-        :placeholder="placeholderText"
-      />
-    </el-form-item>
-    <!-- 表情和提交 -->
-    <el-form-item>
-      <div class="submit-container">
+      <el-form-item prop="content" class="comment-editor__content">
+        <el-input
+          ref="textareaRef"
+          v-model="form.content"
+          type="textarea"
+          :autosize="{ minRows: 3 }"
+          :placeholder="placeholderText"
+        />
+      </el-form-item>
+      <div class="submit-container comment-editor__toolbar">
         <!-- 添加表情的弹出框 -->
         <el-popover
           placement="top"
@@ -390,200 +435,338 @@ const checkCostumAvatar = async () => {
           提交
         </el-button>
       </div>
-    </el-form-item>
+    </div>
   </el-form>
 </template>
 
 <!-- 这里必须加scoped，因为深度选择器:deep()要求配合scoped用，以改变ElementPlus原始样式 -->
 <style lang="scss" scoped>
-/* 评论表单样式 */
-  .comment-form {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-family: var(--font-serif);
+/* 评论表单 */
+.comment-form {
+  margin: 10px 0;
+  font-family: var(--comment-font, var(--font-sans));
 
-    /* 表单输入框样式 */
-    .comment-form-input-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      column-gap: 15px;
-      
-      @media (max-width: 1098px) {
-        grid-template-columns: 1fr;
+  .comment-form-input-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+
+    :deep(.el-form-item) {
+      min-width: 0;
+      margin-bottom: 10px;
+    }
+
+    .comment-form-username {
+      min-width: 0;
+
+      .username-input-wrap {
+        position: relative;
+        width: 100%;
       }
 
-      .comment-form-username {
-        position: relative;
-        display: flex;
-        align-items: center;
-        width: 100%;
+      .avatar-trigger {
+        appearance: none;
+        position: absolute;
+        z-index: 3;
+        top: 50%;
+        left: 10px;
+        width: 22px;
+        height: 22px;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        cursor: pointer;
+        transform: translateY(-50%);
 
-        .input-icon {
-          position: absolute;
-          left: 10px;
-          width: 20px;
-          height: 20px;
-          clip-path: circle(50%);
-          overflow: hidden;
-          object-fit: contain;
-          cursor: pointer;
-        }
-
-        &.has-avatar :deep(.el-input__inner) {
-          padding-left: 26px; /* 留出空间给头像图标 */
-        }
-      }
-
-      .el-input {
-        all: unset;
-        width: 100%;
-        height: 32px;
-        position: relative;
-        :deep(.el-input__wrapper) {
-          all: unset;
-        }
-        :deep(.el-input__inner) {
-          color: var(--light-dark);
-          background-color: var(--white);
-          font-family: var(--font-serif);
-          min-height: 32px;
+        img {
+          display: block;
           width: 100%;
           height: 100%;
-          border: 1px solid #b0b5bd; 
-          border-radius: 4px;
-          text-indent: 0.7em;
-          transition: background 0.3s ease;
-          font-size: 15px;
+          max-width: none;
+          margin: 0;
+          border-radius: 5px;
+          object-fit: cover;
+          clip-path: inset(0 round 5px);
+        }
 
-          &:focus {
-            border: 1.5px solid var(--primary-color);
-            background: var(--white);
-            }
+        &:focus-visible {
+          outline: 2px solid var(--primary-color);
+          outline-offset: 2px;
         }
       }
-    }
 
-    .avatar-slide-fade-enter-active,
-    .avatar-slide-fade-leave-active {
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-
-    .avatar-slide-fade-enter-from,
-    .avatar-slide-fade-leave-to {
-      opacity: 0;
-      transform: translateX(-10px);
-    }
-
-    .avatar-slide-fade-enter-to,
-    .avatar-slide-fade-leave-from {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    .avatar-options-slide-fade-enter-active,
-    .avatar-options-slide-fade-leave-active {
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-
-    .avatar-options-slide-fade-enter-from,
-    .avatar-options-slide-fade-leave-to {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-
-    .avatar-options-slide-fade-enter-to,
-    .avatar-options-slide-fade-leave-from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* 评论输入框样式 */
-    .el-textarea {
-      
-      :deep(.el-textarea__inner) {
-        color: var(--light-dark);
-        background-color: var(--white);
-        font-family: var(--font-serif);
-        box-shadow:none;  // el-textarea的边框是box-shadow
-        border: 1px solid #b0b5bd;
-        font-size: 15px;
-        resize: none;  // 禁用手动调整大小
-
-        &:focus {
-          border: 1.5px solid var(--primary-color);
-          background: var(--white);
-        }
+      .avatar-loading-indicator {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(128, 137, 146, 0.35);
+        border-top-color: #68727d;
+        border-radius: 50%;
+        animation: avatar-spinner 700ms linear infinite;
       }
-      &::placeholder {
-          color: var(--quote-color);
+
+      :deep(.el-input__inner) {
+        padding-left: 38px;
       }
     }
 
-    /* 提交按钮容器样式 */
-    .submit-container {
-      height: 28px;
-      display: flex;
-      justify-content: space-between;
+    .el-input {
       width: 100%;
 
-      /* emoji表情选择按钮 */
-      .emoji-button {
-        width: 32px;
-        height: 28px;
-        border-radius: 4px;
-        background-color: #f4f1ec;
+      :deep(.el-input__wrapper) {
+        min-height: 40px;
+        padding: 0 12px;
+        background: var(--white);
+        border: 1px solid #aeb8c2;
+        border-radius: 7px;
+        box-shadow: none;
+        transition: border-color 160ms ease, background-color 160ms ease;
+
+        &:hover {
+          box-shadow: none;
+        }
+
+        &.is-focus {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 14%, transparent);
+        }
+      }
+
+      :deep(.el-input__inner) {
+        width: 100%;
         color: var(--light-dark);
-        border: 1px solid #ded8cf;
-        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        background: transparent;
+        border: 0;
+        font: inherit;
+        font-size: 0.9rem;
+        text-indent: 0;
+        outline: 0;
 
-        .emoji-icon {
-          font-size: 16px;
-          cursor: pointer;
-          line-height: 1;
-        }
-        
-        &:hover {
-          background-color: #ebe5dc;
-          border-color: #cfc6ba;
-          transform: translateY(-1px);
-        }
-      }
-
-      /* 提交按钮样式 */
-      .comment-form-submit {
-        width: 80px;
-        height: 28px;
-        background: var(--submit-button);
-        border: none;
-        color: var(--white);
-        font-weight: 600;
-        letter-spacing: 8px;
-        text-indent: 8px;
-
-        &:hover {
-        background: var(--blue);  // 悬浮时颜色变化
-        transform: translateY(-1px);  // 轻微上浮效果
-      }
-
-        &:focus {
-          animation: pulse 0.5s;
+        &::placeholder {
+          color: var(--quote-color);
         }
       }
     }
 
-    /* 提交按钮动画 */
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.05);
-      }
-      100% {
-        transform: scale(1);
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+
+  .avatar-slide-fade-enter-active,
+  .avatar-slide-fade-leave-active,
+  .avatar-options-slide-fade-enter-active,
+  .avatar-options-slide-fade-leave-active {
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  .avatar-slide-fade-enter-from,
+  .avatar-slide-fade-leave-to {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+
+  .avatar-options-slide-fade-enter-from,
+  .avatar-options-slide-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  .comment-editor {
+    overflow: hidden;
+    border: 1px solid #aeb8c2;
+    border-radius: 10px;
+    background: var(--white);
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+
+    &:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 14%, transparent);
+    }
+  }
+
+  .comment-editor__content {
+    margin: 0;
+
+    :deep(.el-form-item__content) {
+      display: block;
+      line-height: normal;
+    }
+
+    .el-textarea {
+      display: block;
+
+      :deep(.el-textarea__inner) {
+        display: block;
+        min-height: 88px !important;
+        padding: 14px 15px 10px;
+        color: var(--light-dark);
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        font: inherit;
+        font-size: 0.94rem;
+        line-height: 1.55;
+        resize: none;
+        outline: 0;
+
+        &::placeholder {
+          color: var(--quote-color);
+        }
       }
     }
   }
+
+  .submit-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 48px;
+    padding: 6px 10px;
+
+    .emoji-button {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      color: var(--quote-color);
+      background: transparent;
+      border: 0;
+      border-radius: 7px;
+      box-shadow: none;
+      transition: color 150ms ease, background-color 150ms ease;
+
+      &:hover {
+        color: var(--dark);
+        background: var(--primary-soft);
+        transform: none;
+      }
+
+      .emoji-icon {
+        font-size: 18px;
+        line-height: 1;
+      }
+    }
+
+    .comment-form-submit {
+      width: auto;
+      min-width: 72px;
+      height: 34px;
+      padding: 0 14px;
+      color: var(--white);
+      background: var(--submit-button);
+      border: 0;
+      border-radius: 999px;
+      font: inherit;
+      font-size: 0.84rem;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-indent: 0;
+      transition: background-color 150ms ease, transform 150ms ease;
+
+      &:hover {
+        background: var(--blue);
+        transform: none;
+      }
+    }
+  }
+
+  &.comment-form--reply {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+
+    .comment-form-input-row {
+      gap: 4px;
+      padding: 5px 9px;
+      background: #3a4047;
+
+      :deep(.el-form-item) {
+        margin-bottom: 0;
+      }
+
+      :deep(.el-input__wrapper) {
+        min-height: 36px;
+        padding-inline: 9px;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      :deep(.el-input__inner) {
+        color: #f0f1f2;
+        font-size: 0.84rem;
+
+        &::placeholder {
+          color: #b8bdc3;
+        }
+      }
+    }
+
+    .comment-editor {
+      border-color: #5a6067;
+      border-radius: 10px;
+      background: #30363d;
+
+      &:focus-within {
+        border-color: #858b91;
+        box-shadow: none;
+      }
+    }
+
+    .comment-editor__content .el-textarea :deep(.el-textarea__inner) {
+      min-height: 94px !important;
+      color: #f0f1f2;
+      background: #30363d;
+      border-radius: 7px;
+
+      &::placeholder {
+        color: #b8bdc3;
+      }
+    }
+
+    .submit-container {
+      border-top: 0;
+      padding-top: 2px;
+      background: #30363d;
+
+      .emoji-button {
+        color: #c9cdd1;
+
+        &:hover {
+          color: #ffffff;
+          background: #41474e;
+        }
+      }
+
+      .comment-form-submit {
+        min-width: 68px;
+        height: 32px;
+        padding: 0 12px;
+        color: #f0f1f2;
+        background: #515960;
+        border-radius: 7px;
+        font-size: 0.82rem;
+        font-weight: 500;
+
+        &:hover {
+          background: #626a72;
+        }
+      }
+    }
+  }
+}
 
   /* 添加表情类型选择器样式 */
 .emoji-type-selector {
@@ -680,5 +863,51 @@ const checkCostumAvatar = async () => {
 :deep(.emoji-popover) {
   padding: 12px;
   max-width: 320px;
+}
+
+:global(.avatar-customizer) {
+  padding: 10px;
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+
+  .el-input__wrapper {
+    min-height: 38px;
+    background: var(--white);
+    border: 1px solid #aeb8c2;
+    border-radius: 7px;
+    box-shadow: none;
+  }
+
+  .el-input__inner {
+    color: var(--light-dark);
+    font: inherit;
+    font-size: 0.9rem;
+  }
+
+  &.avatar-customizer--reply {
+    background: #30363d;
+    border-color: #5a6067;
+
+    .el-input__wrapper {
+      background: #252a30;
+      border-color: #5a6067;
+    }
+
+    .el-input__inner {
+      color: #f0f1f2;
+
+      &::placeholder {
+        color: #b8bdc3;
+      }
+    }
+  }
+}
+
+@keyframes avatar-spinner {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

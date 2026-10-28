@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import wasm from 'vite-plugin-wasm'
 import path from 'path'
 import viteCompression from 'vite-plugin-compression'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -32,6 +33,7 @@ const backendProxy = {
 export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
+    wasm(),
     bundleSizeBudget('frontend'),
     mode === 'analyze' && visualizer({
       filename: bundleReportPath('frontend'),
@@ -83,6 +85,19 @@ export default defineConfig(({ mode }) => ({
       resolvers: [ElementPlusResolver()],
     }),
   ].filter(Boolean),
+  // Rapier is fetched as a separate WASM asset only when the 3D scene loads.
+  build: {
+    target: 'es2022',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/@dimforge/rapier3d/')) return 'ema-physics'
+          if (id.includes('/three/')) return 'ema-three'
+        },
+      },
+    },
+  },
+  optimizeDeps: { exclude: ['@dimforge/rapier3d'] },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

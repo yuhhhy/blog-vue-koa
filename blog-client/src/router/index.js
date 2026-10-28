@@ -2,8 +2,28 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { apiCreateVisitor } from '@/api/visitor.js'
 import { apiUpdateWebsiteView } from "@/api/websiteData.js"
 import Layout from '@/views/Layout/index.vue'
+import HomePage from '@/views/Home/index.vue'
+import ExplorePage from '@/views/Explore/index.vue'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import { recordHostedPage } from '@/utils/hostedAnalytics.js'
+
+let isExploreScrollRangePreserved = false
+let previousBodyMinHeight = ''
+
+const preserveExploreScrollRange = () => {
+    if (!isExploreScrollRangePreserved) {
+        previousBodyMinHeight = document.body.style.minHeight
+    }
+    document.body.style.minHeight = `${document.documentElement.scrollHeight}px`
+    isExploreScrollRangePreserved = true
+}
+
+const releaseExploreScrollRange = () => {
+    if (!isExploreScrollRangePreserved) return
+    document.body.style.minHeight = previousBodyMinHeight
+    previousBodyMinHeight = ''
+    isExploreScrollRangePreserved = false
+}
 
 const routes = [
     {
@@ -12,23 +32,55 @@ const routes = [
         children: [
             {
                 path: '',
-                name: 'Redirect',
-                redirect: '/home'
+                name: 'Home',
+                component: HomePage,
+                meta: {
+                    title: '一曝十寒',
+                    keepAlive: true
+                }
             },
             {
-                path: '/home',
-                name: 'Home',
-                component: () => import('@/views/Home/index.vue'),
+                path: 'explore',
+                name: 'Explore',
+                component: ExplorePage,
                 meta: {
-                    title: '一曝十寒'
+                    title: '探索 | 一曝十寒',
+                    backgroundColor: '#e7d3ad',
+                    keepAlive: true
                 }
+            },
+            {
+                path: 'home',
+                redirect: '/'
             },
             {
                 path: 'about',
                 name: 'About',
                 component: () => import('@/views/About/index.vue'),
                 meta: {
-                    title: '关于 | 一曝十寒'
+                    title: '关于 | 一曝十寒',
+                    backgroundColor: '#f3d2dd',
+                    backgroundShape: 'about'
+                }
+            },
+            {
+                path: 'essays',
+                name: 'Essays',
+                component: () => import('@/views/Essays/index.vue'),
+                meta: {
+                    title: '随笔 | 一曝十寒',
+                    backgroundColor: '#c8e4f3',
+                    backgroundShape: 'essays'
+                }
+            },
+            {
+                path: 'archive',
+                name: 'Archive',
+                component: () => import('@/views/Archive/index.vue'),
+                meta: {
+                    title: '归档 | 一曝十寒',
+                    backgroundColor: '#d9e9cb',
+                    backgroundShape: 'archive'
                 }
             },
             {
@@ -37,16 +89,14 @@ const routes = [
                 component: () => import('@/views/Blog/index.vue'),
                 meta: {
                     title: '文章详情 | 一曝十寒',
-                    dynamicTitle: true
+                    dynamicTitle: true,
+                    backgroundColor: '#fafcf9',
+                    backgroundShape: 'blog'
                 }
             },
             {
                 path: 'links',
-                name: 'Links',
-                component: () => import('@/views/Links/index.vue'),
-                meta: {
-                    title: '友链 | 一曝十寒'
-                }
+                redirect: '/explore#links'
             },
             {
                 path: 'info',
@@ -65,9 +115,27 @@ const router = createRouter({
     linkActiveClass: 'active', // 设置Vue Router模糊匹配类名
     routes,
     scrollBehavior(to, from, savedPosition) {
-        // 如果是锚点导航，不做处理
         if (to.hash) {
-            return
+            return {
+                el: to.hash,
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+            }
+        }
+
+        if (
+            (to.name === 'Home' && from.name === 'Explore')
+            || (to.name === 'Explore' && from.name === 'Home')
+        ) {
+            return false
+        }
+
+        // 归档页退出动画需要保留用户点击文章时的可视区域；
+        // 文章页会在动画完成后再无缝回到顶部。
+        if (
+            (to.name === 'Blog' && from.name === 'Archive')
+            || (to.name === 'Archive' && from.name === 'Blog')
+        ) {
+            return false
         }
 
         // 如果有保存的位置，优先使用
@@ -80,15 +148,32 @@ const router = createRouter({
     }
 })
 
-router.beforeEach(async (to, from) => {
+router.beforeEach((to, from) => {
+    if (from.name === 'Explore' && to.name === 'Home') {
+        preserveExploreScrollRange()
+        return
+    }
+
+    if (!(from.name === 'Home' && to.name === 'Explore')) {
+        releaseExploreScrollRange()
+    }
+})
+
+router.afterEach((to, from, failure) => {
+    if (failure) {
+        releaseExploreScrollRange()
+        return
+    }
     // 设置页面标题
     if (to.meta?.title && !to.meta.dynamicTitle) {
         document.title = to.meta.title
     }
+
 })
 
 // 在路由导航完成后执行统计，不会阻塞页面渲染
-router.afterEach((to, from) => {
+router.afterEach((to, from, failure) => {
+    if (failure) return
     // 如果是锚点导航，不做处理
     if (to.hash) {
         return

@@ -1,7 +1,11 @@
+import { respondLinkAvatar } from '../utils/linkAvatar.js'
 import Router from '@koa/router'
 import jwt from 'jsonwebtoken'
 import { randomUUID } from 'node:crypto'
 import KEY from '../config/key.js'
+import { requireAdmin } from '../middlewares/auth.js'
+import { normalizeEssayInput } from '../utils/essay.js'
+import { parseBrowserAndOS } from '../utils/index.js'
 import {
     createMockWebsiteData,
     mockComments,
@@ -55,6 +59,7 @@ const state = {
     users: clone(mockUsers),
     visitors: clone(mockVisitors),
     drafts: [],
+    essays: [],
     website: createMockWebsiteData(),
 }
 
@@ -99,13 +104,6 @@ const publicComments = (blogId) => {
     return buildTree()
 }
 
-const getAdjacentBlog = (id, direction) => {
-    const sorted = [...state.blogs].sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
-    const index = sorted.findIndex((blog) => blog.id === id)
-    if (index < 0) return null
-    return direction === 'prev' ? sorted[index - 1] : sorted[index + 1]
-}
-
 router.get('/health', (ctx) => {
     ctx.body = { status: 'ok', dataSource: 'mock' }
 })
@@ -117,18 +115,46 @@ router.get('/blog/bloglist', (ctx) => {
         .map((blog) => ({ ...clone(blog), excerpt: createExcerpt(contentMap.get(blog.id)) }))
 })
 
-router.get('/blog/prev/:id', (ctx) => {
-    const blog = getAdjacentBlog(ctx.params.id, 'prev')
-    ctx.body = blog
-        ? { found: true, message: '找到上一篇博客', prevBlog: clone(blog) }
-        : { found: false, message: '已经是最新一篇博客' }
+router.get('/essays', (ctx) => {
+    ctx.body = [...state.essays]
+        .sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
+        .map(clone)
 })
 
-router.get('/blog/next/:id', (ctx) => {
-    const blog = getAdjacentBlog(ctx.params.id, 'next')
-    ctx.body = blog
-        ? { found: true, message: '找到下一篇博客', nextBlog: clone(blog) }
-        : { found: false, message: '已经是最后一篇博客' }
+router.post('/essays', requireAdmin, (ctx) => {
+    const now = new Date()
+    const values = normalizeEssayInput(ctx.request.body, now)
+    if (values.error) ctx.throw(422, values.error)
+
+    const essay = {
+        id: randomUUID(),
+        ...values,
+        createTime: now.toISOString(),
+        updateTime: now.toISOString(),
+    }
+    state.essays.push(essay)
+    ctx.status = 201
+    ctx.body = clone(essay)
+})
+
+router.put('/essays/:id', requireAdmin, (ctx) => {
+    const essay = findById(state.essays, ctx.params.id)
+    if (!essay) return notFound(ctx, '随笔不存在')
+
+    const values = normalizeEssayInput({
+        title: ctx.request.body?.title ?? essay.title,
+        content: ctx.request.body?.content ?? essay.content,
+    }, new Date(essay.createTime))
+    if (values.error) ctx.throw(422, values.error)
+
+    Object.assign(essay, values, { updateTime: new Date().toISOString() })
+    ctx.body = clone(essay)
+})
+
+router.delete('/essays/:id', requireAdmin, (ctx) => {
+    if (!findById(state.essays, ctx.params.id)) return notFound(ctx, '随笔不存在')
+    state.essays = state.essays.filter((essay) => essay.id !== ctx.params.id)
+    setNoContent(ctx)
 })
 
 router.get('/blog/:id', (ctx) => {
@@ -238,6 +264,7 @@ router.get('/comment/:id', (ctx) => {
 })
 
 router.post('/comment', (ctx) => {
+    const environment = parseBrowserAndOS(ctx.get('user-agent'))
     const comment = {
         id: ctx.request.body.id || randomUUID(),
         blogId: ctx.request.body.blogId,
@@ -246,6 +273,8 @@ router.post('/comment', (ctx) => {
         username: ctx.request.body.username || '匿名读者',
         email: ctx.request.body.email || 'anonymous@example.com',
         website: ctx.request.body.website || '',
+        ...environment,
+        timezone: ctx.request.body.timezone || 'Asia/Shanghai',
         content: ctx.request.body.content || '',
         createTime: ctx.request.body.createTime || new Date().toISOString(),
         showForm: false,
@@ -381,6 +410,10 @@ router.put('/website/totalwordcount', (ctx) => {
 
 router.get('/links', (ctx) => {
     ctx.body = state.links.map(clone)
+})
+
+router.get('/links/:id/avatar', async (ctx) => {
+    await respondLinkAvatar(ctx, state.links.find(link => link.id === ctx.params.id))
 })
 
 router.post('/links', (ctx) => {

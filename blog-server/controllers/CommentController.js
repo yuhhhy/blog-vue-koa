@@ -2,6 +2,7 @@ import { Comment } from '../models/CommentSchema.js'
 import { WebsiteData } from '../models/WebsiteDataSchema.js'
 import { Blog } from '../models/BlogSchema.js'
 import { sendEmail } from '../utils/sendEmail.js'
+import { parseBrowserAndOS } from '../utils/index.js'
 
 /**
  * Comment Controller
@@ -11,7 +12,7 @@ import { sendEmail } from '../utils/sendEmail.js'
 
 // 获取网站的所有评论
 export const getAllComments = async (ctx) => {
-    const allComments = await Comment.find({})
+    const allComments = await Comment.find({}).sort({ createTime: -1 })
 
     ctx.status = 200
     ctx.body = allComments
@@ -45,7 +46,8 @@ export const getComments = async (ctx) => {
 
 // 创建新评论
 export const createComment = async (ctx) => {
-    const newComment = new Comment(ctx.request.body)
+    const environment = parseBrowserAndOS(ctx.get('user-agent'))
+    const newComment = new Comment({ ...ctx.request.body, ...environment })
     try {
         // 保存评论到数据库
         await newComment.save()

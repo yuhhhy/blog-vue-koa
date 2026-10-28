@@ -1,19 +1,20 @@
 import Router from '@koa/router'
 import multer from '@koa/multer'
-import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog, getPrevBlog, getNextBlog } from '../controllers/BlogController.js'
+import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog } from '../controllers/BlogController.js'
 import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
 import { createArticleDraft, deleteArticleDraft, getArticleDraft, getArticleDrafts, publishArticleDraft, updateArticleDraft } from '../controllers/ArticleDraftController.js'
 import { getWebsiteData, getWebsiteDataCount, updateWebsiteVisit, updateWebsiteView, updateWebsiteComment, updateWebsiteArticle, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
 import { getAllComments, getComments, createComment, reviewComment, deleteComment, updateComment, getPendingComments, sendEmailNotification } from '../controllers/CommentController.js'
 import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
 import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
-import { getLinks, createLink, deleteLink, updateLink } from '../controllers/LinksController.js'
+import { getLinks, createLink, deleteLink, updateLink, getLinkAvatar } from '../controllers/LinksController.js'
 import { getImageFiles, deleteImageFile, reuploadImageFile, generateImageFileVariants } from "../controllers/FilesController.js"
 import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus, initLargeUpload, mergeLargeFile, uploadLargeChunk, verifyLargeFile } from '../controllers/LargeFilesController.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { storage } from '../config/upload.js'
 import { convertImageToAvif, generateImageVariants } from '../utils/imageVariants.js'
 import { checkReadiness } from '../utils/readiness.js'
+import { getEssays, createEssay, updateEssay, deleteEssay } from '../controllers/EssayController.js'
 
 const router = new Router({ prefix: '/api' })
 const upload = multer({ storage })
@@ -63,12 +64,6 @@ router.delete('/blog', requireAdmin, deleteAllBlogs)
 // 更新博客
 router.put('/blog/:id', requireAdmin, updateBlog)
 
-// 获取上一篇博客
-router.get('/blog/prev/:id', getPrevBlog)
-
-// 获取下一篇博客
-router.get('/blog/next/:id', getNextBlog)
-
 /**
  * Blog Content API
  */
@@ -105,6 +100,14 @@ router.get('/drafts/:id', requireAdmin, getArticleDraft)
 router.put('/drafts/:id', requireAdmin, updateArticleDraft)
 router.delete('/drafts/:id', requireAdmin, deleteArticleDraft)
 router.post('/drafts/:id/publish', requireAdmin, publishArticleDraft)
+
+/**
+ * Essay API
+ */
+router.get('/essays', getEssays)
+router.post('/essays', requireAdmin, createEssay)
+router.put('/essays/:id', requireAdmin, updateEssay)
+router.delete('/essays/:id', requireAdmin, deleteEssay)
 
 
 /**
@@ -204,6 +207,7 @@ router.delete('/visitor/:id', requireAdmin, deleteVisitor)
  */
 // 获取所有友链
 router.get('/links', getLinks)
+router.get('/links/:id/avatar', getLinkAvatar)
 
 // 创建友链
 router.post('/links', requireAdmin, createLink)

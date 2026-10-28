@@ -1,14 +1,35 @@
 <script setup>
 import ArticleFooter from "../Blog/components/ArticleFooter.vue"
-import { getLinks } from "@/api/links.js"
-import { ref, onMounted } from "vue"
+import { computed, onMounted, ref } from "vue"
+import { useLinks } from "@/composables/useLinks.js"
 
-const links = ref([])
+import EmaRack from '@/components/ema/EmaRack.vue'
+defineProps({ preview: Boolean })
+const loadError = ref(false)
+const loading = ref(true)
+const { links, loadLinks } = useLinks()
+const linkGroups = computed(() => [
+    {
+        key: 'friend',
+        title: '朋友们',
+        description: '以下是目前与我互相陪伴的站点，点击绘马即可探索他们的世界～ 如果你也想出现在这里，请继续往下看规则',
+        links: links.value.filter((link) => link.category !== 'recommended'),
+    },
+    {
+        key: 'recommended',
+        title: '推荐站点',
+        description: '这些是我单向推荐、值得一看的站点。',
+        links: links.value.filter((link) => link.category === 'recommended'),
+    },
+].filter((group) => group.links.length))
 
-onMounted(async () => {
-    const res = await getLinks()
-    links.value = res
-})
+const fetchLinks = async (force = false) => {
+    loading.value = true
+    loadError.value = false
+    try { await loadLinks({ force }) } catch { loadError.value = true }
+    finally { loading.value = false }
+}
+onMounted(() => fetchLinks())
 
 </script>
 
@@ -24,26 +45,14 @@ onMounted(async () => {
                 <p>我珍视真诚的分享、独特的见解和持续创作的坚持。如果你也建立了一个小小的精神角落，记录生活、表达思考、分享热爱，并且你觉得我们有某种契合，欢迎留言和互加友链。</p>
                 <p>我会认真拜访你的“空间”，如果感觉有缘分，就会将你加入我的友链列表。即使暂时不互相加为友链，也期待与你成为朋友或交流想法！感谢每一位愿意分享小站的朋友！</p>
 
-                <h4>朋友们</h4>
-                <p>以下是目前与我互相陪伴的站点，点击头像即可探索他们的世界～ 如果你也想出现在这里，请继续往下看规则</p>
-                <!-- 友链展示区域 -->
-                <div class="links-display">
-                    <!-- 一条友链 -->
-                    <div class="link-item" v-for="link in links">
-                        <div class="link-avatar">
-                            <a :href="link.site" target="_blank">
-                                <img :src="link.avatar" alt="link-avatar">
-                            </a>
-                        </div>
-                        <div class="link-info">
-                            <a :href="link.site" target="_blank" style="color: var(--light-dark);">
-                                <div class="link-title">{{ link.name }}</div>
-
-                            </a>
-                            <div class="link-motto">{{ link.description }}</div>
-                        </div>
-                    </div>
-                </div>
+                <p v-if="loading" role="status">正在挂上朋友们的绘马…</p>
+                <p v-else-if="loadError" role="alert">友链暂时没有加载成功。<button type="button" @click="fetchLinks(true)">重新加载</button></p>
+                <p v-else-if="!links.length">木架已备好，静候有缘的小站。</p>
+                <section v-for="group in linkGroups" :key="group.key" class="link-group">
+                    <h4>{{ group.title }}</h4>
+                    <p>{{ group.description }}</p>
+                    <EmaRack :links="group.links" :group="group.key" :preview="preview" />
+                </section>
 
                 <h4>友链申请规则</h4>
                 <ul>
@@ -55,20 +64,18 @@ onMounted(async () => {
                 </ul>
 
                 <p>友链申请格式与本站信息如下：</p>
-                <blockquote>
                 <ul>
-                    <li>名称：一曝十寒</li>
-                    <li>简介：纵使不安彷徨，即便茫然无措，也依然迈步前行</li>
-                    <li>网站：https://yuhhhy.cn/</li>
-                    <li>头像：https://yuhhhy.cn/images/avatar.jpg</li>
+                    <li>Name：一曝十寒</li>
+                    <li>Desc：纵使不安彷徨，即便茫然无措，也依然迈步前行</li>
+                    <li>Link：https://yuhhhy.cn/</li>
+                    <li>Avatar：https://yuhhhy.cn/images/avatar.jpg</li>
                 </ul>
-                </blockquote>
 
                 <h4>申请方式</h4>
                 <ol>
                     <li>在当前页面评论区评论</li>
                     <address>
-                        <li>或者你也可以给<a href="mailto:yuhhhy109@163.com">我的邮箱</a>发送邮件</li>
+                        <li>发送邮件至：<a href="mailto:281423846@qq.com">我的邮箱</a></li>
                     </address>
                 </ol>
             </div>
@@ -85,77 +92,15 @@ onMounted(async () => {
     min-height: calc(100vh - 75px);
     
     .links {
-        width: min(960px, calc(100% - 48px));
-        margin: 0 auto;
         padding: 40px 0;
         height: 100%;
 
         .links-article {
             .links-article-content {
-                padding: 0 30px 30px 30px;
+                padding-bottom: 30px;
                 line-height: 1.8;
                 font-family: var(--font-serif);
                 color: var(--light-dark);
-
-                .links-display {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 20px;
-                    
-                    .link-item {
-                        border-radius: 8px;
-                        background-color: var(--links-background);
-                        display: flex;
-                        flex-direction: row;
-
-
-                        .link-avatar {
-                            background: linear-gradient(to right, var(--white), var(--links-background));
-                            height: 75px;
-                            width: 75px;
-
-                            img {
-                                border-radius: 50%;
-                                height: 75px;
-                                width: 75px;
-                                min-width: 75px;
-                                margin: 0;
-
-                                // 旋转效果，离开时反向
-                                &:hover {
-                                    transform: rotate(720deg);
-                                    transition: transform 0.5s ease-in-out;
-                                }
-                                transition: transform 0.5s ease-in-out;
-                            }
-                        }
-
-                        .link-info {
-                            padding-left: 15px;
-
-                            .link-title {
-                                font-size: 1.1rem;
-                                font-weight: bold;
-                                margin-bottom: 0.1em;
-                                &:hover {
-                                    color: var(--blue);
-                                }
-                            }
-                            .link-motto {
-                                color: var(--light-dark);
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                                display: -webkit-box;
-                                line-clamp: 2;  // 限制显示两行，多余部分用省略号
-                                -webkit-box-orient: vertical;
-                                line-height: 1.3;
-                            }
-
-                        }
-
-                    }
-
-                }
 
                 h1 {
                     font-size: 2em;
@@ -248,18 +193,13 @@ onMounted(async () => {
             }
         }
         @media (max-width: 768px) {
-            width: calc(100% - 30px);
             padding: 20px 0;
 
             .links-article {
                 .links-article-content {
                     padding-bottom: 30px;
-                    padding-left: 15px;
-                    padding-right: 15px;
 
-                    .links-display {
-                        grid-template-columns: repeat(1, 1fr);
-                    }
+
                 }
             }
         }

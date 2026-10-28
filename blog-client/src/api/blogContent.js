@@ -1,5 +1,8 @@
 import request from "@/utils/request.js"
 
+const blogContentCache = new Map()
+const blogContentRequests = new Map()
+
 /**
  * Blog Content API
  * @returns {Promise}
@@ -7,11 +10,30 @@ import request from "@/utils/request.js"
 
 // 获取博客内容
 export function apiGetBlogContent(blogId) {
-    return request({
+    if (blogContentCache.has(blogId)) {
+        return Promise.resolve(blogContentCache.get(blogId))
+    }
+
+    if (blogContentRequests.has(blogId)) {
+        return blogContentRequests.get(blogId)
+    }
+
+    const contentRequest = request({
         url: `/blogcontent/${blogId}`,
         method: 'GET'
     })
+        .then((data) => {
+            blogContentCache.set(blogId, data)
+            return data
+        })
+        .finally(() => blogContentRequests.delete(blogId))
+
+    blogContentRequests.set(blogId, contentRequest)
+    return contentRequest
 }
+
+export const apiPrefetchBlogContent = (blogId) => apiGetBlogContent(blogId)
+export const getCachedBlogContent = (blogId) => blogContentCache.get(blogId)
 
 // 获取所有博客内容
 export function apiGetBlogContentList() {

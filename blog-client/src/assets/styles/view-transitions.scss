@@ -1,0 +1,82 @@
+::view-transition-group(root) {
+    animation-duration: 400ms;
+    animation-timing-function: ease;
+}
+
+::view-transition-old(root) {
+    animation: route-view-out 240ms ease both;
+}
+
+::view-transition-new(root) {
+    animation: route-view-in 400ms ease both;
+}
+
+html[data-route-transition]::view-transition-group(root) {
+    z-index: 1;
+    animation-duration: 500ms;
+}
+
+html[data-route-transition]::view-transition-old(root) {
+    animation: none;
+    opacity: 0;
+}
+
+html[data-route-transition]::view-transition-new(root) {
+    animation: none;
+    opacity: 1;
+}
+
+html[data-route-transition]::view-transition-group(section-title) {
+    z-index: 2;
+    animation-duration: 600ms;
+    animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+html[data-route-transition]::view-transition-old(section-title),
+html[data-route-transition]::view-transition-new(section-title) {
+    height: 100%;
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+html[data-route-transition]::view-transition-old(section-title) {
+    opacity: 0;
+}
+
+html[data-route-transition]::view-transition-group(home-corner-return) {
+    z-index: 3;
+    animation-duration: 600ms;
+    animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+html[data-route-transition]::view-transition-old(home-corner-return),
+html[data-route-transition]::view-transition-new(home-corner-return) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+html[data-route-transition]::view-transition-old(home-corner-return) {
+    opacity: 0;
+}
+
+@keyframes route-view-out {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes route-view-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(root),
+    ::view-transition-old(root),
+    ::view-transition-new(root),
+    ::view-transition-group(section-title),
+    ::view-transition-group(home-corner-return) {
+        animation-duration: 1ms;
+    }
+}

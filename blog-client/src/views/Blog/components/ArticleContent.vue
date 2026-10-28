@@ -74,36 +74,35 @@ onBeforeUnmount(cleanupAnimations)
 <!-- 这个不能加scoped，因为是全局的html样式 -->
 <style lang="scss">
 .article-content {
-    padding: 0 30px;
     line-height: 1.8;
-    font-family: var(--font-serif);
+    font-family: var(--font-system-sans);
     color: var(--light-dark);
 
     .markdown-content {
         position: relative;
 
         h1 {
-            font-size: 2em;
+            font-size: 1.6rem;
         }
 
         h2 {
-            font-size: 1.8em;
+            font-size: 1.5rem;
         }
 
         h3 {
-            font-size: 1.6em;
+            font-size: 1.4rem;
         }
 
         h4 {
-            font-size: 1.4em;
+            font-size: 1.3rem;
         }
 
         h5 {
-            font-size: 1.2em;
+            font-size: 1.2rem;
         }
 
         h6 {
-            font-size: 1em;
+            font-size: 1.1rem;
         }
 
         h1, h2, h3, h4, h5, h6 
@@ -159,9 +158,6 @@ onBeforeUnmount(cleanupAnimations)
             text-decoration: none;
             word-break: break-word; // 文字折行
 
-            &:hover {
-                text-decoration: underline;
-            }
         }
 
         blockquote {
@@ -190,15 +186,15 @@ onBeforeUnmount(cleanupAnimations)
 @media (max-width: 768px) {
     .article-content {
         padding-bottom: 30px;
-        padding-left: 15px;
-        padding-right: 15px;
 
         .markdown-content {
 
-            h1, h2, h3, h4 
-            {
-                font-size: 20px;
-            }
+            h1 { font-size: 1.4rem; }
+            h2 { font-size: 1.32rem; }
+            h3 { font-size: 1.24rem; }
+            h4 { font-size: 1.16rem; }
+            h5 { font-size: 1.08rem; }
+            h6 { font-size: 1rem; }
 
             p, ul, ol, li, code, pre, blockquote 
             {

@@ -8,7 +8,138 @@ const mockCovers = {
 
 const cover = (name) => mockCovers[name]
 
+const archiveMockTopics = [
+    ['dev-vue-transition', 'Vue 页面切换动画的状态管理', '2026-08-24T08:20:00.000Z', ['Vue', '动画']],
+    ['dev-css-clip-path', '用 clip-path 设计有方向感的页面过渡', '2026-07-12T04:40:00.000Z', ['CSS', '动效']],
+    ['dev-koa-middleware', 'Koa 中间件的执行顺序与错误处理', '2026-06-03T10:15:00.000Z', ['Koa', '后端']],
+    ['dev-image-pipeline', '博客图片压缩与响应式格式实践', '2026-05-18T02:30:00.000Z', ['图片', '性能优化']],
+    ['dev-vue-composable', '把页面逻辑整理成可复用的 Composable', '2026-04-07T12:05:00.000Z', ['Vue', '工程化']],
+    ['dev-accessibility', '给个人博客补上可访问性细节', '2026-03-21T06:50:00.000Z', ['无障碍', '前端']],
+    ['dev-api-design', '从博客接口重构 REST API 的边界', '2026-02-11T09:10:00.000Z', ['API', '架构']],
+    ['dev-design-tokens', '用设计变量统一博客的视觉语言', '2026-01-05T03:25:00.000Z', ['CSS', '设计系统']],
+    ['dev-year-review-2025', '2025 年度开发与写作复盘', '2025-12-28T13:00:00.000Z', ['复盘', '写作']],
+    ['dev-web-fonts', '中文博客字体加载策略', '2025-10-16T07:35:00.000Z', ['字体', '性能优化']],
+    ['dev-mongodb-migration', '一次 MongoDB 数据迁移记录', '2025-08-09T01:45:00.000Z', ['MongoDB', '数据']],
+    ['dev-vite-chunks', '拆解 Vite 构建产物与分包策略', '2025-06-22T11:20:00.000Z', ['Vite', '工程化']],
+    ['dev-comment-system', '从零实现一套树形评论系统', '2025-04-14T05:55:00.000Z', ['评论', '全栈']],
+    ['dev-theme-switch', '深浅色主题切换的实现细节', '2025-02-02T09:40:00.000Z', ['主题', 'CSS']],
+    ['dev-year-review-2024', '2024 年度个人项目复盘', '2024-12-26T08:00:00.000Z', ['复盘', '个人项目']],
+    ['dev-deploy-nginx', '使用 Nginx 部署 Vue 与 Koa 应用', '2024-10-19T03:15:00.000Z', ['部署', 'Nginx']],
+    ['dev-error-boundary', '前端异常监控与错误边界', '2024-08-08T12:30:00.000Z', ['监控', '前端']],
+    ['dev-auth-jwt', 'JWT 登录鉴权的完整链路', '2024-06-17T06:10:00.000Z', ['JWT', '安全']],
+    ['dev-markdown-render', 'Markdown 渲染、安全过滤与代码高亮', '2024-04-06T10:45:00.000Z', ['Markdown', '安全']],
+    ['dev-first-post', '为什么决定重新做一个个人博客', '2024-02-10T02:20:00.000Z', ['博客', '随笔']],
+]
+
+const archiveCoverNames = ['vue-koa', 'sage-green', 'vite', 'mongodb', 'writing']
+
+const createArchiveMockPost = ([id, title, createTime, tags], index) => ({
+    id,
+    title,
+    author: 'Yuhhhy',
+    coverImage: cover(archiveCoverNames[index % archiveCoverNames.length]),
+    createTime,
+    updateTime: createTime,
+    tags,
+    viewCount: 96 + index * 17,
+    likeCount: 8 + (index * 3) % 29,
+    content: `# ${title}
+
+这是一篇用于展示博客归档长列表表现的示例文章。内容保留了真实文章的标题、摘要和正文层级，因此可以正常进入文章详情页检查阅读体验。
+
+## 背景
+
+项目在持续迭代时，文章数量会逐渐增加。归档页需要在不同年份、不同标题长度和较长滚动距离下保持清晰的阅读节奏。
+
+## 实践记录
+
+- 保持列表日期对齐
+- 让长标题能够自然换行
+- 使用年份划分内容层级
+- 确保文章详情与返回操作正常工作
+
+## 小结
+
+先用接近真实规模的数据观察页面，再决定间距、字号和动画细节，会比只看少量示例更可靠。
+`,
+})
+
 export const mockPosts = [
+    {
+        id: 'dev-markdown-comments-test',
+        title: 'Markdown 与多级评论测试',
+        author: 'Yuhhhy',
+        coverImage: cover('vue-koa'),
+        createTime: '2026-10-28T11:00:00.000Z',
+        updateTime: '2026-10-28T11:00:00.000Z',
+        tags: ['Markdown', '评论测试', 'UI'],
+        viewCount: 0,
+        likeCount: 0,
+        content: `# 一级标题：Markdown 展示测试
+
+这篇文章用于检查博客正文的 **Markdown 排版**、中文与 English 混排，以及评论区不同层级的显示。这里有 *斜体*、**粗体**、~~删除线~~、\`行内代码\` 和一个[普通链接](https://example.com)。
+
+## 二级标题：段落与列表
+
+普通段落用于观察行距、字重和长文本换行。Lorem ipsum dolor sit amet, consectetur adipiscing elit. 这是一段中英文混排内容，适合检查字体回退和标点间距。
+
+无序列表：
+
+- 第一项
+- 第二项，包含 **强调文字**
+  - 嵌套项目 A
+  - 嵌套项目 B
+- 第三项
+
+有序列表：
+
+1. 准备内容
+2. 检查显示
+3. 提交评论
+
+### 三级标题：引用
+
+> 这是一个引用块，用于检查边线、缩进和文字颜色。
+>
+> 引用也可以包含 **强调** 和 \`inline code\`。
+
+#### 四级标题：代码块
+
+\`\`\`js
+const comment = {
+  level: 4,
+  text: '中文与 English',
+  visible: true,
+}
+
+console.log('Markdown rendering test', comment)
+\`\`\`
+
+\`\`\`json
+{
+  "article": "dev-markdown-comments-test",
+  "markdown": true,
+  "commentLevels": [1, 2, 3, 4]
+}
+\`\`\`
+
+##### 五级标题：表格与分隔线
+
+| Markdown | 测试内容 | 状态 |
+| --- | --- | --- |
+| 标题 | H1 到 H6 | 正常 |
+| 列表 | 有序、无序、嵌套 | 正常 |
+| 代码 | 行内与代码块 | 正常 |
+
+---
+
+###### 六级标题：图片
+
+![代码编辑器桌面](https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&h=720&q=82)
+
+图片之后的文字，用来确认图片与后续段落之间的间距正常。
+`,
+    },
     {
         id: 'dev-vue-koa',
         title: 'Vue 3 + Koa：从零搭建个人博客',
@@ -162,9 +293,100 @@ app.mount('#app')
 技术内容也可以有温度。哪些地方最困惑、为什么改变方案、最后有什么遗憾，这些都是读者无法从文档里直接获得的部分。
 `,
     },
+    ...archiveMockTopics.map(createArchiveMockPost),
 ]
 
 export const mockComments = [
+    {
+        id: 'md-test-comment-1',
+        blogId: 'dev-markdown-comments-test',
+        parentId: '-1',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=MarkdownReader',
+        username: 'Markdown 读者',
+        email: 'markdown-reader@example.com',
+        website: 'https://example.com',
+        browser: 'Chrome 138.0.0.0',
+        os: 'Android 10',
+        content: '一级评论：昵称带网址链接。代码块背景和标题层级看起来是否正常？',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-27T17:30:00.000Z',
+        showForm: false,
+        hasParent: false,
+        replies: ['md-test-comment-2'],
+        reviewed: true,
+        reviewPassed: true,
+    },
+    {
+        id: 'md-test-comment-2',
+        blogId: 'dev-markdown-comments-test',
+        parentId: 'md-test-comment-1',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=ReplyOne',
+        username: '一级回复',
+        email: 'reply-one@example.com',
+        browser: 'Safari 18.0',
+        os: 'iOS 18.0',
+        content: '二级评论：没有网址，昵称应与正文同色、同字重。',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-27T22:30:00.000Z',
+        showForm: false,
+        hasParent: true,
+        replies: ['md-test-comment-3'],
+        reviewed: true,
+        reviewPassed: true,
+    },
+    {
+        id: 'md-test-comment-3',
+        blogId: 'dev-markdown-comments-test',
+        parentId: 'md-test-comment-2',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=ReplyTwo',
+        username: '二级回复',
+        email: 'reply-two@example.com',
+        website: 'https://example.org',
+        browser: 'Firefox 132.0',
+        os: 'Windows 11',
+        content: '三级评论：继续测试递归缩进、连接线和右侧回复按钮。',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-28T04:30:00.000Z',
+        showForm: false,
+        hasParent: true,
+        replies: ['md-test-comment-4'],
+        reviewed: true,
+        reviewPassed: true,
+    },
+    {
+        id: 'md-test-comment-4',
+        blogId: 'dev-markdown-comments-test',
+        parentId: 'md-test-comment-3',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=ReplyThree',
+        username: '三级回复',
+        email: 'reply-three@example.com',
+        browser: 'Edge 130.0',
+        os: 'macOS 15.0',
+        content: '四级评论：最深这一层仍然可以继续回复。',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-28T10:30:00.000Z',
+        showForm: false,
+        hasParent: true,
+        replies: [],
+        reviewed: true,
+        reviewPassed: true,
+    },
+    {
+        id: 'md-test-comment-5',
+        blogId: 'dev-markdown-comments-test',
+        parentId: '-1',
+        avatar: 'https://api.dicebear.com/9.x/thumbs/svg?seed=Standalone',
+        username: '独立评论',
+        email: 'standalone@example.com',
+        content: '另一条没有回复的一级评论，用于观察评论之间的间距。',
+        timezone: 'Asia/Shanghai',
+        createTime: '2026-10-28T14:30:00.000Z',
+        showForm: false,
+        hasParent: false,
+        replies: [],
+        reviewed: true,
+        reviewPassed: true,
+    },
     {
         id: 'comment-001',
         blogId: 'dev-vue-koa',
@@ -243,6 +465,38 @@ export const mockComments = [
 ]
 
 export const mockLinks = [
+    {
+        id: '20250701222025',
+        name: '石樱灯笼',
+        description: '灵魂沉为石樱，灯笼映出暗影 一介社畜，妄自菲薄。',
+        site: 'https://www.catscarlet.com/',
+        avatar: 'https://www.catscarlet.com/avatar/qmcd-0008x350.jpg',
+        category: 'recommended',
+    },
+    {
+        id: '20261028200821',
+        name: '枸杞加水',
+        description: '分享知识与生活',
+        site: 'https://blog.fiveth.cc/',
+        avatar: 'https://blog.gochi.cn/logo/icon.ico',
+        category: 'recommended',
+    },
+    {
+        id: '20261028210000',
+        name: "I don't wanna go",
+        description: "WELCOME TO idontwannago's site",
+        site: 'https://www.idontwannago.top/',
+        avatar: 'https://www.idontwannago.top/img/fluid.png',
+        category: 'recommended',
+    },
+    {
+        id: '20261028211556',
+        name: '25020jason1728',
+        description: '抖音个人主页',
+        site: 'https://v.douyin.com/h-Lzt62UbIQ/',
+        avatar: 'https://www.douyin.com/favicon.ico',
+        category: 'recommended',
+    },
     {
         id: '1001',
         name: 'Vue.js',
