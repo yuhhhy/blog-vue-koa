@@ -226,8 +226,17 @@ onMounted(() => {
 }
 
 .layout--article-returning::before {
-    transition-duration: 1250ms;
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    animation: article-archive-background-reveal 1250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes article-archive-background-reveal {
+    from {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    to {
+        clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
+    }
 }
 
 .layout--about::after,
