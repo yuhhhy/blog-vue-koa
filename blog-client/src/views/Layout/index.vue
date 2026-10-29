@@ -6,7 +6,7 @@ import { useBlogList } from '@/composables/useBlogList.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import HomeCornerReturn from '@/components/HomeCornerReturn.vue'
 import HomePage from '@/views/Home/index.vue'
-import ThemeToggle from '@/components/ThemeToggle.vue'
+import PageToolbar from '@/components/PageToolbar.vue'
 
 import EmaScene from '@/components/ema/EmaScene.vue'
 import { createEmaController } from '@/ema/controller.js'
@@ -117,7 +117,6 @@ onMounted(() => {
 
 <template>
     <HomePage @scene-active="setSceneActive" />
-    <ThemeToggle />
     <EmaScene :controller="ema" :preview-active="sceneActive" :route-name="route.name" />
     <HomeCornerReturn
         v-if="showCornerReturn && !sceneActive"
@@ -167,6 +166,7 @@ onMounted(() => {
                     </RouterView>
                 </div>
             </main>
+            <PageToolbar />
         </div>
     </div>
 </template>
@@ -299,6 +299,8 @@ onMounted(() => {
     position: relative;
     z-index: 2;
     display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
     flex-direction: column;
     min-width: 0;
 }

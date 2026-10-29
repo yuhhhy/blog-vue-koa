@@ -78,20 +78,20 @@
 }
 
 :root.dark {
-    --page-background: #101416;
-    --page-explore-background: #25231E;
-    --page-about-background: #2D2228;
-    --page-essays-background: #1E2B32;
-    --page-archive-background: #222C21;
-    --section-surface: #12181B;
+    --page-background: #181D20;
+    --page-explore-background: #302D26;
+    --page-about-background: #382B32;
+    --page-essays-background: #27363E;
+    --page-archive-background: #2B3729;
+    --section-surface: #1C2428;
     --section-text: #E5ECEF;
     --section-body: #CBD7DC;
     --section-muted: #9CAEB6;
     --section-border: #34434A;
     --section-link: #9CCAD6;
-    --section-gradient: linear-gradient(145deg, rgba(255, 255, 255, 0.035), transparent 45%, rgba(0, 0, 0, 0.3));
-    --paper-overlay: rgba(18, 17, 15, 0.72);
-    --pattern-opacity: 0.1;
+    --section-gradient: linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 48%, rgba(0, 0, 0, 0.2));
+    --paper-overlay: rgba(29, 27, 24, 0.64);
+    --pattern-opacity: 0.045;
     --pattern-blend-mode: screen;
     --control-background: #E5ECEF;
     --control-text: #172126;
