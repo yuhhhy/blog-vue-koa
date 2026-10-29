@@ -8,6 +8,7 @@ import {
     apiDeleteEssay,
     apiDeleteEssayDraft,
     apiGetEssayDraft,
+    apiGetEssayDrafts,
     apiGetEssays,
     apiUpdateEssay,
     apiUpdateEssayDraft,
@@ -22,12 +23,17 @@ import AdminPage from '@/components/admin/AdminPage.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
 
 const essays = ref([])
+const drafts = ref([])
 const loading = ref(true)
+const draftsLoading = ref(true)
 const loadError = ref(false)
+const draftsLoadError = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
 const deleteDialogVisible = ref(false)
 const pendingDelete = ref(null)
+const pendingDraftDelete = ref(null)
+const draftDeleteDialogVisible = ref(false)
 const editingId = ref('')
 const draftId = ref('')
 const draftVersion = ref(0)
@@ -36,6 +42,10 @@ const contentError = ref('')
 const form = reactive({ title: '', content: '' })
 const rowActions = [
     { key: 'edit', label: '编辑' },
+    { key: 'delete', label: '删除', danger: true },
+]
+const draftActions = [
+    { key: 'edit', label: '继续编辑' },
     { key: 'delete', label: '删除', danger: true },
 ]
 const ESSAY_DRAFT_REFERENCE_KEY = 'essay-cloud-draft'
@@ -144,6 +154,18 @@ const loadEssays = async () => {
     }
 }
 
+const loadDrafts = async () => {
+    draftsLoading.value = true
+    draftsLoadError.value = false
+    try {
+        drafts.value = await apiGetEssayDrafts()
+    } catch {
+        draftsLoadError.value = true
+    } finally {
+        draftsLoading.value = false
+    }
+}
+
 const resetForm = () => {
     clearTimeout(autoSaveTimer)
     hydrating = true
@@ -169,6 +191,39 @@ const editEssay = (essay) => {
     document.getElementById('essay-editor')?.scrollIntoView({ behavior: 'smooth' })
 }
 
+const editDraft = async (summary) => {
+    clearTimeout(autoSaveTimer)
+    try {
+        const draft = await apiGetEssayDraft(summary.id)
+        hydrating = true
+        rememberDraft(draft)
+        editingId.value = draft.sourceEssayId || ''
+        form.title = draft.title || ''
+        form.content = draft.content || ''
+        contentError.value = ''
+        cloudSaveState.value = 'saved'
+        await nextTick()
+        hydrating = false
+        document.getElementById('essay-editor')?.scrollIntoView({ behavior: 'smooth' })
+    } catch {
+        await loadDrafts()
+    }
+}
+
+const saveAsDraft = async () => {
+    if (!form.title.trim() && !form.content.trim()) {
+        ElMessage.warning('请先写一些内容')
+        return
+    }
+    try {
+        await persistCloudDraft()
+        await loadDrafts()
+        ElMessage.success('随笔草稿已保存')
+    } catch {
+        // 请求层会展示错误信息，编辑内容继续保留。
+    }
+}
+
 const saveEssay = async () => {
     if (saving.value) return
     contentError.value = form.content.trim() ? '' : '请输入随笔正文'
@@ -188,11 +243,37 @@ const saveEssay = async () => {
         const publishedDraftId = draftId.value
         if (publishedDraftId) await apiDeleteEssayDraft(publishedDraftId).catch(() => {})
         resetForm()
-        await loadEssays()
+        await Promise.all([loadEssays(), loadDrafts()])
     } catch {
         // 请求层会展示错误信息，保留表单以便重试。
     } finally {
         saving.value = false
+    }
+}
+
+const handleDraftAction = (action, draft) => {
+    if (action === 'edit') editDraft(draft)
+    if (action === 'delete') {
+        pendingDraftDelete.value = draft
+        draftDeleteDialogVisible.value = true
+    }
+}
+
+const confirmDraftDelete = async () => {
+    if (!pendingDraftDelete.value || deleting.value) return
+    deleting.value = true
+    try {
+        const deletingId = pendingDraftDelete.value.id
+        await apiDeleteEssayDraft(deletingId)
+        if (draftId.value === deletingId) resetForm()
+        draftDeleteDialogVisible.value = false
+        pendingDraftDelete.value = null
+        ElMessage.success('随笔草稿已删除')
+        await loadDrafts()
+    } catch {
+        // 请求层会展示错误信息，保留删除弹窗以便重试。
+    } finally {
+        deleting.value = false
     }
 }
 
@@ -224,7 +305,7 @@ const confirmDelete = async () => {
 watch(() => [form.title, form.content], scheduleCloudSave)
 
 onMounted(async () => {
-    await Promise.all([loadEssays(), restoreCloudDraft()])
+    await Promise.all([loadEssays(), loadDrafts(), restoreCloudDraft()])
 })
 
 onBeforeUnmount(() => clearTimeout(autoSaveTimer))
@@ -232,7 +313,7 @@ onBeforeUnmount(() => clearTimeout(autoSaveTimer))
 
 <template>
     <AdminPage class="essay-manage-page">
-        <AdminCard id="essay-editor" :title="editingId ? '编辑随笔' : '写随笔'">
+        <AdminCard id="essay-editor" :title="editingId ? '编辑随笔' : draftId ? '编辑草稿' : '写随笔'">
             <form class="essay-form" @submit.prevent="saveEssay">
                 <MaterialTextField
                     v-model="form.title"
@@ -257,12 +338,35 @@ onBeforeUnmount(() => clearTimeout(autoSaveTimer))
                     <span class="essay-cloud-state" role="status">
                         {{ cloudSaveState === 'saving' ? '正在保存到云端…' : cloudSaveState === 'pending' ? '等待保存…' : cloudSaveState === 'saved' ? '已保存到云端' : cloudSaveState === 'error' ? '云端保存失败' : '' }}
                     </span>
-                    <AdminButton v-if="editingId" variant="text" @click="resetForm">取消编辑</AdminButton>
+                    <AdminButton v-if="editingId || draftId" variant="text" @click="resetForm">取消编辑</AdminButton>
+                    <AdminButton variant="text" :disabled="saving" @click="saveAsDraft">保存为草稿</AdminButton>
                     <AdminButton tone="primary" type="submit" :disabled="saving">
                         {{ saving ? '保存中…' : editingId ? '保存更改' : '发布随笔' }}
                     </AdminButton>
                 </div>
             </form>
+        </AdminCard>
+
+        <AdminCard title="随笔草稿">
+            <div class="essay-list-toolbar">
+                <span>{{ drafts.length }} 篇草稿</span>
+            </div>
+            <p v-if="draftsLoadError" class="essay-load-error">
+                草稿加载失败。<button type="button" @click="loadDrafts">重试</button>
+            </p>
+            <AdminList v-if="!draftsLoadError" :items="drafts" :loading="draftsLoading" empty-text="暂无草稿" item-label="篇草稿">
+                <template #item="{ item }">
+                    <AdminListItem
+                        :headline="item.title || '无标题随笔'"
+                        :supporting-text="item.content || '尚未填写正文'"
+                        :overline="`更新于 ${formatDate(item.updatedAt)}`"
+                    >
+                        <template #actions>
+                            <AdminActionMenu :actions="draftActions" @select="handleDraftAction($event, item)" />
+                        </template>
+                    </AdminListItem>
+                </template>
+            </AdminList>
         </AdminCard>
 
         <AdminCard title="已发布的随笔">
@@ -292,6 +396,16 @@ onBeforeUnmount(() => clearTimeout(autoSaveTimer))
             danger
             :loading="deleting"
             @confirm="confirmDelete"
+        />
+
+        <AdminConfirmDialog
+            v-model="draftDeleteDialogVisible"
+            title="删除随笔草稿"
+            :message="`确定删除“${pendingDraftDelete?.title || '无标题随笔'}”吗？此操作无法撤销。`"
+            confirm-text="删除"
+            danger
+            :loading="deleting"
+            @confirm="confirmDraftDelete"
         />
     </AdminPage>
 </template>
