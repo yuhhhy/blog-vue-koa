@@ -16,6 +16,7 @@ import nightWithStarsIcon from '@iconify-icons/fluent-emoji-flat/night-with-star
 import sunIcon from '@iconify-icons/fluent-emoji-flat/sun'
 import sunriseIcon from '@iconify-icons/fluent-emoji-flat/sunrise'
 import sunsetIcon from '@iconify-icons/fluent-emoji-flat/sunset'
+import { getSolarPeriod } from '@/utils/solarTime.js'
 
 const props = defineProps({
   kind: {
@@ -29,6 +30,10 @@ const props = defineProps({
   timezone: {
     type: String,
     default: 'Asia/Shanghai',
+  },
+  location: {
+    type: Object,
+    default: null,
   },
 })
 
@@ -48,6 +53,12 @@ const iconConfig = computed(() => {
   }
 
   if (props.kind === 'time') {
+    const solarPeriod = getSolarPeriod(props.value, props.location, props.timezone)
+    if (solarPeriod === 'sunrise') return logo(sunriseIcon, '日出时分')
+    if (solarPeriod === 'day') return logo(sunIcon, '白天')
+    if (solarPeriod === 'sunset') return logo(sunsetIcon, '日落时分')
+    if (solarPeriod === 'night') return logo(nightWithStarsIcon, '夜间')
+
     let hour
     try {
       hour = Number(new Intl.DateTimeFormat('en-US', {

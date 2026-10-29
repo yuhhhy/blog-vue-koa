@@ -4,6 +4,8 @@ import { useEssays } from '@/composables/useEssays.js'
 import { getFormatDateTimeToMinute } from '@/utils/date.js'
 import CommentEnvironmentIcon from '@/views/Blog/components/CommentEnvironmentIcon.vue'
 
+const shenzhenLocation = Object.freeze({ latitude: 22.5431, longitude: 114.0579 })
+
 const { essays, loading, loadError, loadEssays } = useEssays()
 const retryLoadEssays = () => loadEssays({ force: true }).catch(() => {})
 
@@ -26,7 +28,12 @@ onMounted(() => loadEssays().catch(() => {}))
             <article v-for="essay in essays" :key="essay.id" class="essay-item">
                 <h2>{{ essay.title }}</h2>
                 <time :datetime="essay.createTime">
-                    <CommentEnvironmentIcon kind="time" :value="essay.createTime" timezone="Asia/Shanghai" />
+                    <CommentEnvironmentIcon
+                        kind="time"
+                        :value="essay.createTime"
+                        timezone="Asia/Shanghai"
+                        :location="shenzhenLocation"
+                    />
                     {{ getFormatDateTimeToMinute(essay.createTime) }}
                 </time>
                 <p>{{ essay.content }}</p>

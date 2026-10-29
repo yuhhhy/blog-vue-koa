@@ -140,7 +140,7 @@ watch(() => route.params.id || props.pageId, (pageId) => {
                   {{ comment.os }}
                 </span>
                 <time class="comment-detail-item">
-                  <CommentEnvironmentIcon kind="time" :value="comment.createTime" :timezone="comment.timezone" />
+                  <CommentEnvironmentIcon kind="time" :value="comment.createTime" :timezone="comment.timezone" :location="comment.solarLocation" />
                   {{ getFormatDateTimeToMinute(comment.createTime, comment.timezone) }}
                 </time>
               </div>

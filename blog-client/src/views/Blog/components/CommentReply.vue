@@ -62,7 +62,7 @@ const handleUpdate = () => {
                     {{ reply.os }}
                   </span>
                   <time class="comment-detail-item">
-                    <CommentEnvironmentIcon kind="time" :value="reply.createTime" :timezone="reply.timezone" />
+                    <CommentEnvironmentIcon kind="time" :value="reply.createTime" :timezone="reply.timezone" :location="reply.solarLocation" />
                     {{ getFormatDateTimeToMinute(reply.createTime, reply.timezone) }}
                   </time>
                 </div>

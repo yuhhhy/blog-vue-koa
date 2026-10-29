@@ -330,6 +330,11 @@ router.post('/comment', (ctx) => {
         website: ctx.request.body.website || '',
         ...environment,
         timezone: ctx.request.body.timezone || 'Asia/Shanghai',
+        solarLocation: {
+            latitude: 22.5431,
+            longitude: 114.0579,
+            region: '广东省 深圳市',
+        },
         content: ctx.request.body.content || '',
         createTime: ctx.request.body.createTime || new Date().toISOString(),
         showForm: false,

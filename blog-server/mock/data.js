@@ -347,6 +347,11 @@ export const mockComments = [
         os: 'Android 10',
         content: '一级评论：昵称带网址链接。代码块背景和标题层级看起来是否正常？',
         timezone: 'Asia/Shanghai',
+        solarLocation: {
+            latitude: 22.5431,
+            longitude: 114.0579,
+            region: '广东省 深圳市',
+        },
         createTime: '2026-10-27T17:30:00.000Z',
         showForm: false,
         hasParent: false,
