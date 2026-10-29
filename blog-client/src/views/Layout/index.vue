@@ -26,12 +26,17 @@ const routeTransitionScrollOffset = ref('0px')
 const routeTransitionReturnOffset = ref('0px')
 const routeTransitionDocumentHeight = ref('100vh')
 const routeTransitionDuration = computed(() => {
-    if (routeTransition.value === 'article-archive') return 1320
     return routeTransition.value ? 980 : 0
 })
 let archiveScrollPosition = 0
+let articleScrollPosition = 0
 let previousBodyMinHeight = ''
 let articleTransitionLocked = false
+let routeTransitionId = 0
+let routeTransitionTargetScrollPosition = 0
+// A cancelled enter can finish after its replacement has already started.
+// Keep hook ownership on the element so stale cleanup cannot stop the new leg.
+const enterTransitionIds = new WeakMap()
 const showCornerReturn = computed(() => ['About', 'Essays', 'Archive', 'Blog'].includes(route.name))
 const cornerReturnLabel = computed(() => route.name === 'Blog' ? '返回文章列表' : '返回首页')
 const returnFromPage = async () => {
@@ -71,14 +76,25 @@ const unlockArticleTransitionScroll = () => {
     previousBodyMinHeight = ''
     articleTransitionLocked = false
 }
-const finishRouteTransition = async () => {
-    const completedTransition = routeTransition.value
+const prepareRouteTransitionEnter = (element) => {
+    enterTransitionIds.set(element, {
+        id: routeTransitionId,
+        name: routeTransition.value,
+    })
+}
+const finishRouteTransition = async (element) => {
+    const transition = enterTransitionIds.get(element)
+    if (!transition
+        || transition.id !== routeTransitionId
+        || transition.name !== routeTransition.value) return
+
+    const completedTransition = transition.name
     if (completedTransition === 'archive-article') {
         applyRouteBackground()
     }
     routeTransition.value = ''
     await nextTick()
-    window.scrollTo(0, completedTransition === 'article-archive' ? archiveScrollPosition : 0)
+    window.scrollTo(0, routeTransitionTargetScrollPosition)
     routeTransitionScrollOffset.value = '0px'
     routeTransitionReturnOffset.value = '0px'
     routeTransitionDocumentHeight.value = '100vh'
@@ -91,23 +107,38 @@ const setSceneActive = (active) => {
 
 watch(() => route.name, (target, source) => {
     if (source === 'Archive' && target === 'Blog') {
+        const isReversingReturn = routeTransition.value === 'article-archive'
         lockArticleTransitionScroll()
-        archiveScrollPosition = window.scrollY
-        routeTransitionScrollOffset.value = `${window.scrollY}px`
+        if (!isReversingReturn) {
+            archiveScrollPosition = window.scrollY
+            articleScrollPosition = 0
+        }
+        routeTransitionScrollOffset.value = `${isReversingReturn ? 0 : archiveScrollPosition}px`
+        routeTransitionTargetScrollPosition = articleScrollPosition
+        routeTransitionId += 1
         routeTransition.value = 'archive-article'
         return
     }
 
     if (source === 'Blog' && target === 'Archive') {
+        const isReversingOpening = routeTransition.value === 'archive-article'
         lockArticleTransitionScroll()
+        if (!isReversingOpening) articleScrollPosition = window.scrollY
         routeTransitionReturnOffset.value = `${window.scrollY - archiveScrollPosition}px`
+        routeTransitionTargetScrollPosition = archiveScrollPosition
+        routeTransitionId += 1
         routeTransition.value = 'article-archive'
         applyRouteBackground()
         return
     }
 
+    routeTransitionId += 1
     routeTransition.value = ''
+    routeTransitionScrollOffset.value = '0px'
+    routeTransitionReturnOffset.value = '0px'
+    routeTransitionDocumentHeight.value = '100vh'
     applyRouteBackground()
+    unlockArticleTransitionScroll()
 }, { flush: 'sync' })
 
 onMounted(() => {
@@ -161,6 +192,7 @@ onMounted(() => {
                             :name="routeTransition"
                             :css="Boolean(routeTransition)"
                             :duration="routeTransitionDuration"
+                            @before-enter="prepareRouteTransitionEnter"
                             @after-enter="finishRouteTransition"
                             @enter-cancelled="finishRouteTransition"
                         >
@@ -231,25 +263,11 @@ onMounted(() => {
     will-change: clip-path;
 }
 
-.layout--article-returning::before {
-    animation: article-archive-background-reveal 1250ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .layout--article-returning {
     // The browser is still at the article's scroll position while the archive
     // enters. Keep this ancestor covering that viewport so its fixed background
     // is not culled when the shorter archive replaces a deeply scrolled article.
     min-height: var(--route-transition-document-height, 100vh);
-}
-
-@keyframes article-archive-background-reveal {
-    from {
-        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-    }
-
-    to {
-        clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
-    }
 }
 
 .layout--about::after,
@@ -344,6 +362,7 @@ onMounted(() => {
     top: 0;
     left: 0;
     width: 100%;
+    transform: translateY(var(--route-transition-return-offset, 0px));
 }
 
 .archive-article-leave-active .page-heading,
@@ -352,8 +371,8 @@ onMounted(() => {
 .article-archive-enter-active .archive-year {
     transform-origin: left center;
     transition:
-        opacity 650ms ease,
-        transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+        opacity 600ms ease,
+        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
     will-change: opacity, transform;
 }
 
@@ -367,7 +386,7 @@ onMounted(() => {
 
 .archive-article-enter-from .blog-surface {
     opacity: 0;
-    transform: translate(-18vw, calc(24vh + var(--route-transition-scroll-offset, 0px))) rotate(6deg);
+    transform: translate(-18vw, calc(24vh + var(--route-transition-scroll-offset, 0px))) rotate(3deg);
 }
 
 .archive-article-enter-active {
@@ -383,14 +402,14 @@ onMounted(() => {
 
 .archive-article-enter-active .blog-surface {
     transition:
-        opacity 650ms ease,
+        opacity 600ms ease,
         transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 .article-archive-leave-active .blog-surface {
     transition:
-        opacity 320ms ease-out,
-        transform 700ms cubic-bezier(0.76, 0, 0.24, 1);
+        opacity 600ms ease,
+        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 .archive-article-enter-to .blog-surface {
@@ -410,7 +429,7 @@ onMounted(() => {
 
 .article-archive-leave-to .blog-surface {
     opacity: 0;
-    transform: translate(-18vw, 24vh) rotate(6deg);
+    transform: translate(-18vw, calc(24vh + var(--route-transition-scroll-offset, 0px))) rotate(3deg);
 }
 
 .article-archive-enter-active {
