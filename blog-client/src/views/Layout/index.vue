@@ -24,6 +24,7 @@ const pageBackgroundShape = ref(route.meta.backgroundShape || '')
 const routeTransition = ref('')
 const routeTransitionScrollOffset = ref('0px')
 const routeTransitionReturnOffset = ref('0px')
+const routeTransitionDocumentHeight = ref('100vh')
 const routeTransitionDuration = computed(() => {
     if (routeTransition.value === 'article-archive') return 1320
     return routeTransition.value ? 980 : 0
@@ -57,7 +58,9 @@ const applyRouteBackground = () => {
 const lockArticleTransitionScroll = () => {
     if (articleTransitionLocked) return
     previousBodyMinHeight = document.body.style.minHeight
-    document.body.style.minHeight = `${Math.max(document.documentElement.scrollHeight, window.innerHeight)}px`
+    const documentHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight)
+    routeTransitionDocumentHeight.value = `${documentHeight}px`
+    document.body.style.minHeight = routeTransitionDocumentHeight.value
     document.documentElement.classList.add('is-article-transitioning')
     articleTransitionLocked = true
 }
@@ -78,6 +81,7 @@ const finishRouteTransition = async () => {
     window.scrollTo(0, completedTransition === 'article-archive' ? archiveScrollPosition : 0)
     routeTransitionScrollOffset.value = '0px'
     routeTransitionReturnOffset.value = '0px'
+    routeTransitionDocumentHeight.value = '100vh'
     unlockArticleTransitionScroll()
 }
 const setSceneActive = (active) => {
@@ -134,7 +138,10 @@ onMounted(() => {
                 'is-scene-active': sceneActive,
             },
         ]"
-        :style="{ backgroundColor: pageBackground }"
+        :style="{
+            backgroundColor: pageBackground,
+            '--route-transition-document-height': routeTransitionDocumentHeight,
+        }"
         :inert="sceneActive"
         :aria-hidden="sceneActive"
     >
@@ -226,6 +233,13 @@ onMounted(() => {
 
 .layout--article-returning::before {
     animation: article-archive-background-reveal 1250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.layout--article-returning {
+    // The browser is still at the article's scroll position while the archive
+    // enters. Keep this ancestor covering that viewport so its fixed background
+    // is not culled when the shorter archive replaces a deeply scrolled article.
+    min-height: var(--route-transition-document-height, 100vh);
 }
 
 @keyframes article-archive-background-reveal {
@@ -330,41 +344,58 @@ onMounted(() => {
     top: 0;
     left: 0;
     width: 100%;
-    transform-origin: left bottom;
-    transition: opacity 520ms ease, transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.archive-article-leave-active .page-heading,
+.archive-article-leave-active .archive-year,
+.article-archive-enter-active .page-heading,
+.article-archive-enter-active .archive-year {
+    transform-origin: left center;
+    transition:
+        opacity 650ms ease,
+        transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: opacity, transform;
 }
 
-.archive-article-leave-to {
+.archive-article-leave-to .page-heading,
+.archive-article-leave-to .archive-year,
+.article-archive-enter-from .page-heading,
+.article-archive-enter-from .archive-year {
     opacity: 0;
-    transform: translate(26vw, -20vh) rotate(-6deg);
+    transform: translate3d(18vw, -8vh, 0) rotate(-3deg);
 }
 
-.archive-article-enter-from {
-    .blog-surface {
-        opacity: 0;
-        transform: translate(-18vw, calc(24vh + var(--route-transition-scroll-offset, 0px))) rotate(6deg);
-    }
+.archive-article-enter-from .blog-surface {
+    opacity: 0;
+    transform: translate(-18vw, calc(24vh + var(--route-transition-scroll-offset, 0px))) rotate(6deg);
 }
 
 .archive-article-enter-active {
     backface-visibility: hidden;
-
-    .blog-surface {
-        backface-visibility: hidden;
-        transform-origin: left bottom;
-        transition:
-            opacity 650ms 80ms ease,
-            transform 900ms 80ms cubic-bezier(0.76, 0, 0.24, 1);
-        will-change: opacity, transform;
-    }
 }
 
-.archive-article-enter-to {
-    .blog-surface {
-        opacity: 1;
-        transform: translate(0, var(--route-transition-scroll-offset, 0px)) rotate(0);
-    }
+.archive-article-enter-active .blog-surface,
+.article-archive-leave-active .blog-surface {
+    backface-visibility: hidden;
+    transform-origin: left bottom;
+    will-change: opacity, transform;
+}
+
+.archive-article-enter-active .blog-surface {
+    transition:
+        opacity 650ms ease,
+        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.article-archive-leave-active .blog-surface {
+    transition:
+        opacity 320ms ease-out,
+        transform 700ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.archive-article-enter-to .blog-surface {
+    opacity: 1;
+    transform: translate(0, var(--route-transition-scroll-offset, 0px)) rotate(0);
 }
 
 .article-archive-leave-active {
@@ -375,14 +406,9 @@ onMounted(() => {
     top: 0;
     left: 0;
     width: 100%;
-    transform-origin: left bottom;
-    transition:
-        opacity 340ms ease,
-        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
-    will-change: opacity, transform;
 }
 
-.article-archive-leave-to {
+.article-archive-leave-to .blog-surface {
     opacity: 0;
     transform: translate(-18vw, 24vh) rotate(6deg);
 }
@@ -394,25 +420,6 @@ onMounted(() => {
     transform: translateY(var(--route-transition-return-offset, 0px));
 }
 
-.article-archive-enter-from .page-heading,
-.article-archive-enter-from .archive-year {
-    opacity: 0;
-    transform: translate3d(18vw, -8vh, 0) rotate(-3deg);
-}
-
-.article-archive-enter-active .page-heading,
-.article-archive-enter-active .archive-year {
-    transform-origin: left center;
-    transition:
-        opacity 1050ms ease,
-        transform 1250ms cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity, transform;
-}
-
-.article-archive-enter-active .archive-year {
-    transition-delay: 0ms, 0ms;
-}
-
 .article-archive-enter-to .page-heading,
 .article-archive-enter-to .archive-year {
     opacity: 1;
@@ -421,9 +428,10 @@ onMounted(() => {
 
 @media (prefers-reduced-motion: reduce) {
     .layout::before,
-    .archive-article-leave-active,
+    .archive-article-leave-active .page-heading,
+    .archive-article-leave-active .archive-year,
     .archive-article-enter-active .blog-surface,
-    .article-archive-leave-active,
+    .article-archive-leave-active .blog-surface,
     .article-archive-enter-active,
     .article-archive-enter-active .page-heading,
     .article-archive-enter-active .archive-year {
