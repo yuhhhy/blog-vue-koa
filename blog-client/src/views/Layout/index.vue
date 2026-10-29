@@ -6,7 +6,7 @@ import { useBlogList } from '@/composables/useBlogList.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import HomeCornerReturn from '@/components/HomeCornerReturn.vue'
 import HomePage from '@/views/Home/index.vue'
-import ThemePull from '@/components/ThemePull.vue'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 import EmaScene from '@/components/ema/EmaScene.vue'
 import { createEmaController } from '@/ema/controller.js'
@@ -117,7 +117,7 @@ onMounted(() => {
 
 <template>
     <HomePage @scene-active="setSceneActive" />
-    <ThemePull />
+    <ThemeToggle />
     <EmaScene :controller="ema" :preview-active="sceneActive" :route-name="route.name" />
     <HomeCornerReturn
         v-if="showCornerReturn && !sceneActive"
