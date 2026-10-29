@@ -1,4 +1,5 @@
 import { respondLinkAvatar } from '../utils/linkAvatar.js'
+import { getNextLinkSortOrder, normalizeLinkSortOrder } from '../utils/linkSort.js'
 import { Links } from "../models/LinksSchema.js"
 
 const categoryRank = {
@@ -6,16 +7,11 @@ const categoryRank = {
     recommended: 1,
 }
 
-const normalizeSortOrder = (value) => {
-    const sortOrder = Number(value)
-    return Number.isFinite(sortOrder) ? Math.max(0, Math.trunc(sortOrder)) : 0
-}
-
 const compareLinks = (a, b) => {
     const categoryDifference = (categoryRank[a.category] ?? 0) - (categoryRank[b.category] ?? 0)
     if (categoryDifference !== 0) return categoryDifference
 
-    const sortOrderDifference = normalizeSortOrder(a.sortOrder) - normalizeSortOrder(b.sortOrder)
+    const sortOrderDifference = normalizeLinkSortOrder(a.sortOrder) - normalizeLinkSortOrder(b.sortOrder)
     if (sortOrderDifference !== 0) return sortOrderDifference
 
     return Number(b.id) - Number(a.id)
@@ -31,10 +27,12 @@ export const getLinks = async (ctx) => {
 
 // 创建友链
 export const createLink = async (ctx) => {
-    console.log(ctx.request.body)
-    
-    const { id, name, description, site, avatar, category = 'friend', sortOrder = 0 } = ctx.request.body
-    const link = new Links({ id, name, description, site, avatar, category, sortOrder: normalizeSortOrder(sortOrder) })
+    const { id, name, description, site, avatar, category = 'friend' } = ctx.request.body
+    const hasSortOrder = Object.hasOwn(ctx.request.body, 'sortOrder')
+    const sortOrder = hasSortOrder
+        ? normalizeLinkSortOrder(ctx.request.body.sortOrder)
+        : getNextLinkSortOrder(await Links.find({}).lean(), category)
+    const link = new Links({ id, name, description, site, avatar, category, sortOrder })
     await link.save()
     ctx.status = 201
     ctx.body = link
@@ -53,7 +51,7 @@ export const updateLink = async (ctx) => {
     const { name, description, site, avatar, category = 'friend', sortOrder = 0 } = ctx.request.body
     const updatedLink = await Links.findOneAndUpdate(
         { id },
-        { name, description, site, avatar, category, sortOrder: normalizeSortOrder(sortOrder) },
+        { name, description, site, avatar, category, sortOrder: normalizeLinkSortOrder(sortOrder) },
         { new: true, runValidators: true }
     )
     ctx.status = 200

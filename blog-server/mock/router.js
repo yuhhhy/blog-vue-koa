@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto'
 import KEY from '../config/key.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { normalizeEssayInput } from '../utils/essay.js'
+import { getNextLinkSortOrder, normalizeLinkSortOrder } from '../utils/linkSort.js'
 import { parseBrowserAndOS } from '../utils/index.js'
 import {
     createMockWebsiteData,
@@ -418,6 +419,10 @@ router.get('/links/:id/avatar', async (ctx) => {
 
 router.post('/links', (ctx) => {
     const link = clone(ctx.request.body)
+    link.category ||= 'friend'
+    link.sortOrder = Object.hasOwn(link, 'sortOrder')
+        ? normalizeLinkSortOrder(link.sortOrder)
+        : getNextLinkSortOrder(state.links, link.category)
     state.links.push(link)
     ctx.status = 201
     ctx.body = clone(link)
