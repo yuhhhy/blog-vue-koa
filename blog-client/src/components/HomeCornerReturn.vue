@@ -26,9 +26,9 @@ defineProps({
     aspect-ratio: 1;
     padding: 0;
     overflow: hidden;
-    color: #ffffff;
-    background: #263846;
-    border: 1px solid #263846;
+    color: var(--control-text);
+    background: var(--control-background);
+    border: 1px solid var(--control-background);
     border-radius: 0;
     cursor: pointer;
     transform: translate(-50%, -50%) rotate(45deg);
@@ -67,7 +67,7 @@ defineProps({
 }
 
 .home-corner-return:focus-visible {
-    outline: 2px solid #263846;
+    outline: 2px solid var(--control-background);
     outline-offset: 3px;
 }
 

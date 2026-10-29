@@ -12,9 +12,12 @@ html, body {
 }
 
 html {
-    background: #fafcf9;
+    background: var(--page-background);
     scrollbar-gutter: stable;
+    transition: background-color 240ms ease;
 }
+
+body { background: var(--page-background); }
 
 html.is-scene-transitioning,
 html.is-scene-transitioning body {

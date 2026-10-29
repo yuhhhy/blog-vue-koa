@@ -1,12 +1,12 @@
 <script setup>
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 import { useBlogList } from '@/composables/useBlogList.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import HomeCornerReturn from '@/components/HomeCornerReturn.vue'
 import HomePage from '@/views/Home/index.vue'
+import ThemePull from '@/components/ThemePull.vue'
 
 import EmaScene from '@/components/ema/EmaScene.vue'
 import { createEmaController } from '@/ema/controller.js'
@@ -15,7 +15,6 @@ import { emaContextKey } from '@/ema/context.js'
 const ema = createEmaController()
 provide(emaContextKey, ema)
 
-const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
 const { fetchBlogList } = useBlogList()
@@ -118,6 +117,7 @@ onMounted(() => {
 
 <template>
     <HomePage @scene-active="setSceneActive" />
+    <ThemePull />
     <EmaScene :controller="ema" :preview-active="sceneActive" :route-name="route.name" />
     <HomeCornerReturn
         v-if="showCornerReturn && !sceneActive"
@@ -186,9 +186,9 @@ onMounted(() => {
 }
 
 .layout--explore {
-    background-color: #e7d3ad;
+    background-color: var(--page-explore-background);
     background-image:
-        linear-gradient(rgba(255, 249, 232, 0.5), rgba(255, 249, 232, 0.5)),
+        linear-gradient(var(--paper-overlay), var(--paper-overlay)),
         url('/textures/kraft-paper.jpg');
     background-size: cover, 920px 920px;
     background-repeat: no-repeat, repeat;
@@ -198,28 +198,27 @@ onMounted(() => {
 .layout--essays,
 .layout--archive,
 .layout--blog {
-    --white: #ffffff;
-    --light: #fafcf9;
-    --lightgrey: #ccd9d9;
-    --light-dark: #354b56;
-    --dark: #263846;
-    --black: #263846;
-    --quote-color: #526976;
-    --border-color: #d3dfdf;
-    --blue: #263846;
-    --skyblue: #3e7181;
-    --b-color: #263846;
+    --white: var(--section-surface);
+    --light: var(--section-surface);
+    --lightgrey: var(--section-border);
+    --light-dark: var(--section-body);
+    --dark: var(--section-text);
+    --black: var(--section-text);
+    --quote-color: var(--section-muted);
+    --border-color: var(--section-border);
+    --blue: var(--section-text);
+    --skyblue: var(--section-link);
+    --b-color: var(--section-text);
     color: var(--black);
-    color-scheme: light;
-    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
+    background-image: var(--section-gradient);
 }
 
 .layout::before {
     position: fixed;
     z-index: 1;
     inset: 0;
-    background-color: #fafcf9;
-    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
+    background-color: var(--section-surface);
+    background-image: var(--section-gradient);
     pointer-events: none;
     transition: clip-path 900ms cubic-bezier(0.76, 0, 0.24, 1);
     will-change: clip-path;
@@ -251,8 +250,8 @@ onMounted(() => {
     background-position: 0 0;
     background-size: 320px 320px;
     background-repeat: repeat;
-    opacity: 0.05;
-    mix-blend-mode: multiply;
+    opacity: var(--pattern-opacity);
+    mix-blend-mode: var(--pattern-blend-mode);
     pointer-events: none;
 }
 

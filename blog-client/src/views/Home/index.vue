@@ -445,7 +445,7 @@ onBeforeUnmount(() => transitions.cancel())
     z-index: 30;
     inset: 0;
     overflow: hidden;
-    background: #fafcf9;
+    background: var(--page-background);
 }
 
 .home-track {
@@ -474,9 +474,9 @@ onBeforeUnmount(() => transitions.cancel())
     position: relative;
     overflow: hidden;
     color: var(--black);
-    background-color: #e7d3ad;
+    background-color: var(--page-explore-background);
     background-image:
-        linear-gradient(rgba(255, 249, 232, 0.5), rgba(255, 249, 232, 0.5)),
+        linear-gradient(var(--paper-overlay), var(--paper-overlay)),
         url('/textures/kraft-paper.jpg');
     background-size: cover, 920px 920px;
     background-repeat: no-repeat, repeat;
@@ -503,9 +503,9 @@ onBeforeUnmount(() => transitions.cancel())
     aspect-ratio: 1;
     padding: 0;
     overflow: visible;
-    color: #ffffff;
-    background: #263846;
-    border: 1px solid #263846;
+    color: var(--control-text);
+    background: var(--control-background);
+    border: 1px solid var(--control-background);
     border-radius: 0;
     cursor: pointer;
 }
@@ -597,21 +597,24 @@ onBeforeUnmount(() => transitions.cancel())
 }
 
 .screen-toggle:focus-visible {
-    outline: 2px solid #263846;
+    outline: 2px solid var(--control-background);
     outline-offset: 3px;
 }
 
 .home-sections {
-    --about-block: #f3d2dd;
-    --essays-block: #c8e4f3;
-    --archive-block: #d9e9cb;
-    --black: #263846;
-    --dark: #263846;
-    --light-dark: #354b56;
-    --quote-color: #526976;
-    --blue: #263846;
-    --skyblue: #3e7181;
-    --b-color: #263846;
+    --about-block: var(--page-about-background);
+    --essays-block: var(--page-essays-background);
+    --archive-block: var(--page-archive-background);
+    --white: var(--section-surface);
+    --light: var(--section-surface);
+    --black: var(--section-text);
+    --dark: var(--section-text);
+    --light-dark: var(--section-body);
+    --quote-color: var(--section-muted);
+    --border-color: var(--section-border);
+    --blue: var(--section-text);
+    --skyblue: var(--section-link);
+    --b-color: var(--section-text);
     --page-title-left: calc(max(0px, 50vw - 540px) + clamp(20px, 4vw, 48px));
     --page-title-top: calc(clamp(48px, 8vw, 96px) + 20px);
 
@@ -629,8 +632,8 @@ onBeforeUnmount(() => transitions.cancel())
 .home-section {
     position: absolute;
     inset: 0;
-    color: #263846;
-    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
+    color: var(--section-text);
+    background-image: var(--section-gradient);
     cursor: pointer;
     transform: translate(0) rotate(0) scale(1);
     transform-origin: 0 50%;
@@ -652,8 +655,8 @@ onBeforeUnmount(() => transitions.cancel())
     background-position: 0 0;
     background-size: 320px 320px;
     background-repeat: repeat;
-    opacity: 0.05;
-    mix-blend-mode: multiply;
+    opacity: var(--pattern-opacity);
+    mix-blend-mode: var(--pattern-blend-mode);
     pointer-events: none;
 }
 
@@ -691,8 +694,8 @@ onBeforeUnmount(() => transitions.cancel())
     position: absolute;
     z-index: 1;
     inset: 0;
-    background-color: #fafcf9;
-    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
+    background-color: var(--section-surface);
+    background-image: var(--section-gradient);
     opacity: var(--section-white-opacity, 0);
     transition: opacity 500ms ease;
     pointer-events: none;

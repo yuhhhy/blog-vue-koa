@@ -207,7 +207,7 @@ const handleUpdate = () => {
             padding: 4px 9px;
             border: 0;
             border-radius: 4px;
-            color: #343536;
+            color: var(--light-dark);
             background: transparent;
             font-family: var(--comment-font, sans-serif);
             font-size: 0.78rem;
@@ -216,7 +216,7 @@ const handleUpdate = () => {
             transition: color 160ms ease, background-color 160ms ease;
 
             &:hover {
-              background: #d7d9da;
+              background: var(--primary-soft-hover);
             }
           }
         }

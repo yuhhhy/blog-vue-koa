@@ -218,12 +218,12 @@ watch(() => route.params.id || props.pageId, (pageId) => {
   .comment-compose-toggle {
     padding: 4px 9px;
     border-radius: 4px;
-    color: #343536;
+    color: var(--light-dark);
     background: transparent;
     font-size: 0.75rem;
 
     &:hover {
-      background: #d7d9da;
+      background: var(--primary-soft-hover);
     }
   }
 
@@ -328,12 +328,12 @@ watch(() => route.params.id || props.pageId, (pageId) => {
           margin-left: auto;
           padding: 4px 9px;
           border-radius: 4px;
-          color: #343536;
+          color: var(--light-dark);
           background: transparent;
           font-size: 0.75rem;
 
           &:hover {
-            background: #d7d9da;
+            background: var(--primary-soft-hover);
           }
         }
       }

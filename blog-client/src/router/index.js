@@ -46,7 +46,7 @@ const routes = [
                 component: ExplorePage,
                 meta: {
                     title: '探索 | 一曝十寒',
-                    backgroundColor: '#e7d3ad',
+                    backgroundColor: 'var(--page-explore-background)',
                     keepAlive: true
                 }
             },
@@ -60,7 +60,7 @@ const routes = [
                 component: () => import('@/views/About/index.vue'),
                 meta: {
                     title: '关于 | 一曝十寒',
-                    backgroundColor: '#f3d2dd',
+                    backgroundColor: 'var(--page-about-background)',
                     backgroundShape: 'about'
                 }
             },
@@ -70,7 +70,7 @@ const routes = [
                 component: () => import('@/views/Essays/index.vue'),
                 meta: {
                     title: '随笔 | 一曝十寒',
-                    backgroundColor: '#c8e4f3',
+                    backgroundColor: 'var(--page-essays-background)',
                     backgroundShape: 'essays'
                 }
             },
@@ -80,7 +80,7 @@ const routes = [
                 component: () => import('@/views/Archive/index.vue'),
                 meta: {
                     title: '归档 | 一曝十寒',
-                    backgroundColor: '#d9e9cb',
+                    backgroundColor: 'var(--page-archive-background)',
                     backgroundShape: 'archive'
                 }
             },
@@ -91,7 +91,7 @@ const routes = [
                 meta: {
                     title: '文章详情 | 一曝十寒',
                     dynamicTitle: true,
-                    backgroundColor: '#fafcf9',
+                    backgroundColor: 'var(--section-surface)',
                     backgroundShape: 'blog'
                 }
             },

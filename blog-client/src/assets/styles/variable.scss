@@ -3,6 +3,23 @@
 }
 
 :root.light {
+    --page-background: #FAFCF9;
+    --page-explore-background: #E7D3AD;
+    --page-about-background: #F3D2DD;
+    --page-essays-background: #C8E4F3;
+    --page-archive-background: #D9E9CB;
+    --section-surface: #FAFCF9;
+    --section-text: #263846;
+    --section-body: #354B56;
+    --section-muted: #526976;
+    --section-border: #D3DFDF;
+    --section-link: #3E7181;
+    --section-gradient: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
+    --paper-overlay: rgba(255, 249, 232, 0.5);
+    --pattern-opacity: 0.05;
+    --pattern-blend-mode: multiply;
+    --control-background: #263846;
+    --control-text: #FFFFFF;
     --white: #FFFFFF;
     --light: #FAFAFA;
     --lightgrey: #E5E5E5;
@@ -61,6 +78,23 @@
 }
 
 :root.dark {
+    --page-background: #101416;
+    --page-explore-background: #25231E;
+    --page-about-background: #2D2228;
+    --page-essays-background: #1E2B32;
+    --page-archive-background: #222C21;
+    --section-surface: #12181B;
+    --section-text: #E5ECEF;
+    --section-body: #CBD7DC;
+    --section-muted: #9CAEB6;
+    --section-border: #34434A;
+    --section-link: #9CCAD6;
+    --section-gradient: linear-gradient(145deg, rgba(255, 255, 255, 0.035), transparent 45%, rgba(0, 0, 0, 0.3));
+    --paper-overlay: rgba(18, 17, 15, 0.72);
+    --pattern-opacity: 0.1;
+    --pattern-blend-mode: screen;
+    --control-background: #E5ECEF;
+    --control-text: #172126;
     --white: #0F0F0F;
     --light: #0F0F0F;
     --lightgrey: #707070;
