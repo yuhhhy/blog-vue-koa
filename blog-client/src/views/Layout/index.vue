@@ -108,8 +108,6 @@ watch(() => route.name, (target, source) => {
 }, { flush: 'sync' })
 
 onMounted(() => {
-    document.documentElement.classList.remove('light', 'dark')
-    document.documentElement.classList.add(themeStore.theme)
     setSceneActive(sceneActive.value)
 
     runAfterPageIdle(() => {
