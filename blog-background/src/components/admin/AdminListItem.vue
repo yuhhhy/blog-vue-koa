@@ -38,6 +38,7 @@ defineProps({
 .admin-list-item {
   position: relative;
   display: grid;
+  grid-template-areas: "leading content trailing actions";
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   min-height: 80px;
   align-items: center;
@@ -59,6 +60,7 @@ defineProps({
 }
 
 .admin-list-item__leading {
+  grid-area: leading;
   display: grid;
   width: 56px;
   height: 56px;
@@ -70,6 +72,7 @@ defineProps({
 }
 
 .admin-list-item__content {
+  grid-area: content;
   min-width: 0;
   align-self: center;
 }
@@ -111,6 +114,7 @@ defineProps({
 }
 
 .admin-list-item__trailing {
+  grid-area: trailing;
   display: flex;
   max-width: 300px;
   min-height: 48px;
@@ -123,6 +127,7 @@ defineProps({
 }
 
 .admin-list-item__actions {
+  grid-area: actions;
   display: grid;
   min-width: 48px;
   min-height: 48px;
@@ -140,11 +145,7 @@ defineProps({
     padding-left: 12px;
   }
 
-  .admin-list-item__leading { grid-area: leading; }
-  .admin-list-item__content { grid-area: content; }
-  .admin-list-item__actions { grid-area: actions; }
   .admin-list-item__trailing {
-    grid-area: trailing;
     min-height: 0;
     align-items: flex-start;
     justify-content: flex-start;
