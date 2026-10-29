@@ -21,3 +21,37 @@ export const apiDeleteEssay = (id) => request({
     method: 'DELETE',
     requireAuth: true,
 })
+
+export const apiGetEssayDrafts = () => request({
+    url: '/essay-drafts',
+    method: 'GET',
+    requireAuth: true,
+})
+
+export const apiGetEssayDraft = (id) => request({
+    url: `/essay-drafts/${id}`,
+    method: 'GET',
+    requireAuth: true,
+    suppressError: true,
+})
+
+export const apiCreateEssayDraft = (data) => request({
+    url: '/essay-drafts',
+    method: 'POST',
+    data,
+    requireAuth: true,
+})
+
+export const apiUpdateEssayDraft = (id, data) => request({
+    url: `/essay-drafts/${id}`,
+    method: 'PUT',
+    data,
+    requireAuth: true,
+})
+
+export const apiDeleteEssayDraft = (id) => request({
+    url: `/essay-drafts/${id}`,
+    method: 'DELETE',
+    requireAuth: true,
+    suppressError: true,
+})

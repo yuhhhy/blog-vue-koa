@@ -60,3 +60,43 @@ test('essay routes support publishing, editing, listing and deleting', async (t)
     assert.equal(deleted.status, 204)
     assert.deepEqual(await (await fetch(base)).json(), [])
 })
+
+test('essay drafts survive separate requests and reject stale updates', async (t) => {
+    const app = new Koa()
+    app.use(bodyParser())
+    app.use(router.routes())
+    const server = app.listen(0, '127.0.0.1')
+    await new Promise((resolve) => server.once('listening', resolve))
+    t.after(() => new Promise((resolve) => server.close(resolve)))
+
+    const base = `http://127.0.0.1:${server.address().port}/api/essay-drafts`
+    const token = jwt.sign({ role: 'admin' }, KEY)
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    const createdResponse = await fetch(base, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ title: '未完成', content: '云端内容' }),
+    })
+    assert.equal(createdResponse.status, 201)
+    const created = await createdResponse.json()
+
+    const restored = await (await fetch(`${base}/${created.id}`, { headers })).json()
+    assert.equal(restored.content, '云端内容')
+
+    const updatedResponse = await fetch(`${base}/${created.id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ version: created.version, content: '刷新后继续写' }),
+    })
+    assert.equal(updatedResponse.status, 200)
+    const updated = await updatedResponse.json()
+    assert.equal(updated.version, 2)
+
+    const staleResponse = await fetch(`${base}/${created.id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ version: created.version, content: '旧页面内容' }),
+    })
+    assert.equal(staleResponse.status, 409)
+    assert.equal((await staleResponse.json()).draft.content, '刷新后继续写')
+})
