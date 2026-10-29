@@ -1,27 +1,11 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useEssays } from '@/composables/useEssays.js'
+import { getFormatDateTimeToMinute } from '@/utils/date.js'
+import CommentEnvironmentIcon from '@/views/Blog/components/CommentEnvironmentIcon.vue'
 
 const { essays, loading, loadError, loadEssays } = useEssays()
 const retryLoadEssays = () => loadEssays({ force: true }).catch(() => {})
-
-const formatDate = (value) => new Intl.DateTimeFormat('zh-CN', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-}).format(new Date(value))
-
-const isDateTitle = (essay) => {
-    const parts = new Intl.DateTimeFormat('zh-CN', {
-        timeZone: 'Asia/Shanghai',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-    }).formatToParts(new Date(essay.createTime))
-    const value = (type) => parts.find((part) => part.type === type)?.value
-    return essay.title === `${value('year')}年${value('month')}月${value('day')}日随笔`
-}
 
 onMounted(() => loadEssays().catch(() => {}))
 </script>
@@ -41,7 +25,10 @@ onMounted(() => loadEssays().catch(() => {}))
         <div v-else class="essay-list">
             <article v-for="essay in essays" :key="essay.id" class="essay-item">
                 <h2>{{ essay.title }}</h2>
-                <time v-if="!isDateTitle(essay)" :datetime="essay.createTime">{{ formatDate(essay.createTime) }}</time>
+                <time :datetime="essay.createTime">
+                    <CommentEnvironmentIcon kind="time" :value="essay.createTime" timezone="Asia/Shanghai" />
+                    {{ getFormatDateTimeToMinute(essay.createTime) }}
+                </time>
                 <p>{{ essay.content }}</p>
             </article>
         </div>
@@ -103,7 +90,9 @@ onMounted(() => loadEssays().catch(() => {}))
 }
 
 .essay-item time {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     margin-top: 8px;
     color: var(--quote-color);
     font-size: 0.875rem;
