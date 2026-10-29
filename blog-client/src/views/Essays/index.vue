@@ -4,10 +4,9 @@ import { useEssays } from '@/composables/useEssays.js'
 import { getFormatDateTimeToMinute } from '@/utils/date.js'
 import CommentEnvironmentIcon from '@/views/Blog/components/CommentEnvironmentIcon.vue'
 
-const shenzhenLocation = Object.freeze({ latitude: 22.5431, longitude: 114.0579 })
-
 const { essays, loading, loadError, loadEssays } = useEssays()
 const retryLoadEssays = () => loadEssays({ force: true }).catch(() => {})
+const getEssayDisplayTitle = (title) => title.replace(/^\d{4}年(?=\d{1,2}月\d{1,2}日随笔$)/, '')
 
 onMounted(() => loadEssays().catch(() => {}))
 </script>
@@ -26,16 +25,22 @@ onMounted(() => loadEssays().catch(() => {}))
         <div v-else-if="!essays.length" class="essay-status">暂无随笔</div>
         <div v-else class="essay-list">
             <article v-for="essay in essays" :key="essay.id" class="essay-item">
-                <h2>{{ essay.title }}</h2>
-                <time :datetime="essay.createTime">
+                <h2>{{ getEssayDisplayTitle(essay.title) }}</h2>
+                <div class="essay-meta">
+                    <time :datetime="essay.createTime">
+                        {{ getFormatDateTimeToMinute(essay.createTime) }}
+                    </time>
+                    <template v-if="essay.solarLocation?.region">
+                        <span aria-hidden="true">·</span>
+                        <span>{{ essay.solarLocation.region }}</span>
+                    </template>
                     <CommentEnvironmentIcon
                         kind="time"
                         :value="essay.createTime"
                         timezone="Asia/Shanghai"
-                        :location="shenzhenLocation"
+                        :location="essay.solarLocation"
                     />
-                    {{ getFormatDateTimeToMinute(essay.createTime) }}
-                </time>
+                </div>
                 <p>{{ essay.content }}</p>
             </article>
         </div>
@@ -96,13 +101,19 @@ onMounted(() => loadEssays().catch(() => {}))
     overflow-wrap: anywhere;
 }
 
-.essay-item time {
+.essay-meta {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     margin-top: 8px;
     color: var(--quote-color);
     font-size: 0.875rem;
+}
+
+.essay-meta time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .essay-status {

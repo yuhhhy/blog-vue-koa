@@ -16,11 +16,16 @@ test('essay routes support publishing, editing, listing and deleting', async (t)
 
     const base = `http://127.0.0.1:${server.address().port}/api/essays`
     const token = jwt.sign({ role: 'admin' }, KEY)
-    const jsonHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    const jsonHeaders = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        'X-Forwarded-For': '223.5.5.5',
+    }
 
     const initialResponse = await fetch(base)
     const initialEssays = await initialResponse.json()
     assert.ok(initialEssays.length >= 3)
+    assert.ok(initialEssays.every((item) => item.solarLocation?.region))
 
     const unauthorized = await fetch(base, {
         method: 'POST',
@@ -43,8 +48,13 @@ test('essay routes support publishing, editing, listing and deleting', async (t)
     })
     assert.equal(created.status, 201)
     const essay = await created.json()
-    assert.match(essay.title, /^\d{4}年\d{1,2}月\d{1,2}日随笔$/)
+    assert.match(essay.title, /^\d{1,2}月\d{1,2}日随笔$/)
     assert.equal(essay.content, '第一段\n第二段')
+    assert.deepEqual(essay.solarLocation, {
+        latitude: 30.2741,
+        longitude: 120.1551,
+        region: '浙江省 杭州市',
+    })
 
     const listed = await fetch(base)
     const listedEssays = await listed.json()
@@ -57,7 +67,9 @@ test('essay routes support publishing, editing, listing and deleting', async (t)
         body: JSON.stringify({ title: '后来想到的标题', content: '修改后的正文' }),
     })
     assert.equal(updated.status, 200)
-    assert.equal((await updated.json()).title, '后来想到的标题')
+    const updatedEssay = await updated.json()
+    assert.equal(updatedEssay.title, '后来想到的标题')
+    assert.deepEqual(updatedEssay.solarLocation, essay.solarLocation)
 
     const deleted = await fetch(`${base}/${essay.id}`, { method: 'DELETE', headers: jsonHeaders })
     assert.equal(deleted.status, 204)

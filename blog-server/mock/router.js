@@ -6,7 +6,7 @@ import KEY from '../config/key.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { normalizeEssayInput } from '../utils/essay.js'
 import { getNextLinkSortOrder, normalizeLinkSortOrder } from '../utils/linkSort.js'
-import { parseBrowserAndOS } from '../utils/index.js'
+import { getIp, parseBrowserAndOS, parseIpSolarLocation } from '../utils/index.js'
 import {
     createMockWebsiteData,
     mockComments,
@@ -128,10 +128,12 @@ router.post('/essays', requireAdmin, (ctx) => {
     const now = new Date()
     const values = normalizeEssayInput(ctx.request.body, now)
     if (values.error) ctx.throw(422, values.error)
+    const solarLocation = parseIpSolarLocation(getIp(ctx))
 
     const essay = {
         id: randomUUID(),
         ...values,
+        ...(solarLocation ? { solarLocation } : {}),
         createTime: now.toISOString(),
         updateTime: now.toISOString(),
     }

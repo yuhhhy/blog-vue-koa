@@ -1,12 +1,11 @@
 export const defaultEssayTitle = (date = new Date()) => {
     const parts = new Intl.DateTimeFormat('zh-CN', {
         timeZone: 'Asia/Shanghai',
-        year: 'numeric',
         month: 'numeric',
         day: 'numeric',
     }).formatToParts(date)
     const value = (type) => parts.find((part) => part.type === type)?.value
-    return `${value('year')}年${value('month')}月${value('day')}日随笔`
+    return `${value('month')}月${value('day')}日随笔`
 }
 
 export const normalizeEssayInput = (input, date = new Date()) => {
