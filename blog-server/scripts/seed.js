@@ -3,6 +3,7 @@ import { Blog } from '../models/BlogSchema.js'
 import { BlogContent } from '../models/BlogContentSchema.js'
 import { Comment } from '../models/CommentSchema.js'
 import { Links } from '../models/LinksSchema.js'
+import { Essay } from '../models/EssaySchema.js'
 import { WebsiteData } from '../models/WebsiteDataSchema.js'
 import { User } from '../models/UserSchema.js'
 import {
@@ -10,6 +11,7 @@ import {
     mockComments,
     mockLinks,
     mockPosts,
+    mockEssays,
 } from '../mock/data.js'
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/blog'
@@ -40,6 +42,7 @@ const seed = async () => {
         BlogContent.deleteMany({}),
         Comment.deleteMany({}),
         Links.deleteMany({}),
+        Essay.deleteMany({}),
         WebsiteData.deleteMany({}),
     ])
 
@@ -52,6 +55,7 @@ const seed = async () => {
         BlogContent.insertMany(contents),
         Comment.insertMany(mockComments),
         Links.insertMany(mockLinks),
+        Essay.insertMany(mockEssays),
         WebsiteData.create(website),
     ])
 
@@ -67,7 +71,7 @@ const seed = async () => {
         console.log('Created admin user (admin / admin123)')
     }
 
-    console.log(`Inserted ${blogs.length} blogs, ${mockComments.length} comments, ${mockLinks.length} links`)
+    console.log(`Inserted ${blogs.length} blogs, ${mockEssays.length} essays, ${mockComments.length} comments, ${mockLinks.length} links`)
     await mongoose.disconnect()
     console.log('Done')
 }

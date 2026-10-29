@@ -18,8 +18,9 @@ test('essay routes support publishing, editing, listing and deleting', async (t)
     const token = jwt.sign({ role: 'admin' }, KEY)
     const jsonHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
 
-    const empty = await fetch(base)
-    assert.deepEqual(await empty.json(), [])
+    const initialResponse = await fetch(base)
+    const initialEssays = await initialResponse.json()
+    assert.ok(initialEssays.length >= 3)
 
     const unauthorized = await fetch(base, {
         method: 'POST',
@@ -46,7 +47,9 @@ test('essay routes support publishing, editing, listing and deleting', async (t)
     assert.equal(essay.content, '第一段\n第二段')
 
     const listed = await fetch(base)
-    assert.deepEqual((await listed.json()).map((item) => item.id), [essay.id])
+    const listedEssays = await listed.json()
+    assert.equal(listedEssays.length, initialEssays.length + 1)
+    assert.ok(listedEssays.some((item) => item.id === essay.id))
 
     const updated = await fetch(`${base}/${essay.id}`, {
         method: 'PUT',
@@ -58,7 +61,10 @@ test('essay routes support publishing, editing, listing and deleting', async (t)
 
     const deleted = await fetch(`${base}/${essay.id}`, { method: 'DELETE', headers: jsonHeaders })
     assert.equal(deleted.status, 204)
-    assert.deepEqual(await (await fetch(base)).json(), [])
+    assert.deepEqual(
+        (await (await fetch(base)).json()).map((item) => item.id),
+        initialEssays.map((item) => item.id),
+    )
 })
 
 test('essay drafts survive separate requests and reject stale updates', async (t) => {

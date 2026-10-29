@@ -12,6 +12,7 @@ import {
     mockComments,
     mockLinks,
     mockPosts,
+    mockEssays,
     mockUsers,
     mockVisitors,
 } from './data.js'
@@ -60,7 +61,7 @@ const state = {
     users: clone(mockUsers),
     visitors: clone(mockVisitors),
     drafts: [],
-    essays: [],
+    essays: clone(mockEssays),
     essayDrafts: [],
     website: createMockWebsiteData(),
 }
