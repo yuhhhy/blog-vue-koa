@@ -243,18 +243,24 @@ async function handleConfirm() {
               'link-sort-item--dragging': draggingId === item.id,
               'link-sort-item--over': dragOverId === item.id,
             }"
-            :draggable="sortBy === 'category-order' && !sorting"
-            @dragstart="handleDragStart($event, item)"
             @dragover.prevent="handleDragOver(item)"
             @drop.prevent="handleDrop(item)"
+          >
+          <span
+            v-if="sortBy === 'category-order'"
+            class="link-drag-handle"
+            :draggable="!sorting"
+            role="button"
+            :aria-label="`拖动调整 ${item.name} 的顺序`"
+            title="拖动调整顺序"
+            @dragstart="handleDragStart($event, item)"
             @dragend="handleDragEnd"
           >
+            <MaterialIcon :path="mdiDragVertical" aria-hidden="true" />
+          </span>
           <AdminListItem :headline="item.name" :supporting-text="item.description">
             <template #leading>
-              <div class="link-leading">
-                <MaterialIcon v-if="sortBy === 'category-order'" :path="mdiDragVertical" class="link-drag-handle" aria-hidden="true" />
-                <AdminAvatar :src="item.avatar" :alt="`${item.name} 的头像`" />
-              </div>
+              <AdminAvatar :src="item.avatar" :alt="`${item.name} 的头像`" />
             </template>
             <template #supporting>
               <span class="link-category-badge">{{ categoryLabels[item.category || 'friend'] }}</span>
@@ -327,20 +333,38 @@ async function handleConfirm() {
 .list-toolbar__actions { display: flex; align-items: center; gap: 8px; }
 
 .link-sort-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
   border-radius: 8px;
   transition: opacity 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
 
-.link-sort-item[draggable="true"] { cursor: grab; }
-.link-sort-item[draggable="true"]:active { cursor: grabbing; }
+.link-sort-item :deep(.admin-list-item) { min-width: 0; }
 .link-sort-item--dragging { opacity: 0.45; }
 .link-sort-item--over {
   transform: translateY(2px);
   box-shadow: 0 -3px 0 var(--md-sys-color-primary);
 }
 
-.link-leading { display: flex; align-items: center; gap: 8px; }
-.link-drag-handle { color: var(--md-sys-color-on-surface-variant); }
+.link-drag-handle {
+  display: grid;
+  width: 30px;
+  height: 48px;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: grab;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.link-drag-handle:hover {
+  color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-primary-container);
+}
+
+.link-drag-handle:active { cursor: grabbing; }
 
 .link-address {
   display: block;
