@@ -228,7 +228,7 @@ onMounted(() => {
     background-color: var(--page-explore-background);
     background-image:
         linear-gradient(var(--paper-overlay), var(--paper-overlay)),
-        url('/textures/kraft-paper.jpg');
+        url('../../assets/textures/kraft-paper.webp');
     background-size: cover, 920px 920px;
     background-repeat: no-repeat, repeat;
 }
@@ -280,7 +280,7 @@ onMounted(() => {
     inset: 0;
     background-image: var(--pattern-image);
     background-position: 0 0;
-    background-size: 320px 320px;
+    background-size: var(--pattern-size, 320px 320px);
     background-repeat: repeat;
     opacity: var(--pattern-opacity);
     mix-blend-mode: var(--pattern-blend-mode);
@@ -288,19 +288,23 @@ onMounted(() => {
 }
 
 .layout--about {
-    --pattern-image: url('/textures/sakura-weave.webp');
+    --pattern-image: url('../../assets/textures/sakura-weave.webp');
+    --pattern-size: 160px 160px;
 }
 
 .layout--essays {
-    --pattern-image: url('/textures/cloud-weave.webp');
+    --pattern-image: url('../../assets/textures/cloud-weave.webp');
+    --pattern-size: 175px 172px;
 }
 
 .layout--archive {
-    --pattern-image: url('/textures/leaf-weave.webp');
+    --pattern-image: url('../../assets/textures/leaf-weave.webp');
+    --pattern-size: 320px 320px;
 }
 
 .layout--blog {
-    --pattern-image: url('/textures/leaf-weave.webp');
+    --pattern-image: url('../../assets/textures/leaf-weave.webp');
+    --pattern-size: 320px 320px;
 }
 
 .layout--about::before,

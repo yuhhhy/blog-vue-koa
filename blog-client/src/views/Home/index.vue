@@ -477,7 +477,7 @@ onBeforeUnmount(() => transitions.cancel())
     background-color: var(--page-explore-background);
     background-image:
         linear-gradient(var(--paper-overlay), var(--paper-overlay)),
-        url('/textures/kraft-paper.jpg');
+        url('../../assets/textures/kraft-paper.webp');
     background-size: cover, 920px 920px;
     background-repeat: no-repeat, repeat;
     overscroll-behavior: contain;
@@ -653,7 +653,7 @@ onBeforeUnmount(() => transitions.cancel())
     inset: 0;
     background-image: var(--pattern-image);
     background-position: 0 0;
-    background-size: 320px 320px;
+    background-size: var(--pattern-size, 320px 320px);
     background-repeat: repeat;
     opacity: var(--pattern-opacity);
     mix-blend-mode: var(--pattern-blend-mode);
@@ -723,7 +723,8 @@ onBeforeUnmount(() => transitions.cancel())
 }
 
 .home-section--about {
-    --pattern-image: url('/textures/sakura-weave.webp');
+    --pattern-image: url('../../assets/textures/sakura-weave.webp');
+    --pattern-size: 160px 160px;
     background-color: var(--about-block);
     clip-path: polygon(0 0, 100% 0, 100% 0, 0 50%);
 }
@@ -734,7 +735,8 @@ onBeforeUnmount(() => transitions.cancel())
 }
 
 .home-section--essays {
-    --pattern-image: url('/textures/cloud-weave.webp');
+    --pattern-image: url('../../assets/textures/cloud-weave.webp');
+    --pattern-size: 175px 172px;
     background-color: var(--essays-block);
     /* Duplicate the bottom-right vertex, as in the original essays-expand
        keyframe. Its travel along the bottom edge creates the rotating reveal;
@@ -748,7 +750,8 @@ onBeforeUnmount(() => transitions.cancel())
 }
 
 .home-section--archive {
-    --pattern-image: url('/textures/leaf-weave.webp');
+    --pattern-image: url('../../assets/textures/leaf-weave.webp');
+    --pattern-size: 320px 320px;
     background-color: var(--archive-block);
     clip-path: polygon(0 50%, 100% 100%, 100% 100%, 0 100%);
 }
