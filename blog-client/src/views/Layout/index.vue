@@ -1,12 +1,12 @@
 <script setup>
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useThemeStore } from '@/stores/themeStore.js'
 import { apiUpdateWebsiteVisit } from '@/api/websiteData.js'
 import { useBlogList } from '@/composables/useBlogList.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import HomeCornerReturn from '@/components/HomeCornerReturn.vue'
 import HomePage from '@/views/Home/index.vue'
+import PageToolbar from '@/components/PageToolbar.vue'
 
 import EmaScene from '@/components/ema/EmaScene.vue'
 import { createEmaController } from '@/ema/controller.js'
@@ -15,7 +15,6 @@ import { emaContextKey } from '@/ema/context.js'
 const ema = createEmaController()
 provide(emaContextKey, ema)
 
-const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
 const { fetchBlogList } = useBlogList()
@@ -25,13 +24,19 @@ const pageBackgroundShape = ref(route.meta.backgroundShape || '')
 const routeTransition = ref('')
 const routeTransitionScrollOffset = ref('0px')
 const routeTransitionReturnOffset = ref('0px')
+const routeTransitionDocumentHeight = ref('100vh')
 const routeTransitionDuration = computed(() => {
-    if (routeTransition.value === 'article-archive') return 1320
     return routeTransition.value ? 980 : 0
 })
 let archiveScrollPosition = 0
+let articleScrollPosition = 0
 let previousBodyMinHeight = ''
 let articleTransitionLocked = false
+let routeTransitionId = 0
+let routeTransitionTargetScrollPosition = 0
+// A cancelled enter can finish after its replacement has already started.
+// Keep hook ownership on the element so stale cleanup cannot stop the new leg.
+const enterTransitionIds = new WeakMap()
 const showCornerReturn = computed(() => ['About', 'Essays', 'Archive', 'Blog'].includes(route.name))
 const cornerReturnLabel = computed(() => route.name === 'Blog' ? '返回文章列表' : '返回首页')
 const returnFromPage = async () => {
@@ -58,7 +63,9 @@ const applyRouteBackground = () => {
 const lockArticleTransitionScroll = () => {
     if (articleTransitionLocked) return
     previousBodyMinHeight = document.body.style.minHeight
-    document.body.style.minHeight = `${Math.max(document.documentElement.scrollHeight, window.innerHeight)}px`
+    const documentHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight)
+    routeTransitionDocumentHeight.value = `${documentHeight}px`
+    document.body.style.minHeight = routeTransitionDocumentHeight.value
     document.documentElement.classList.add('is-article-transitioning')
     articleTransitionLocked = true
 }
@@ -69,16 +76,28 @@ const unlockArticleTransitionScroll = () => {
     previousBodyMinHeight = ''
     articleTransitionLocked = false
 }
-const finishRouteTransition = async () => {
-    const completedTransition = routeTransition.value
+const prepareRouteTransitionEnter = (element) => {
+    enterTransitionIds.set(element, {
+        id: routeTransitionId,
+        name: routeTransition.value,
+    })
+}
+const finishRouteTransition = async (element) => {
+    const transition = enterTransitionIds.get(element)
+    if (!transition
+        || transition.id !== routeTransitionId
+        || transition.name !== routeTransition.value) return
+
+    const completedTransition = transition.name
     if (completedTransition === 'archive-article') {
         applyRouteBackground()
     }
     routeTransition.value = ''
     await nextTick()
-    window.scrollTo(0, completedTransition === 'article-archive' ? archiveScrollPosition : 0)
+    window.scrollTo(0, routeTransitionTargetScrollPosition)
     routeTransitionScrollOffset.value = '0px'
     routeTransitionReturnOffset.value = '0px'
+    routeTransitionDocumentHeight.value = '100vh'
     unlockArticleTransitionScroll()
 }
 const setSceneActive = (active) => {
@@ -88,28 +107,41 @@ const setSceneActive = (active) => {
 
 watch(() => route.name, (target, source) => {
     if (source === 'Archive' && target === 'Blog') {
+        const isReversingReturn = routeTransition.value === 'article-archive'
         lockArticleTransitionScroll()
-        archiveScrollPosition = window.scrollY
-        routeTransitionScrollOffset.value = `${window.scrollY}px`
+        if (!isReversingReturn) {
+            archiveScrollPosition = window.scrollY
+            articleScrollPosition = 0
+        }
+        routeTransitionScrollOffset.value = `${isReversingReturn ? 0 : archiveScrollPosition}px`
+        routeTransitionTargetScrollPosition = articleScrollPosition
+        routeTransitionId += 1
         routeTransition.value = 'archive-article'
         return
     }
 
     if (source === 'Blog' && target === 'Archive') {
+        const isReversingOpening = routeTransition.value === 'archive-article'
         lockArticleTransitionScroll()
+        if (!isReversingOpening) articleScrollPosition = window.scrollY
         routeTransitionReturnOffset.value = `${window.scrollY - archiveScrollPosition}px`
+        routeTransitionTargetScrollPosition = archiveScrollPosition
+        routeTransitionId += 1
         routeTransition.value = 'article-archive'
         applyRouteBackground()
         return
     }
 
+    routeTransitionId += 1
     routeTransition.value = ''
+    routeTransitionScrollOffset.value = '0px'
+    routeTransitionReturnOffset.value = '0px'
+    routeTransitionDocumentHeight.value = '100vh'
     applyRouteBackground()
+    unlockArticleTransitionScroll()
 }, { flush: 'sync' })
 
 onMounted(() => {
-    document.documentElement.classList.remove('light', 'dark')
-    document.documentElement.classList.add(themeStore.theme)
     setSceneActive(sceneActive.value)
 
     runAfterPageIdle(() => {
@@ -137,7 +169,10 @@ onMounted(() => {
                 'is-scene-active': sceneActive,
             },
         ]"
-        :style="{ backgroundColor: pageBackground }"
+        :style="{
+            backgroundColor: pageBackground,
+            '--route-transition-document-height': routeTransitionDocumentHeight,
+        }"
         :inert="sceneActive"
         :aria-hidden="sceneActive"
     >
@@ -157,6 +192,7 @@ onMounted(() => {
                             :name="routeTransition"
                             :css="Boolean(routeTransition)"
                             :duration="routeTransitionDuration"
+                            @before-enter="prepareRouteTransitionEnter"
                             @after-enter="finishRouteTransition"
                             @enter-cancelled="finishRouteTransition"
                         >
@@ -169,6 +205,7 @@ onMounted(() => {
                     </RouterView>
                 </div>
             </main>
+            <PageToolbar />
         </div>
     </div>
 </template>
@@ -188,10 +225,10 @@ onMounted(() => {
 }
 
 .layout--explore {
-    background-color: #e7d3ad;
+    background-color: var(--page-explore-background);
     background-image:
-        linear-gradient(rgba(255, 249, 232, 0.5), rgba(255, 249, 232, 0.5)),
-        url('/textures/kraft-paper.jpg');
+        linear-gradient(var(--paper-overlay), var(--paper-overlay)),
+        url('../../assets/textures/kraft-paper.webp');
     background-size: cover, 920px 920px;
     background-repeat: no-repeat, repeat;
 }
@@ -200,36 +237,37 @@ onMounted(() => {
 .layout--essays,
 .layout--archive,
 .layout--blog {
-    --white: #ffffff;
-    --light: #fafcf9;
-    --lightgrey: #ccd9d9;
-    --light-dark: #354b56;
-    --dark: #263846;
-    --black: #263846;
-    --quote-color: #526976;
-    --border-color: #d3dfdf;
-    --blue: #263846;
-    --skyblue: #3e7181;
-    --b-color: #263846;
+    --white: var(--section-surface);
+    --light: var(--section-surface);
+    --lightgrey: var(--section-border);
+    --light-dark: var(--section-body);
+    --dark: var(--section-text);
+    --black: var(--section-text);
+    --quote-color: var(--section-muted);
+    --border-color: var(--section-border);
+    --blue: var(--section-text);
+    --skyblue: var(--section-link);
+    --b-color: var(--section-text);
     color: var(--black);
-    color-scheme: light;
-    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
+    background-image: var(--section-gradient);
 }
 
 .layout::before {
     position: fixed;
     z-index: 1;
     inset: 0;
-    background-color: #fafcf9;
-    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.3), transparent 45%, rgba(71, 55, 55, 0.08));
+    background-color: var(--section-surface);
+    background-image: var(--section-gradient);
     pointer-events: none;
     transition: clip-path 900ms cubic-bezier(0.76, 0, 0.24, 1);
     will-change: clip-path;
 }
 
-.layout--article-returning::before {
-    transition-duration: 1250ms;
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+.layout--article-returning {
+    // The browser is still at the article's scroll position while the archive
+    // enters. Keep this ancestor covering that viewport so its fixed background
+    // is not culled when the shorter archive replaces a deeply scrolled article.
+    min-height: var(--route-transition-document-height, 100vh);
 }
 
 .layout--about::after,
@@ -242,27 +280,31 @@ onMounted(() => {
     inset: 0;
     background-image: var(--pattern-image);
     background-position: 0 0;
-    background-size: 320px 320px;
+    background-size: var(--pattern-size, 320px 320px);
     background-repeat: repeat;
-    opacity: 0.05;
-    mix-blend-mode: multiply;
+    opacity: var(--pattern-opacity);
+    mix-blend-mode: var(--pattern-blend-mode);
     pointer-events: none;
 }
 
 .layout--about {
-    --pattern-image: url('/textures/sakura-weave.webp');
+    --pattern-image: url('../../assets/textures/sakura-weave.webp');
+    --pattern-size: 160px 160px;
 }
 
 .layout--essays {
-    --pattern-image: url('/textures/cloud-weave.webp');
+    --pattern-image: url('../../assets/textures/cloud-weave.webp');
+    --pattern-size: 175px 172px;
 }
 
 .layout--archive {
-    --pattern-image: url('/textures/leaf-weave.webp');
+    --pattern-image: url('../../assets/textures/leaf-weave.webp');
+    --pattern-size: 320px 320px;
 }
 
 .layout--blog {
-    --pattern-image: url('/textures/leaf-weave.webp');
+    --pattern-image: url('../../assets/textures/leaf-weave.webp');
+    --pattern-size: 320px 320px;
 }
 
 .layout--about::before,
@@ -293,6 +335,8 @@ onMounted(() => {
     position: relative;
     z-index: 2;
     display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
     flex-direction: column;
     min-width: 0;
 }
@@ -322,41 +366,59 @@ onMounted(() => {
     top: 0;
     left: 0;
     width: 100%;
-    transform-origin: left bottom;
-    transition: opacity 520ms ease, transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
+    transform: translateY(var(--route-transition-return-offset, 0px));
+}
+
+.archive-article-leave-active .page-heading,
+.archive-article-leave-active .archive-year,
+.article-archive-enter-active .page-heading,
+.article-archive-enter-active .archive-year {
+    transform-origin: left center;
+    transition:
+        opacity 600ms ease,
+        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
     will-change: opacity, transform;
 }
 
-.archive-article-leave-to {
+.archive-article-leave-to .page-heading,
+.archive-article-leave-to .archive-year,
+.article-archive-enter-from .page-heading,
+.article-archive-enter-from .archive-year {
     opacity: 0;
-    transform: translate(26vw, -20vh) rotate(-6deg);
+    transform: translate3d(18vw, -8vh, 0) rotate(-3deg);
 }
 
-.archive-article-enter-from {
-    .blog-surface {
-        opacity: 0;
-        transform: translate(-18vw, calc(24vh + var(--route-transition-scroll-offset, 0px))) rotate(6deg);
-    }
+.archive-article-enter-from .blog-surface {
+    opacity: 0;
+    transform: translate(-18vw, calc(24vh + var(--route-transition-scroll-offset, 0px))) rotate(3deg);
 }
 
 .archive-article-enter-active {
     backface-visibility: hidden;
-
-    .blog-surface {
-        backface-visibility: hidden;
-        transform-origin: left bottom;
-        transition:
-            opacity 650ms 80ms ease,
-            transform 900ms 80ms cubic-bezier(0.76, 0, 0.24, 1);
-        will-change: opacity, transform;
-    }
 }
 
-.archive-article-enter-to {
-    .blog-surface {
-        opacity: 1;
-        transform: translate(0, var(--route-transition-scroll-offset, 0px)) rotate(0);
-    }
+.archive-article-enter-active .blog-surface,
+.article-archive-leave-active .blog-surface {
+    backface-visibility: hidden;
+    transform-origin: left bottom;
+    will-change: opacity, transform;
+}
+
+.archive-article-enter-active .blog-surface {
+    transition:
+        opacity 600ms ease,
+        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.article-archive-leave-active .blog-surface {
+    transition:
+        opacity 600ms ease,
+        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.archive-article-enter-to .blog-surface {
+    opacity: 1;
+    transform: translate(0, var(--route-transition-scroll-offset, 0px)) rotate(0);
 }
 
 .article-archive-leave-active {
@@ -367,16 +429,11 @@ onMounted(() => {
     top: 0;
     left: 0;
     width: 100%;
-    transform-origin: left bottom;
-    transition:
-        opacity 340ms ease,
-        transform 900ms cubic-bezier(0.76, 0, 0.24, 1);
-    will-change: opacity, transform;
 }
 
-.article-archive-leave-to {
+.article-archive-leave-to .blog-surface {
     opacity: 0;
-    transform: translate(-18vw, 24vh) rotate(6deg);
+    transform: translate(-18vw, calc(24vh + var(--route-transition-scroll-offset, 0px))) rotate(3deg);
 }
 
 .article-archive-enter-active {
@@ -384,25 +441,6 @@ onMounted(() => {
     z-index: 3;
     backface-visibility: hidden;
     transform: translateY(var(--route-transition-return-offset, 0px));
-}
-
-.article-archive-enter-from .page-heading,
-.article-archive-enter-from .archive-year {
-    opacity: 0;
-    transform: translate3d(18vw, -8vh, 0) rotate(-3deg);
-}
-
-.article-archive-enter-active .page-heading,
-.article-archive-enter-active .archive-year {
-    transform-origin: left center;
-    transition:
-        opacity 1050ms ease,
-        transform 1250ms cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity, transform;
-}
-
-.article-archive-enter-active .archive-year {
-    transition-delay: 0ms, 0ms;
 }
 
 .article-archive-enter-to .page-heading,
@@ -413,9 +451,10 @@ onMounted(() => {
 
 @media (prefers-reduced-motion: reduce) {
     .layout::before,
-    .archive-article-leave-active,
+    .archive-article-leave-active .page-heading,
+    .archive-article-leave-active .archive-year,
     .archive-article-enter-active .blog-surface,
-    .article-archive-leave-active,
+    .article-archive-leave-active .blog-surface,
     .article-archive-enter-active,
     .article-archive-enter-active .page-heading,
     .article-archive-enter-active .archive-year {

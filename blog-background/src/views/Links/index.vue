@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import { mdiPlus } from '@mdi/js'
+import { mdiDragVertical, mdiPlus } from '@mdi/js'
 import { getLinks, createLink, updateLink, deleteLink } from '@/api/links.js'
 import { getTimestampToSeconds } from '@/utils/date.js'
 import AdminActionMenu from '@/components/admin/AdminActionMenu.vue'
@@ -15,12 +15,17 @@ import AdminListItem from '@/components/admin/AdminListItem.vue'
 import AdminListSort from '@/components/admin/AdminListSort.vue'
 import AdminPage from '@/components/admin/AdminPage.vue'
 import MaterialTextField from '@/components/material/MaterialTextField.vue'
+import MaterialIcon from '@/components/MaterialIcon.vue'
+import { reorderLinksWithinCategory } from '@/utils/linkOrder.js'
 
 const tableData = ref([])
 const loading = ref(true)
 const dialogFormVisible = ref(false)
 const deleteDialogVisible = ref(false)
 const pendingDelete = ref(null)
+const draggingId = ref('')
+const dragOverId = ref('')
+const sorting = ref(false)
 const formErrors = reactive({ name: '', description: '', site: '', avatar: '', sortOrder: '' })
 const sortBy = ref('category-order')
 const sortOptions = [
@@ -80,6 +85,57 @@ async function getLinksList() {
     tableData.value = await getLinks()
   } finally {
     loading.value = false
+  }
+}
+
+function handleDragStart(event, item) {
+  if (sortBy.value !== 'category-order' || sorting.value) {
+    event.preventDefault()
+    return
+  }
+  draggingId.value = item.id
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', item.id)
+}
+
+function handleDragOver(item) {
+  const dragged = tableData.value.find(link => link.id === draggingId.value)
+  if (!dragged || (dragged.category || 'friend') !== (item.category || 'friend')) {
+    dragOverId.value = ''
+    return
+  }
+  dragOverId.value = item.id
+}
+
+function handleDragEnd() {
+  draggingId.value = ''
+  dragOverId.value = ''
+}
+
+async function handleDrop(item) {
+  const updates = reorderLinksWithinCategory(sortedLinks.value, draggingId.value, item.id)
+  handleDragEnd()
+  if (!updates.length) return
+
+  const previous = new Map(tableData.value.map(link => [link.id, link.sortOrder]))
+  updates.forEach((update) => {
+    const link = tableData.value.find(candidate => candidate.id === update.id)
+    if (link) link.sortOrder = update.sortOrder
+  })
+
+  sorting.value = true
+  try {
+    await Promise.all(updates.map(updateLink))
+    showMessage('友链顺序已保存', 'success')
+  } catch (error) {
+    console.error(error)
+    tableData.value.forEach((link) => {
+      if (previous.has(link.id)) link.sortOrder = previous.get(link.id)
+    })
+    await getLinksList()
+    showMessage('顺序保存失败，请重试', 'error')
+  } finally {
+    sorting.value = false
   }
 }
 
@@ -173,14 +229,35 @@ async function handleConfirm() {
   <AdminPage>
     <AdminCard title="友链列表">
       <div class="list-toolbar">
-        <span>{{ sortedLinks.length }} 个友链</span>
+        <span>{{ sortedLinks.length }} 个友链<span v-if="sortBy === 'category-order'"> · 拖动同类友链调整顺序</span></span>
         <div class="list-toolbar__actions">
           <AdminButton tone="primary" :icon="mdiPlus" @click="handleAddLink">新增友链</AdminButton>
           <AdminListSort v-model="sortBy" :options="sortOptions" />
         </div>
       </div>
-      <AdminList :items="sortedLinks" item-key="id" :loading="loading" empty-text="暂无友链">
+      <AdminList :items="sortedLinks" item-key="id" :loading="loading || sorting" :page-size="Math.max(sortedLinks.length, 1)" empty-text="暂无友链">
         <template #item="{ item }">
+          <div
+            class="link-sort-item"
+            :class="{
+              'link-sort-item--dragging': draggingId === item.id,
+              'link-sort-item--over': dragOverId === item.id,
+            }"
+            @dragover.prevent="handleDragOver(item)"
+            @drop.prevent="handleDrop(item)"
+          >
+          <span
+            v-if="sortBy === 'category-order'"
+            class="link-drag-handle"
+            :draggable="!sorting"
+            role="button"
+            :aria-label="`拖动调整 ${item.name} 的顺序`"
+            title="拖动调整顺序"
+            @dragstart="handleDragStart($event, item)"
+            @dragend="handleDragEnd"
+          >
+            <MaterialIcon :path="mdiDragVertical" aria-hidden="true" />
+          </span>
           <AdminListItem :headline="item.name" :supporting-text="item.description">
             <template #leading>
               <AdminAvatar :src="item.avatar" :alt="`${item.name} 的头像`" />
@@ -195,6 +272,7 @@ async function handleConfirm() {
               <AdminActionMenu :actions="rowActions" @select="handleRowAction($event, item)" />
             </template>
           </AdminListItem>
+          </div>
         </template>
       </AdminList>
     </AdminCard>
@@ -253,6 +331,40 @@ async function handleConfirm() {
 }
 
 .list-toolbar__actions { display: flex; align-items: center; gap: 8px; }
+
+.link-sort-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  transition: opacity 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+.link-sort-item :deep(.admin-list-item) { min-width: 0; }
+.link-sort-item--dragging { opacity: 0.45; }
+.link-sort-item--over {
+  transform: translateY(2px);
+  box-shadow: 0 -3px 0 var(--md-sys-color-primary);
+}
+
+.link-drag-handle {
+  display: grid;
+  width: 30px;
+  height: 48px;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: grab;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.link-drag-handle:hover {
+  color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-primary-container);
+}
+
+.link-drag-handle:active { cursor: grabbing; }
 
 .link-address {
   display: block;

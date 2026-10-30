@@ -4,9 +4,9 @@ import { defaultEssayTitle, normalizeEssayInput } from './essay.js'
 
 test('untitled essays use the publishing date in China', () => {
     const date = new Date('2026-10-27T17:30:00.000Z')
-    assert.equal(defaultEssayTitle(date), '2026年10月28日随笔')
+    assert.equal(defaultEssayTitle(date), '10月28日随笔')
     assert.deepEqual(normalizeEssayInput({ title: '  ', content: '  今天的记录  ' }, date), {
-        title: '2026年10月28日随笔',
+        title: '10月28日随笔',
         content: '今天的记录',
     })
 })

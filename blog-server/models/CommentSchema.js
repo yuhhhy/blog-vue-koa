@@ -11,6 +11,14 @@ const CommentSchema = new mongoose.Schema({
     browser: { type: String, default: '' },
     os: { type: String, default: '' },
     timezone: { type: String, default: 'Asia/Shanghai' },
+    solarLocation: {
+        type: new mongoose.Schema({
+            latitude: { type: Number, required: true, min: -90, max: 90 },
+            longitude: { type: Number, required: true, min: -180, max: 180 },
+            region: { type: String, default: '' },
+        }, { _id: false }),
+        required: false,
+    },
     content: { type: String, required: true },
     createTime: { type: Date, default: Date.now },
     showForm: { type: Boolean, required: true }, // 是否显示回复表单

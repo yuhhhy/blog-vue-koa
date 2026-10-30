@@ -62,7 +62,7 @@ const handleUpdate = () => {
                     {{ reply.os }}
                   </span>
                   <time class="comment-detail-item">
-                    <CommentEnvironmentIcon kind="time" :value="reply.createTime" :timezone="reply.timezone" />
+                    <CommentEnvironmentIcon kind="time" :value="reply.createTime" :timezone="reply.timezone" :location="reply.solarLocation" />
                     {{ getFormatDateTimeToMinute(reply.createTime, reply.timezone) }}
                   </time>
                 </div>
@@ -207,7 +207,7 @@ const handleUpdate = () => {
             padding: 4px 9px;
             border: 0;
             border-radius: 4px;
-            color: #343536;
+            color: var(--light-dark);
             background: transparent;
             font-family: var(--comment-font, sans-serif);
             font-size: 0.78rem;
@@ -216,7 +216,7 @@ const handleUpdate = () => {
             transition: color 160ms ease, background-color 160ms ease;
 
             &:hover {
-              background: #d7d9da;
+              background: var(--primary-soft-hover);
             }
           }
         }

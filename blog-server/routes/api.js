@@ -15,6 +15,7 @@ import { storage } from '../config/upload.js'
 import { convertImageToAvif, generateImageVariants } from '../utils/imageVariants.js'
 import { checkReadiness } from '../utils/readiness.js'
 import { getEssays, createEssay, updateEssay, deleteEssay } from '../controllers/EssayController.js'
+import { createEssayDraft, deleteEssayDraft, getEssayDraft, getEssayDrafts, updateEssayDraft } from '../controllers/EssayDraftController.js'
 
 const router = new Router({ prefix: '/api' })
 const upload = multer({ storage })
@@ -108,6 +109,11 @@ router.get('/essays', getEssays)
 router.post('/essays', requireAdmin, createEssay)
 router.put('/essays/:id', requireAdmin, updateEssay)
 router.delete('/essays/:id', requireAdmin, deleteEssay)
+router.get('/essay-drafts', requireAdmin, getEssayDrafts)
+router.post('/essay-drafts', requireAdmin, createEssayDraft)
+router.get('/essay-drafts/:id', requireAdmin, getEssayDraft)
+router.put('/essay-drafts/:id', requireAdmin, updateEssayDraft)
+router.delete('/essay-drafts/:id', requireAdmin, deleteEssayDraft)
 
 
 /**

@@ -5,7 +5,7 @@ import { EMA } from './model.js'
 import { BraidedCord } from './BraidedCord.js'
 import { createMaterials } from './materials.js'
 import { createPhysics, STEP } from './physics.js'
-import { clamp, linkKey, safeSite, createMotionSampler, createGesture, moveGesture, canVisit } from './interaction.js'
+import { clamp, linkKey, safeSite, createMotionSampler, createGesture, moveGesture, canVisit, TOUCH_DRAG_DELAY } from './interaction.js'
 
 export async function createEmaRuntime(canvas, controller) {
     let renderer, materials, physics
@@ -281,7 +281,7 @@ export async function createEmaRuntime(canvas, controller) {
         if (event.pointerType === 'mouse') event.preventDefault()
         activeHit = hit
         gesture = { ...createGesture(event.clientX,event.clientY,event.pointerType !== 'mouse'), pointerId: event.pointerId }
-        if (gesture.touch) longPress = setTimeout(beginDrag, 350)
+        if (gesture.touch) longPress = setTimeout(beginDrag, TOUCH_DRAG_DELAY)
     }, {capture:true,passive:false})
     listen(document, 'pointermove', (event) => {
         if (gesture && gesture.pointerId === event.pointerId) {

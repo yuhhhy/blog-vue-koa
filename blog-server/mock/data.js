@@ -296,6 +296,69 @@ app.mount('#app')
     ...archiveMockTopics.map(createArchiveMockPost),
 ]
 
+export const mockEssays = [
+    {
+        id: 'essay-dev-001',
+        title: '十月末的一个普通晚上',
+        content: '下班以后沿着熟悉的路慢慢走了一圈。风已经有一点凉，路边的树叶被灯照得很亮。\n\n没有发生特别的事，但还是想把这个晚上记下来。',
+        solarLocation: {
+            latitude: 22.5431,
+            longitude: 114.0579,
+            region: '广东省 深圳市',
+        },
+        createTime: '2026-10-28T12:36:00.000Z',
+        updateTime: '2026-10-28T12:36:00.000Z',
+    },
+    {
+        id: 'essay-dev-002',
+        title: '10月27日随笔',
+        content: '重新整理了一遍博客的页面。很多细节单独看都很小，放在一起却会影响整个页面的呼吸感。先把能看见的问题一点点改掉。',
+        solarLocation: {
+            latitude: 22.5431,
+            longitude: 114.0579,
+            region: '广东省 深圳市',
+        },
+        createTime: '2026-10-27T06:08:00.000Z',
+        updateTime: '2026-10-27T06:08:00.000Z',
+    },
+    {
+        id: 'essay-dev-003',
+        title: '雨停之后',
+        content: '雨停以后窗外安静了很多。循环播放着一首很久以前收藏的歌，突然又想起第一次听到它的时候。\n\n有些记忆似乎一直没有消失，只是平时很少被碰到。',
+        solarLocation: {
+            latitude: 22.5431,
+            longitude: 114.0579,
+            region: '广东省 深圳市',
+        },
+        createTime: '2026-10-24T15:42:00.000Z',
+        updateTime: '2026-10-24T15:42:00.000Z',
+    },
+    {
+        id: 'essay-dev-004',
+        title: '关于慢一点',
+        content: '最近总想一次把所有事情做完，结果反而什么都做不好。也许应该允许自己慢一点，把眼前这一件事认真做完，再去想下一件。',
+        solarLocation: {
+            latitude: 22.5431,
+            longitude: 114.0579,
+            region: '广东省 深圳市',
+        },
+        createTime: '2026-10-19T03:15:00.000Z',
+        updateTime: '2026-10-19T03:15:00.000Z',
+    },
+    {
+        id: 'essay-dev-005',
+        title: '10月12日随笔',
+        content: '今天把搁置了很久的一个小功能补完了。实现本身没有想象中复杂，真正困难的似乎总是重新开始。',
+        solarLocation: {
+            latitude: 22.5431,
+            longitude: 114.0579,
+            region: '广东省 深圳市',
+        },
+        createTime: '2026-10-12T09:27:00.000Z',
+        updateTime: '2026-10-12T09:27:00.000Z',
+    },
+]
+
 export const mockComments = [
     {
         id: 'md-test-comment-1',
@@ -309,6 +372,11 @@ export const mockComments = [
         os: 'Android 10',
         content: '一级评论：昵称带网址链接。代码块背景和标题层级看起来是否正常？',
         timezone: 'Asia/Shanghai',
+        solarLocation: {
+            latitude: 22.5431,
+            longitude: 114.0579,
+            region: '广东省 深圳市',
+        },
         createTime: '2026-10-27T17:30:00.000Z',
         showForm: false,
         hasParent: false,

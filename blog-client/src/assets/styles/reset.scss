@@ -12,17 +12,18 @@ html, body {
 }
 
 html {
-    background: #fafcf9;
+    background: var(--page-background);
+    /* Preserve the layout viewport width while the fixed home scene hands off
+       to route content, otherwise text reflows and jumps for one frame. */
     scrollbar-gutter: stable;
+    transition: background-color 240ms ease;
 }
+
+body { background: var(--page-background); }
 
 html.is-scene-transitioning,
 html.is-scene-transitioning body {
     overflow: hidden;
-}
-
-html.is-scene-transitioning {
-    scrollbar-gutter: auto;
 }
 
 html.is-article-transitioning,

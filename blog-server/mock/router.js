@@ -5,12 +5,14 @@ import { randomUUID } from 'node:crypto'
 import KEY from '../config/key.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { normalizeEssayInput } from '../utils/essay.js'
-import { parseBrowserAndOS } from '../utils/index.js'
+import { getNextLinkSortOrder, normalizeLinkSortOrder } from '../utils/linkSort.js'
+import { getIp, parseBrowserAndOS, parseIpSolarLocation } from '../utils/index.js'
 import {
     createMockWebsiteData,
     mockComments,
     mockLinks,
     mockPosts,
+    mockEssays,
     mockUsers,
     mockVisitors,
 } from './data.js'
@@ -59,7 +61,8 @@ const state = {
     users: clone(mockUsers),
     visitors: clone(mockVisitors),
     drafts: [],
-    essays: [],
+    essays: clone(mockEssays),
+    essayDrafts: [],
     website: createMockWebsiteData(),
 }
 
@@ -125,10 +128,12 @@ router.post('/essays', requireAdmin, (ctx) => {
     const now = new Date()
     const values = normalizeEssayInput(ctx.request.body, now)
     if (values.error) ctx.throw(422, values.error)
+    const solarLocation = parseIpSolarLocation(getIp(ctx))
 
     const essay = {
         id: randomUUID(),
         ...values,
+        ...(solarLocation ? { solarLocation } : {}),
         createTime: now.toISOString(),
         updateTime: now.toISOString(),
     }
@@ -154,6 +159,58 @@ router.put('/essays/:id', requireAdmin, (ctx) => {
 router.delete('/essays/:id', requireAdmin, (ctx) => {
     if (!findById(state.essays, ctx.params.id)) return notFound(ctx, '随笔不存在')
     state.essays = state.essays.filter((essay) => essay.id !== ctx.params.id)
+    setNoContent(ctx)
+})
+
+router.get('/essay-drafts', requireAdmin, (ctx) => {
+    ctx.body = [...state.essayDrafts]
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+        .map(clone)
+})
+
+router.post('/essay-drafts', requireAdmin, (ctx) => {
+    const now = new Date().toISOString()
+    const draft = {
+        id: randomUUID(),
+        sourceEssayId: String(ctx.request.body?.sourceEssayId || ''),
+        title: String(ctx.request.body?.title || '').slice(0, 120),
+        content: String(ctx.request.body?.content || ''),
+        version: 1,
+        createdAt: now,
+        updatedAt: now,
+    }
+    state.essayDrafts.push(draft)
+    ctx.status = 201
+    ctx.body = clone(draft)
+})
+
+router.get('/essay-drafts/:id', requireAdmin, (ctx) => {
+    const draft = findById(state.essayDrafts, ctx.params.id)
+    if (!draft) return notFound(ctx, '随笔草稿不存在')
+    ctx.body = clone(draft)
+})
+
+router.put('/essay-drafts/:id', requireAdmin, (ctx) => {
+    const draft = findById(state.essayDrafts, ctx.params.id)
+    if (!draft) return notFound(ctx, '随笔草稿不存在')
+    if (Number(ctx.request.body?.version) !== draft.version) {
+        ctx.status = 409
+        ctx.body = { message: '云端随笔草稿已有更新', draft: clone(draft) }
+        return
+    }
+    Object.assign(draft, {
+        sourceEssayId: String(ctx.request.body?.sourceEssayId ?? draft.sourceEssayId),
+        title: String(ctx.request.body?.title ?? draft.title).slice(0, 120),
+        content: String(ctx.request.body?.content ?? draft.content),
+        version: draft.version + 1,
+        updatedAt: new Date().toISOString(),
+    })
+    ctx.body = clone(draft)
+})
+
+router.delete('/essay-drafts/:id', requireAdmin, (ctx) => {
+    if (!findById(state.essayDrafts, ctx.params.id)) return notFound(ctx, '随笔草稿不存在')
+    state.essayDrafts = state.essayDrafts.filter((draft) => draft.id !== ctx.params.id)
     setNoContent(ctx)
 })
 
@@ -275,6 +332,11 @@ router.post('/comment', (ctx) => {
         website: ctx.request.body.website || '',
         ...environment,
         timezone: ctx.request.body.timezone || 'Asia/Shanghai',
+        solarLocation: {
+            latitude: 22.5431,
+            longitude: 114.0579,
+            region: '广东省 深圳市',
+        },
         content: ctx.request.body.content || '',
         createTime: ctx.request.body.createTime || new Date().toISOString(),
         showForm: false,
@@ -418,6 +480,10 @@ router.get('/links/:id/avatar', async (ctx) => {
 
 router.post('/links', (ctx) => {
     const link = clone(ctx.request.body)
+    link.category ||= 'friend'
+    link.sortOrder = Object.hasOwn(link, 'sortOrder')
+        ? normalizeLinkSortOrder(link.sortOrder)
+        : getNextLinkSortOrder(state.links, link.category)
     state.links.push(link)
     ctx.status = 201
     ctx.body = clone(link)

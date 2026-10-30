@@ -38,15 +38,10 @@ const isNavActive = (item) => {
 
 // 设置主题
 const toggleTheme = () => {
-    document.documentElement.classList.remove(themeStore.theme)
-    themeStore.toggleTheme();
-    document.documentElement.classList.add(themeStore.theme)
+    themeStore.toggleTheme()
 }
 
 onMounted(() => {
-    // document.documentElement 指向根元素 <html>
-    document.documentElement.classList.add(themeStore.theme)
-
     runAfterPageIdle(() => {
         apiUpdateWebsiteVisit().catch(() => {})
     })

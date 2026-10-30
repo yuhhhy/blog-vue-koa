@@ -102,7 +102,7 @@ onBeforeUnmount(() => clearTimeout(burstTimer))
     }
 
     &:focus-visible {
-        outline: 2px solid #263846;
+        outline: 2px solid var(--section-text);
         outline-offset: 4px;
     }
 

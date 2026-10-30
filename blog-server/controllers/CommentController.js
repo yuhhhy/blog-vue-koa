@@ -2,7 +2,7 @@ import { Comment } from '../models/CommentSchema.js'
 import { WebsiteData } from '../models/WebsiteDataSchema.js'
 import { Blog } from '../models/BlogSchema.js'
 import { sendEmail } from '../utils/sendEmail.js'
-import { parseBrowserAndOS } from '../utils/index.js'
+import { getIp, parseBrowserAndOS, parseIpSolarLocation } from '../utils/index.js'
 
 /**
  * Comment Controller
@@ -47,7 +47,14 @@ export const getComments = async (ctx) => {
 // 创建新评论
 export const createComment = async (ctx) => {
     const environment = parseBrowserAndOS(ctx.get('user-agent'))
-    const newComment = new Comment({ ...ctx.request.body, ...environment })
+    const solarLocation = parseIpSolarLocation(getIp(ctx))
+    const commentBody = { ...ctx.request.body }
+    delete commentBody.solarLocation
+    const newComment = new Comment({
+        ...commentBody,
+        ...environment,
+        ...(solarLocation ? { solarLocation } : {}),
+    })
     try {
         // 保存评论到数据库
         await newComment.save()

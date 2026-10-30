@@ -1,27 +1,12 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useEssays } from '@/composables/useEssays.js'
+import { getFormatDateTimeToMinute } from '@/utils/date.js'
+import CommentEnvironmentIcon from '@/views/Blog/components/CommentEnvironmentIcon.vue'
 
 const { essays, loading, loadError, loadEssays } = useEssays()
 const retryLoadEssays = () => loadEssays({ force: true }).catch(() => {})
-
-const formatDate = (value) => new Intl.DateTimeFormat('zh-CN', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-}).format(new Date(value))
-
-const isDateTitle = (essay) => {
-    const parts = new Intl.DateTimeFormat('zh-CN', {
-        timeZone: 'Asia/Shanghai',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-    }).formatToParts(new Date(essay.createTime))
-    const value = (type) => parts.find((part) => part.type === type)?.value
-    return essay.title === `${value('year')}年${value('month')}月${value('day')}日随笔`
-}
+const getEssayDisplayTitle = (title) => title.replace(/^\d{4}年(?=\d{1,2}月\d{1,2}日随笔$)/, '')
 
 onMounted(() => loadEssays().catch(() => {}))
 </script>
@@ -40,8 +25,22 @@ onMounted(() => loadEssays().catch(() => {}))
         <div v-else-if="!essays.length" class="essay-status">暂无随笔</div>
         <div v-else class="essay-list">
             <article v-for="essay in essays" :key="essay.id" class="essay-item">
-                <h2>{{ essay.title }}</h2>
-                <time v-if="!isDateTitle(essay)" :datetime="essay.createTime">{{ formatDate(essay.createTime) }}</time>
+                <h2>{{ getEssayDisplayTitle(essay.title) }}</h2>
+                <div class="essay-meta">
+                    <time :datetime="essay.createTime">
+                        {{ getFormatDateTimeToMinute(essay.createTime) }}
+                    </time>
+                    <template v-if="essay.solarLocation?.region">
+                        <span aria-hidden="true">·</span>
+                        <span>{{ essay.solarLocation.region }}</span>
+                    </template>
+                    <CommentEnvironmentIcon
+                        kind="time"
+                        :value="essay.createTime"
+                        timezone="Asia/Shanghai"
+                        :location="essay.solarLocation"
+                    />
+                </div>
                 <p>{{ essay.content }}</p>
             </article>
         </div>
@@ -102,11 +101,19 @@ onMounted(() => loadEssays().catch(() => {}))
     overflow-wrap: anywhere;
 }
 
-.essay-item time {
-    display: block;
+.essay-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     margin-top: 8px;
     color: var(--quote-color);
     font-size: 0.875rem;
+}
+
+.essay-meta time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .essay-status {

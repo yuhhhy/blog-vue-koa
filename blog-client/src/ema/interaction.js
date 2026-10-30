@@ -1,4 +1,6 @@
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
+export const TOUCH_DRAG_DELAY = 160
+export const TOUCH_MOVE_TOLERANCE = 12
 export const linkKey = (link) => String(link.id || link.site)
 export const safeSite = (site) => {
     try {
@@ -32,7 +34,7 @@ export const createMotionSampler = () => {
 
 export const createGesture = (x, y, touch) => ({ x, y, touch, moved: false, dragging: false, cancelled: false })
 export const moveGesture = (gesture, x, y) => {
-    if (Math.hypot(x - gesture.x, y - gesture.y) > 8) {
+    if (Math.hypot(x - gesture.x, y - gesture.y) > TOUCH_MOVE_TOLERANCE) {
         gesture.moved = true
         if (gesture.touch && !gesture.dragging) gesture.cancelled = true
     }
