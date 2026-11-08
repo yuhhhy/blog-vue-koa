@@ -4,7 +4,7 @@ import mongoose from 'mongoose'
 export const BlogSchema = new mongoose.Schema({
     id: { type: String, required: true },
     title: { type: String, required: true },
-    coverImage: { type: String, required: true },
+    coverImage: { type: String, default: '' },
     createTime: { type: Date, default: Date.now },
     updateTime: { type: Date, default: Date.now },
     tags: { type: [String], default: [] },

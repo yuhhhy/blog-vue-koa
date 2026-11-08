@@ -48,7 +48,7 @@ const rowActions = [
   { key: 'edit', label: '编辑' },
   { key: 'delete', label: '删除', danger: true }
 ]
-const formErrors = reactive({ author: '', title: '', coverImage: '', tags: '' })
+const formErrors = reactive({ author: '', title: '', tags: '' })
 const form = reactive({
   id: '',
   author: '',
@@ -250,7 +250,6 @@ const handleRowAction = (action, row) => {
 async function handleConfirm() {
   formErrors.author = form.author.trim() ? '' : '请输入作者'
   formErrors.title = form.title.trim() ? '' : '请输入标题'
-  formErrors.coverImage = form.coverImage.trim() ? '' : '请输入封面路径'
   formErrors.tags = form.tags.length ? '' : '请添加至少一个标签'
   if (Object.values(formErrors).some(Boolean)) return
   if (!form.content) {
@@ -358,10 +357,7 @@ async function UpdateBlog(id) {
             v-model="form.coverImage"
             label="封面路径"
             :prefix="isDirectCoverUrl(form.coverImage) ? '' : '/images/'"
-            placeholder="dev-covers/vite.jpg"
-            required
-            :error-message="formErrors.coverImage"
-            @update:model-value="formErrors.coverImage = ''"
+            placeholder="可选，例如 dev-covers/vite.jpg"
           />
           <div class="cover-preview">
             <el-image

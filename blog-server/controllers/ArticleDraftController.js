@@ -35,7 +35,6 @@ const getMissingPublishFields = (draft) => {
     const missing = []
     if (!draft.title?.trim()) missing.push('title')
     if (!draft.author?.trim()) missing.push('author')
-    if (!draft.coverImage?.trim()) missing.push('coverImage')
     if (!Array.isArray(draft.tags) || !draft.tags.length) missing.push('tags')
     if (!draft.content?.trim()) missing.push('content')
     return missing

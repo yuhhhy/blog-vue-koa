@@ -68,10 +68,6 @@ const handleSubmit = () => {
   errors.author = form.author.trim() ? '' : '请输入作者名称'
   errors.tags = form.tags.length ? '' : '请添加至少一个标签'
   if (Object.values(errors).some(Boolean)) return
-  if (!form.coverImgUploaded) {
-    ElMessage.error('请上传封面图片')
-    return
-  }
   emit('articleSubmit', { ...form })
 }
 
@@ -154,7 +150,7 @@ const removeCover = () => {
           <img v-if="coverPreviewUrl" :src="coverPreviewUrl" alt="文章封面预览">
           <div v-else class="cover-preview__empty">
             <MaterialIcon :path="mdiImageOutline" />
-            <span>点击上传封面</span>
+            <span>添加封面（可选）</span>
           </div>
         </button>
         <button

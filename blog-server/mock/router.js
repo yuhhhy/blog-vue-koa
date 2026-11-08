@@ -657,7 +657,7 @@ router.post('/drafts/:id/publish', (ctx) => {
         return
     }
 
-    const missingFields = ['title', 'author', 'coverImage', 'content']
+    const missingFields = ['title', 'author', 'content']
         .filter((field) => !String(draft[field] || '').trim())
     if (!draft.tags?.length) missingFields.push('tags')
     if (missingFields.length) {
