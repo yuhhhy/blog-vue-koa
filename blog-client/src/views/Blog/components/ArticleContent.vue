@@ -5,6 +5,7 @@ import SandboxAnimationWidget from './sandbox/SandboxAnimationWidget.vue'
 const props = defineProps(['htmlContent'])
 const contentRef = ref(null)
 const mountedAnimations = []
+const imageCleanupCallbacks = []
 let prismLoadPromise
 
 const loadPrism = () => {
@@ -54,14 +55,75 @@ const mountSandboxAnimations = () => {
     })
 }
 
+const cleanupImageListeners = () => {
+    while (imageCleanupCallbacks.length) imageCleanupCallbacks.pop()()
+}
+
+const replaceFailedImage = (image, frame) => {
+    if (!frame.isConnected) return
+
+    const placeholder = document.createElement('div')
+    const altText = image.getAttribute('alt')?.trim()
+    placeholder.className = 'article-image-placeholder'
+    placeholder.setAttribute('role', 'img')
+    placeholder.setAttribute('aria-label', altText ? `图片加载失败：${altText}` : '图片加载失败')
+
+    const title = document.createElement('strong')
+    title.textContent = '图片暂时无法显示'
+    placeholder.append(title)
+
+    if (altText) {
+        const description = document.createElement('span')
+        description.textContent = altText
+        placeholder.append(description)
+    }
+
+    frame.replaceWith(placeholder)
+}
+
+const enhanceArticleImages = () => {
+    cleanupImageListeners()
+
+    contentRef.value?.querySelectorAll('img').forEach((image) => {
+        const frame = document.createElement('span')
+        frame.className = 'article-image-frame is-loading'
+        image.before(frame)
+        frame.append(image)
+
+        const handleLoad = () => frame.classList.remove('is-loading')
+        const handleError = () => {
+            frame.classList.remove('is-loading')
+            replaceFailedImage(image, frame)
+        }
+
+        image.addEventListener('load', handleLoad, { once: true })
+        image.addEventListener('error', handleError, { once: true })
+        imageCleanupCallbacks.push(() => {
+            image.removeEventListener('load', handleLoad)
+            image.removeEventListener('error', handleError)
+        })
+
+        // Cached images can complete before Vue has inserted the article HTML.
+        if (image.complete) {
+            if (image.naturalWidth > 0) handleLoad()
+            else handleError()
+        }
+    })
+}
+
 const refreshContentEnhancements = async () => {
+    cleanupImageListeners()
     await nextTick()
+    enhanceArticleImages()
     await highlightCode()
     mountSandboxAnimations()
 }
 
 watch(() => props.htmlContent, refreshContentEnhancements, { immediate: true, flush: 'post' })
-onBeforeUnmount(cleanupAnimations)
+onBeforeUnmount(() => {
+    cleanupImageListeners()
+    cleanupAnimations()
+})
 </script>
 
 <template>
@@ -160,6 +222,73 @@ onBeforeUnmount(cleanupAnimations)
 
         }
 
+        .article-image-frame {
+            display: block;
+            width: 100%;
+            margin: 1.5em 0;
+            overflow: hidden;
+            border-radius: 6px;
+
+            img {
+                display: block;
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+            }
+
+            &.is-loading {
+                position: relative;
+                min-height: clamp(180px, 32vw, 320px);
+                background: color-mix(in srgb, var(--light-dark) 8%, transparent);
+
+                img {
+                    opacity: 0;
+                }
+
+                &::after {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    width: 32px;
+                    height: 32px;
+                    border: 3px solid color-mix(in srgb, var(--quote-color) 28%, transparent);
+                    border-top-color: var(--skyblue);
+                    border-radius: 50%;
+                    content: '';
+                    animation: article-image-loading-spin 800ms linear infinite;
+                }
+            }
+        }
+
+        .article-image-placeholder {
+            display: flex;
+            width: 100%;
+            min-height: clamp(180px, 32vw, 320px);
+            margin: 1.5em 0;
+            padding: 24px;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 6px;
+            border: 1px dashed color-mix(in srgb, var(--quote-color) 55%, transparent);
+            border-radius: 6px;
+            color: var(--quote-color);
+            background: color-mix(in srgb, var(--light-dark) 4%, transparent);
+            text-align: center;
+
+            strong {
+                color: var(--light-dark);
+                font-size: 0.95rem;
+                font-weight: 600;
+            }
+
+            span {
+                max-width: 36rem;
+                overflow-wrap: anywhere;
+                font-size: 0.8rem;
+            }
+        }
+
         blockquote {
             border-left: 3px solid var(--quote-color);
             padding-left: 1em;
@@ -180,6 +309,18 @@ onBeforeUnmount(cleanupAnimations)
                 border: 1px solid var(--submit-button);
             }
         }
+    }
+}
+
+@keyframes article-image-loading-spin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .article-content .markdown-content .article-image-frame.is-loading::after {
+        animation: none;
+        transform: translate(-50%, -50%);
     }
 }
 
