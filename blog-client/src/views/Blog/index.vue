@@ -12,6 +12,7 @@ import { apiGetBlogContent, apiUpdateBlogViewCount, getCachedBlogContent } from 
 import { getFormatDate } from '@/utils/date.js'
 import { runAfterPageIdle } from '@/utils/runAfterPageIdle.js'
 import config from '@/config/index.js'
+import { applyImageWidth } from '../../../../shared/imageWidth.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -65,7 +66,8 @@ md.renderer.rules.fence = function(tokens, idx, options, env, self) {
 
 md.renderer.rules.image = function(tokens, idx, options, env, self) {
     const token = tokens[idx]
-    token.attrPush(['loading', 'lazy'])
+    applyImageWidth(token)
+    token.attrSet('loading', 'lazy')
     return defaultImageRender(tokens, idx, options, env, self)
 }
 

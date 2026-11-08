@@ -65,6 +65,7 @@ const replaceFailedImage = (image, frame) => {
     const placeholder = document.createElement('div')
     const altText = image.getAttribute('alt')?.trim()
     placeholder.className = 'article-image-placeholder'
+    if (frame.dataset.imageWidth) placeholder.dataset.imageWidth = frame.dataset.imageWidth
     placeholder.setAttribute('role', 'img')
     placeholder.setAttribute('aria-label', altText ? `图片加载失败：${altText}` : '图片加载失败')
 
@@ -87,6 +88,7 @@ const enhanceArticleImages = () => {
     contentRef.value?.querySelectorAll('img').forEach((image) => {
         const frame = document.createElement('span')
         frame.className = 'article-image-frame is-loading'
+        if (image.dataset.imageWidth) frame.dataset.imageWidth = image.dataset.imageWidth
         image.before(frame)
         frame.append(image)
 
@@ -259,6 +261,15 @@ onBeforeUnmount(() => {
                 }
             }
         }
+
+        .article-image-frame[data-image-width="25"] { width: 25%; }
+        .article-image-frame[data-image-width="50"] { width: 50%; }
+        .article-image-frame[data-image-width="75"] { width: 75%; }
+        .article-image-frame[data-image-width="100"] { width: 100%; }
+        .article-image-placeholder[data-image-width="25"] { width: 25%; }
+        .article-image-placeholder[data-image-width="50"] { width: 50%; }
+        .article-image-placeholder[data-image-width="75"] { width: 75%; }
+        .article-image-placeholder[data-image-width="100"] { width: 100%; }
 
         .article-image-placeholder {
             display: flex;

@@ -2,6 +2,7 @@
 import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
 import { computed, nextTick, ref, watch } from 'vue'
+import { applyImageWidth } from '../../../../../shared/imageWidth.js'
 
 const props = defineProps({
     markdown: {
@@ -41,7 +42,8 @@ md.renderer.rules.fence = (tokens, idx, options, env, self) => {
 }
 
 md.renderer.rules.image = (tokens, idx, options, env, self) => {
-    tokens[idx].attrPush(['loading', 'lazy'])
+    applyImageWidth(tokens[idx])
+    tokens[idx].attrSet('loading', 'lazy')
     return defaultImageRender(tokens, idx, options, env, self)
 }
 
@@ -150,6 +152,10 @@ watch(htmlContent, async () => {
 .markdown-content :deep(img),
 .markdown-content :deep(video),
 .markdown-content :deep(iframe) { max-width: 100%; }
+.markdown-content :deep(img[data-image-width="25"]) { display: block; width: 25%; }
+.markdown-content :deep(img[data-image-width="50"]) { display: block; width: 50%; }
+.markdown-content :deep(img[data-image-width="75"]) { display: block; width: 75%; }
+.markdown-content :deep(img[data-image-width="100"]) { display: block; width: 100%; }
 
 .markdown-content :deep(table) {
     display: block;

@@ -10,6 +10,7 @@ import MaterialIcon from '@/components/MaterialIcon.vue'
 import { useArticleStore } from '@/stores/articleStore.js'
 import { useUserStore } from '@/stores/userStore.js'
 import cfg from '@/config/index.js'
+import { imageWidthOptions, parseImageWidth, setImageWidth } from '../../../../../shared/imageWidth.js'
 
 const props = defineProps({
     content: {
@@ -167,6 +168,66 @@ const editorToolbar = [
     },
 ]
 
+const addImageWidthControl = (type, popover) => {
+    if (type !== 'image') return
+
+    const inputs = [...popover.querySelectorAll('input.vditor-input')]
+    const [urlInput, altInput, titleInput] = inputs.slice(-3)
+    if (!urlInput || !altInput || !titleInput) return
+
+    const parsedTitle = parseImageWidth(titleInput.value)
+    let selectedWidth = parsedTitle.width
+    const inputHandlers = new Map(inputs.map((input) => [input, input.oninput]))
+    titleInput.value = parsedTitle.title
+
+    const persistImageSettings = (input, event = new Event('input')) => {
+        const visibleTitle = titleInput.value
+        titleInput.value = setImageWidth(visibleTitle, selectedWidth)
+        inputHandlers.get(input)?.call(input, event)
+        titleInput.value = visibleTitle
+    }
+
+    ;[urlInput, altInput, titleInput].forEach((input) => {
+        input.oninput = (event) => persistImageSettings(input, event)
+    })
+
+    const control = document.createElement('span')
+    control.className = 'image-width-control'
+    control.setAttribute('role', 'group')
+    control.setAttribute('aria-label', '图片宽度')
+
+    const options = [
+        { label: '自动', value: null },
+        ...imageWidthOptions.map((width) => ({ label: `${width}%`, value: width })),
+    ]
+
+    const renderSelection = (selectedWidth) => {
+        control.querySelectorAll('button').forEach((button) => {
+            const active = button.dataset.width === String(selectedWidth ?? '')
+            button.classList.toggle('is-active', active)
+            button.setAttribute('aria-pressed', String(active))
+        })
+    }
+
+    options.forEach(({ label, value }) => {
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'image-width-control__button'
+        button.dataset.width = String(value ?? '')
+        button.textContent = label
+        button.addEventListener('click', (event) => {
+            event.preventDefault()
+            selectedWidth = value
+            persistImageSettings(titleInput)
+            renderSelection(selectedWidth)
+        })
+        control.append(button)
+    })
+
+    renderSelection(selectedWidth)
+    popover.append(control)
+}
+
 defineExpose({ clearContent })
 
 watch(() => props.content, (content) => {
@@ -193,6 +254,7 @@ onMounted(() => {
         cache: { enable: false },
         toolbar: editorToolbar,
         toolbarConfig: { pin: true },
+        customWysiwygToolbar: addImageWidthControl,
         upload: {
             accept: 'image/*',
             multiple: true,
@@ -308,6 +370,45 @@ onBeforeUnmount(() => {
 .vditor-editor :deep(.vditor-panel) {
     z-index: 21;
 }
+
+.vditor-editor :deep(.image-width-control) {
+    display: inline-flex;
+    height: 28px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+.vditor-editor :deep(.image-width-control__button) {
+    min-width: 34px;
+    padding: 0 4px;
+    border: 0;
+    border-right: 1px solid var(--border-color);
+    color: var(--second-color);
+    background: var(--panel-background-color);
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.vditor-editor :deep(.image-width-control__button:last-child) {
+    border-right: 0;
+}
+
+.vditor-editor :deep(.image-width-control__button:hover),
+.vditor-editor :deep(.image-width-control__button.is-active) {
+    color: var(--md-sys-color-on-primary-container, #21005d);
+    background: var(--md-sys-color-primary-container, #eaddff);
+}
+
+.vditor-editor :deep(.vditor-wysiwyg img[title$="width=25%"]),
+.vditor-editor :deep(.vditor-wysiwyg img[data-image-width="25"]) { width: 25%; }
+.vditor-editor :deep(.vditor-wysiwyg img[title$="width=50%"]),
+.vditor-editor :deep(.vditor-wysiwyg img[data-image-width="50"]) { width: 50%; }
+.vditor-editor :deep(.vditor-wysiwyg img[title$="width=75%"]),
+.vditor-editor :deep(.vditor-wysiwyg img[data-image-width="75"]) { width: 75%; }
+.vditor-editor :deep(.vditor-wysiwyg img[title$="width=100%"]),
+.vditor-editor :deep(.vditor-wysiwyg img[data-image-width="100"]) { width: 100%; }
 
 .vditor-editor :deep(.vditor-toolbar__item:has(> [data-type="edit-mode"])),
 .vditor-editor :deep([data-type="both"]),
