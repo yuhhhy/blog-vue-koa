@@ -7,8 +7,25 @@ import {
 
 test('detects the admin visitor query value', () => {
     assert.equal(hasAdminVisitorQuery({ visitor: 'admin' }), true)
+    assert.equal(hasAdminVisitorQuery({ visitor: 'Admin' }), true)
+    assert.equal(hasAdminVisitorQuery({ visitor: 'ADMIN' }), true)
+    assert.equal(hasAdminVisitorQuery({ visitor: ['guest', 'Admin'] }), true)
     assert.equal(hasAdminVisitorQuery({ visitor: ['guest', 'admin'] }), true)
     assert.equal(hasAdminVisitorQuery({ visitor: 'guest' }), false)
+})
+
+test('recognizes Admin before the analytics tracker loads and preserves it on navigation', async () => {
+    const previousWindow = globalThis.window
+    globalThis.window = { location: { search: '?visitor=Admin' } }
+    try {
+        const mode = await import('./adminVisitorMode.js?initial-admin-test')
+        assert.equal(mode.isAdminVisitorMode(), true)
+        assert.equal(mode.syncAdminVisitorMode({ query: {} }), true)
+        assert.equal(mode.getAdminVisitorRedirect({ path: '/about', query: {}, hash: '' }).query.visitor, 'admin')
+    } finally {
+        if (previousWindow === undefined) delete globalThis.window
+        else globalThis.window = previousWindow
+    }
 })
 
 test('preserves admin visitor mode on internal navigation', () => {

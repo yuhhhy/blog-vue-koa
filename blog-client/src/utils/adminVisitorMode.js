@@ -2,13 +2,15 @@ export const ADMIN_VISITOR_QUERY_KEY = 'visitor'
 export const ADMIN_VISITOR_QUERY_VALUE = 'admin'
 
 const initialSearch = typeof window === 'undefined' ? '' : window.location.search
-let adminVisitorMode = new URLSearchParams(initialSearch).get(ADMIN_VISITOR_QUERY_KEY) === ADMIN_VISITOR_QUERY_VALUE
+const isAdminValue = (value) => typeof value === 'string'
+    && value.toLowerCase() === ADMIN_VISITOR_QUERY_VALUE
+let adminVisitorMode = new URLSearchParams(initialSearch).getAll(ADMIN_VISITOR_QUERY_KEY).some(isAdminValue)
 
 export const hasAdminVisitorQuery = (query = {}) => {
     const value = query[ADMIN_VISITOR_QUERY_KEY]
     return Array.isArray(value)
-        ? value.includes(ADMIN_VISITOR_QUERY_VALUE)
-        : value === ADMIN_VISITOR_QUERY_VALUE
+        ? value.some(isAdminValue)
+        : isAdminValue(value)
 }
 
 export const createAdminVisitorRedirect = (route, enabled) => {
