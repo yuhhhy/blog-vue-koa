@@ -85,12 +85,16 @@ const getArticleTime = (article) => {
   return Number.isFinite(value) ? value : 0
 }
 const sortedArticles = computed(() => {
-  const articles = [...tableData.value]
-  if (sortBy.value === 'created-asc') return articles.sort((a, b) => getArticleTime(a) - getArticleTime(b))
-  if (sortBy.value === 'title-asc') return articles.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'))
-  if (sortBy.value === 'words-desc') return articles.sort((a, b) => (b.wordCount || 0) - (a.wordCount || 0))
-  if (sortBy.value === 'views-desc') return articles.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-  return articles.sort((a, b) => getArticleTime(b) - getArticleTime(a))
+  return [...tableData.value].sort((a, b) => {
+    const draftPriority = Number(b.status === 'draft') - Number(a.status === 'draft')
+    if (draftPriority) return draftPriority
+
+    if (sortBy.value === 'created-asc') return getArticleTime(a) - getArticleTime(b)
+    if (sortBy.value === 'title-asc') return a.title.localeCompare(b.title, 'zh-CN')
+    if (sortBy.value === 'words-desc') return (b.wordCount || 0) - (a.wordCount || 0)
+    if (sortBy.value === 'views-desc') return (b.viewCount || 0) - (a.viewCount || 0)
+    return getArticleTime(b) - getArticleTime(a)
+  })
 })
 
 onMounted(() => {
