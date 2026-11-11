@@ -1,8 +1,12 @@
 .gitignore
 .github/
 .vscode/
-package.json
 pnpm-lock.yaml
 node_modules/
 exports/
 docs/
+**/dist/
+**/dist-ssr/
+release/
+reports/
+.husky/_/

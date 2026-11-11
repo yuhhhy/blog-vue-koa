@@ -1,0 +1,4 @@
+set -e
+
+pnpm audit:prod
+pnpm lint:staged

@@ -1,21 +1,39 @@
 {
-  "name": "blog-vue-koa",
-  "type": "module",
-  "version": "1.0.0",
-  "packageManager": "pnpm@11.7.0",
-  "scripts": {
-    "server": "pnpm --dir blog-server serve",
-    "client": "pnpm --dir blog-client dev",
-    "background": "pnpm --dir blog-background dev",
-    "start": "concurrently \"pnpm server\" \"pnpm client\" \"pnpm background\"",
-    "start-client": "concurrently \"pnpm server\" \"pnpm client\"",
-    "start-admin": "concurrently \"pnpm server\" \"pnpm background\"",
-    "generate:image-variants": "pnpm --dir blog-server generate:image-variants",
-    "analyze": "pnpm --filter frontend analyze && pnpm --filter blog-background analyze && pnpm bundle:report",
-    "bundle:report": "node scripts/report-bundle-size.js frontend admin",
-    "bundle:baseline": "pnpm --filter frontend build && pnpm --filter blog-background build && node scripts/update-bundle-baseline.js"
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.2"
-  }
+    "name": "blog-vue-koa",
+    "type": "module",
+    "version": "1.0.0",
+    "packageManager": "pnpm@11.7.0",
+    "scripts": {
+        "server": "pnpm --dir blog-server serve",
+        "client": "pnpm --dir blog-client dev",
+        "background": "pnpm --dir blog-background dev",
+        "start": "concurrently \"pnpm server\" \"pnpm client\" \"pnpm background\"",
+        "start-client": "concurrently \"pnpm server\" \"pnpm client\"",
+        "start-admin": "concurrently \"pnpm server\" \"pnpm background\"",
+        "generate:image-variants": "pnpm --dir blog-server generate:image-variants",
+        "analyze": "pnpm --filter frontend analyze && pnpm --filter blog-background analyze && pnpm bundle:report",
+        "bundle:report": "node scripts/report-bundle-size.js frontend admin",
+        "bundle:baseline": "pnpm --filter frontend build && pnpm --filter blog-background build && node scripts/update-bundle-baseline.js",
+        "prepare": "node scripts/install-hooks.js",
+        "lint": "pnpm lint:code && pnpm audit:prod",
+        "lint:code": "oxlint .",
+        "lint:staged": "lint-staged",
+        "audit:prod": "pnpm audit --prod --audit-level high",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.2",
+        "husky": "^9.1.7",
+        "lint-staged": "^17.6.0",
+        "oxlint": "^1.93.0",
+        "prettier": "^3.9.10"
+    },
+    "lint-staged": {
+        "*.{js,mjs,cjs,jsx,ts,tsx,vue}": [
+            "prettier --write",
+            "oxlint"
+        ],
+        "*.{json,jsonc,yaml,yml,scss,css,html,md}": "prettier --write"
+    }
 }

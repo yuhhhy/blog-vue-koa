@@ -77,20 +77,21 @@ jobs:
       - name: Install dependencies
         if: steps.changes.outputs.has_changes == 'true'
         env:
+          HUSKY: '0'
           BUILD_FRONTEND: ${{ steps.changes.outputs.frontend }}
           BUILD_ADMIN: ${{ steps.changes.outputs.admin }}
           BUILD_SERVER: ${{ steps.changes.outputs.server }}
         run: |
           set -Eeuo pipefail
-          filters=()
+          filters=(--filter=blog-vue-koa)
           [[ "${BUILD_FRONTEND}" == true ]] && filters+=(--filter=frontend)
           [[ "${BUILD_ADMIN}" == true ]] && filters+=(--filter=blog-background)
           [[ "${BUILD_SERVER}" == true ]] && filters+=(--filter=backend)
           pnpm "${filters[@]}" install --frozen-lockfile
 
-      - name: Audit production dependencies
+      - name: Lint and audit production dependencies
         if: steps.changes.outputs.has_changes == 'true'
-        run: pnpm audit --prod --audit-level high
+        run: pnpm lint
 
       - name: Build frontend
         if: steps.changes.outputs.frontend == 'true'
