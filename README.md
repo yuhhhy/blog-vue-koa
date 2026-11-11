@@ -15,6 +15,14 @@ pnpm install
 pnpm start
 ```
 
+## Checks
+
+```bash
+pnpm lint          # Oxlint + production dependency audit (blocks high/critical)
+pnpm audit:prod    # Same dependency audit used before commits and in CI
+pnpm format:check # Check formatting; legacy files may still need formatting
+```
+
 ## Structure
 
 ```text

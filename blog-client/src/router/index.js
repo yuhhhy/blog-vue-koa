@@ -184,6 +184,7 @@ router.afterEach((to, from, failure) => {
     recordHostedPage(to)
 
     runAfterPageIdle(() => {
+        if (isAdminVisitorMode()) return
         const { role, page } = { role: 'client', page: to.name }
         Promise.allSettled([
             apiCreateVisitor({ role, page }),

@@ -92,7 +92,7 @@ const uploadImages = async (files) => {
 
             const data = await response.json()
             const filename = data?.filename || data?.originalname || file.name
-            markdownList.push(`![${filename}](${buildImageUrl(filename)})`)
+            markdownList.push(`![](${buildImageUrl(filename)})`)
         }
 
         editor?.insertMD(`${markdownList.join('\n')}\n`)
@@ -187,9 +187,14 @@ const addImageWidthControl = (type, popover) => {
         titleInput.value = visibleTitle
     }
 
-    ;[urlInput, altInput, titleInput].forEach((input) => {
+    ;[urlInput, altInput].forEach((input) => {
         input.oninput = (event) => persistImageSettings(input, event)
     })
+    // Do not rewrite the active title field on every keystroke: changing its
+    // value during IME composition cancels the candidate window (especially
+    // for Chinese input). Commit width metadata after editing finishes.
+    titleInput.oninput = (event) => inputHandlers.get(titleInput)?.call(titleInput, event)
+    titleInput.addEventListener('blur', () => persistImageSettings(titleInput))
 
     const control = document.createElement('span')
     control.className = 'image-width-control'

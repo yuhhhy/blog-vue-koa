@@ -1,0 +1,19 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["oxc", "typescript", "unicorn", "vue"],
+    "categories": { "correctness": "error" },
+    "rules": {
+        "eslint/no-unused-vars": "warn",
+        "eslint/no-unsafe-finally": "warn",
+        "unicorn/no-useless-spread": "warn"
+    },
+    "ignorePatterns": [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/dist-ssr/**",
+        "public/**",
+        "release/**",
+        "reports/**",
+        ".husky/_/**"
+    ]
+}

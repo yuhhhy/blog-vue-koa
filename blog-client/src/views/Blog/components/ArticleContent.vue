@@ -1,12 +1,109 @@
 <script setup>
 import { createApp, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { ElImageViewer } from 'element-plus'
+import 'element-plus/theme-chalk/el-image-viewer.css'
 import SandboxAnimationWidget from './sandbox/SandboxAnimationWidget.vue'
 
 const props = defineProps(['htmlContent'])
 const contentRef = ref(null)
+const lightbox = ref(null)
+const lightboxImages = ref([])
+const lightboxIndex = ref(0)
 const mountedAnimations = []
 const imageCleanupCallbacks = []
 let prismLoadPromise
+let activeArticleImage = null
+let pinchStartDistance = 0
+let pinchLastStepDistance = 0
+
+const openImage = (image) => {
+    const images = [...(contentRef.value?.querySelectorAll('.article-image-frame img') || [])]
+        .filter((item) => item.isConnected && item.naturalWidth > 0)
+    const index = images.indexOf(image)
+    if (index < 0) return
+
+    lightboxImages.value = images.map((item) => ({
+        src: item.currentSrc || item.src,
+        alt: item.getAttribute('alt')?.trim() || '',
+    }))
+    lightboxIndex.value = index
+    activeArticleImage = image
+    lightbox.value = true
+}
+
+const closeImage = () => {
+    lightbox.value = false
+    nextTick(() => activeArticleImage?.focus())
+}
+
+const handleArticleImageClick = (event) => {
+    const image = event.target.closest?.('.article-image-frame img')
+    if (!image || !contentRef.value?.contains(image)) return
+    event.preventDefault()
+    openImage(image)
+}
+
+const handleArticleImageKeydown = (event) => {
+    if (!['Enter', ' '].includes(event.key)) return
+    const image = event.target.closest?.('.article-image-frame img')
+    if (!image || !contentRef.value?.contains(image)) return
+    event.preventDefault()
+    openImage(image)
+}
+
+const handleLightboxSwitch = (index) => { lightboxIndex.value = index }
+
+const getPinchDistance = (touches) => Math.hypot(
+    touches[0].clientX - touches[1].clientX,
+    touches[0].clientY - touches[1].clientY,
+)
+
+const handlePinchStart = (event) => {
+    if (event.touches.length !== 2) return
+    pinchStartDistance = getPinchDistance(event.touches)
+    pinchLastStepDistance = pinchStartDistance
+}
+
+const handlePinchMove = (event) => {
+    if (event.touches.length !== 2 || !pinchStartDistance) return
+    event.preventDefault()
+
+    const distance = getPinchDistance(event.touches)
+    const delta = distance - pinchLastStepDistance
+    if (Math.abs(delta) < 18) return
+
+    const viewer = document.querySelector('.el-image-viewer__wrapper')
+    if (!viewer) return
+    viewer.dispatchEvent(new WheelEvent('wheel', {
+        deltaY: delta > 0 ? -120 : 120,
+        bubbles: true,
+        cancelable: true,
+    }))
+    pinchLastStepDistance = distance
+}
+
+const handlePinchEnd = (event) => {
+    if (event.touches.length < 2) {
+        pinchStartDistance = 0
+        pinchLastStepDistance = 0
+    }
+}
+
+const attachPinchListeners = () => {
+    document.addEventListener('touchstart', handlePinchStart, { passive: true, capture: true })
+    document.addEventListener('touchmove', handlePinchMove, { passive: false, capture: true })
+    document.addEventListener('touchend', handlePinchEnd, true)
+    document.addEventListener('touchcancel', handlePinchEnd, true)
+}
+
+const detachPinchListeners = () => {
+    document.removeEventListener('touchstart', handlePinchStart, true)
+    document.removeEventListener('touchmove', handlePinchMove, true)
+    document.removeEventListener('touchend', handlePinchEnd, true)
+    document.removeEventListener('touchcancel', handlePinchEnd, true)
+    pinchStartDistance = 0
+    pinchLastStepDistance = 0
+}
 
 const loadPrism = () => {
     prismLoadPromise ||= Promise.all([
@@ -91,6 +188,9 @@ const enhanceArticleImages = () => {
         if (image.dataset.imageWidth) frame.dataset.imageWidth = image.dataset.imageWidth
         image.before(frame)
         frame.append(image)
+        image.tabIndex = 0
+        image.setAttribute('role', 'button')
+        image.setAttribute('aria-label', `放大查看图片${image.alt ? `：${image.alt}` : ''}`)
 
         const handleLoad = () => frame.classList.remove('is-loading')
         const handleError = () => {
@@ -117,14 +217,27 @@ const refreshContentEnhancements = async () => {
     cleanupImageListeners()
     await nextTick()
     enhanceArticleImages()
+    contentRef.value?.addEventListener('click', handleArticleImageClick)
+    contentRef.value?.addEventListener('keydown', handleArticleImageKeydown)
     await highlightCode()
     mountSandboxAnimations()
 }
 
 watch(() => props.htmlContent, refreshContentEnhancements, { immediate: true, flush: 'post' })
+watch(lightbox, async (isOpen) => {
+    if (isOpen) {
+        await nextTick()
+        attachPinchListeners()
+    } else {
+        detachPinchListeners()
+    }
+})
 onBeforeUnmount(() => {
     cleanupImageListeners()
     cleanupAnimations()
+    contentRef.value?.removeEventListener('click', handleArticleImageClick)
+    contentRef.value?.removeEventListener('keydown', handleArticleImageKeydown)
+    detachPinchListeners()
 })
 </script>
 
@@ -132,6 +245,15 @@ onBeforeUnmount(() => {
     <article class="article-content">
         <div ref="contentRef" v-html="htmlContent" class="markdown-content">
         </div>
+        <ElImageViewer
+            v-if="lightbox"
+            :url-list="lightboxImages.map((image) => image.src)"
+            :initial-index="lightboxIndex"
+            teleported
+            show-progress
+            @close="closeImage"
+            @switch="handleLightboxSwitch"
+        />
     </article>
 </template>
 
@@ -322,6 +444,8 @@ onBeforeUnmount(() => {
         }
     }
 }
+
+.article-image-frame:not(.is-loading) img { cursor: zoom-in; }
 
 @keyframes article-image-loading-spin {
     from { transform: translate(-50%, -50%) rotate(0deg); }
