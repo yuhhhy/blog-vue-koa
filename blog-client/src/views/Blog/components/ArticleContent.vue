@@ -205,6 +205,7 @@ onBeforeUnmount(() => {
             v-if="lightbox"
             :images="lightboxImages.map((image) => image.src)"
             :initial-index="lightboxIndex"
+            hide-mobile-arrows
             @close="closeImage"
             @switch="handleLightboxSwitch"
         />

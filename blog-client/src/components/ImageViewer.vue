@@ -6,6 +6,7 @@ import 'element-plus/theme-chalk/el-image-viewer.css'
 defineProps({
     images: { type: Array, required: true },
     initialIndex: { type: Number, default: 0 },
+    hideMobileArrows: Boolean,
 })
 defineEmits(['close', 'switch'])
 let pinchStartDistance = 0
@@ -77,17 +78,27 @@ onBeforeUnmount(detachPinchListeners)
 </script>
 
 <template>
-    <ElImageViewer
-        :url-list="images"
-        :initial-index="initialIndex"
-        teleported
-        show-progress
-        @close="$emit('close')"
-        @switch="$emit('switch', $event)"
-    />
+    <Teleport to="body">
+        <div :class="{ 'image-viewer--hide-mobile-arrows': hideMobileArrows }">
+            <ElImageViewer
+                :url-list="images"
+                :initial-index="initialIndex"
+                show-progress
+                @close="$emit('close')"
+                @switch="$emit('switch', $event)"
+            />
+        </div>
+    </Teleport>
 </template>
 
 <style>
+@media (max-width: 768px) {
+    .image-viewer--hide-mobile-arrows .el-image-viewer__prev,
+    .image-viewer--hide-mobile-arrows .el-image-viewer__next {
+        display: none;
+    }
+}
+
 @supports (scrollbar-gutter: stable) {
     /* The root already reserves the gutter. Element Plus also subtracts its
        width inline when locking the body, which would compensate twice. */
