@@ -1,7 +1,6 @@
 <script setup>
 import { createApp, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { ElImageViewer } from 'element-plus'
-import 'element-plus/theme-chalk/el-image-viewer.css'
+import ImageViewer from '@/components/ImageViewer.vue'
 import SandboxAnimationWidget from './sandbox/SandboxAnimationWidget.vue'
 
 const props = defineProps(['htmlContent'])
@@ -13,12 +12,12 @@ const mountedAnimations = []
 const imageCleanupCallbacks = []
 let prismLoadPromise
 let activeArticleImage = null
-let pinchStartDistance = 0
-let pinchLastStepDistance = 0
 
 const openImage = (image) => {
-    const images = [...(contentRef.value?.querySelectorAll('.article-image-frame img') || [])]
-        .filter((item) => item.isConnected && item.naturalWidth > 0)
+    const images = [
+        ...(contentRef.value?.querySelectorAll('.article-image-frame img') ||
+            []),
+    ].filter((item) => item.isConnected && item.naturalWidth > 0)
     const index = images.indexOf(image)
     if (index < 0) return
 
@@ -51,64 +50,14 @@ const handleArticleImageKeydown = (event) => {
     openImage(image)
 }
 
-const handleLightboxSwitch = (index) => { lightboxIndex.value = index }
-
-const getPinchDistance = (touches) => Math.hypot(
-    touches[0].clientX - touches[1].clientX,
-    touches[0].clientY - touches[1].clientY,
-)
-
-const handlePinchStart = (event) => {
-    if (event.touches.length !== 2) return
-    pinchStartDistance = getPinchDistance(event.touches)
-    pinchLastStepDistance = pinchStartDistance
-}
-
-const handlePinchMove = (event) => {
-    if (event.touches.length !== 2 || !pinchStartDistance) return
-    event.preventDefault()
-
-    const distance = getPinchDistance(event.touches)
-    const delta = distance - pinchLastStepDistance
-    if (Math.abs(delta) < 18) return
-
-    const viewer = document.querySelector('.el-image-viewer__wrapper')
-    if (!viewer) return
-    viewer.dispatchEvent(new WheelEvent('wheel', {
-        deltaY: delta > 0 ? -120 : 120,
-        bubbles: true,
-        cancelable: true,
-    }))
-    pinchLastStepDistance = distance
-}
-
-const handlePinchEnd = (event) => {
-    if (event.touches.length < 2) {
-        pinchStartDistance = 0
-        pinchLastStepDistance = 0
-    }
-}
-
-const attachPinchListeners = () => {
-    document.addEventListener('touchstart', handlePinchStart, { passive: true, capture: true })
-    document.addEventListener('touchmove', handlePinchMove, { passive: false, capture: true })
-    document.addEventListener('touchend', handlePinchEnd, true)
-    document.addEventListener('touchcancel', handlePinchEnd, true)
-}
-
-const detachPinchListeners = () => {
-    document.removeEventListener('touchstart', handlePinchStart, true)
-    document.removeEventListener('touchmove', handlePinchMove, true)
-    document.removeEventListener('touchend', handlePinchEnd, true)
-    document.removeEventListener('touchcancel', handlePinchEnd, true)
-    pinchStartDistance = 0
-    pinchLastStepDistance = 0
+const handleLightboxSwitch = (index) => {
+    lightboxIndex.value = index
 }
 
 const loadPrism = () => {
     prismLoadPromise ||= Promise.all([
         import('prismjs'),
-        import('prismjs/themes/prism.css')
+        import('prismjs/themes/prism.css'),
     ])
 
     return prismLoadPromise
@@ -135,8 +84,7 @@ const parseAnimationProps = (rawProps) => {
 
     try {
         return JSON.parse(decodeURIComponent(rawProps))
-    }
-    catch (error) {
+    } catch (error) {
         console.warn('动画参数解析失败', error)
         return {}
     }
@@ -146,7 +94,10 @@ const mountSandboxAnimations = () => {
     cleanupAnimations()
 
     contentRef.value?.querySelectorAll('[data-animation]').forEach((target) => {
-        const app = createApp(SandboxAnimationWidget, parseAnimationProps(target.dataset.props))
+        const app = createApp(
+            SandboxAnimationWidget,
+            parseAnimationProps(target.dataset.props),
+        )
         app.mount(target)
         mountedAnimations.push(app)
     })
@@ -162,9 +113,13 @@ const replaceFailedImage = (image, frame) => {
     const placeholder = document.createElement('div')
     const altText = image.getAttribute('alt')?.trim()
     placeholder.className = 'article-image-placeholder'
-    if (frame.dataset.imageWidth) placeholder.dataset.imageWidth = frame.dataset.imageWidth
+    if (frame.dataset.imageWidth)
+        placeholder.dataset.imageWidth = frame.dataset.imageWidth
     placeholder.setAttribute('role', 'img')
-    placeholder.setAttribute('aria-label', altText ? `图片加载失败：${altText}` : '图片加载失败')
+    placeholder.setAttribute(
+        'aria-label',
+        altText ? `图片加载失败：${altText}` : '图片加载失败',
+    )
 
     const title = document.createElement('strong')
     title.textContent = '图片暂时无法显示'
@@ -185,12 +140,16 @@ const enhanceArticleImages = () => {
     contentRef.value?.querySelectorAll('img').forEach((image) => {
         const frame = document.createElement('span')
         frame.className = 'article-image-frame is-loading'
-        if (image.dataset.imageWidth) frame.dataset.imageWidth = image.dataset.imageWidth
+        if (image.dataset.imageWidth)
+            frame.dataset.imageWidth = image.dataset.imageWidth
         image.before(frame)
         frame.append(image)
         image.tabIndex = 0
         image.setAttribute('role', 'button')
-        image.setAttribute('aria-label', `放大查看图片${image.alt ? `：${image.alt}` : ''}`)
+        image.setAttribute(
+            'aria-label',
+            `放大查看图片${image.alt ? `：${image.alt}` : ''}`,
+        )
 
         const handleLoad = () => frame.classList.remove('is-loading')
         const handleError = () => {
@@ -223,34 +182,30 @@ const refreshContentEnhancements = async () => {
     mountSandboxAnimations()
 }
 
-watch(() => props.htmlContent, refreshContentEnhancements, { immediate: true, flush: 'post' })
-watch(lightbox, async (isOpen) => {
-    if (isOpen) {
-        await nextTick()
-        attachPinchListeners()
-    } else {
-        detachPinchListeners()
-    }
+watch(() => props.htmlContent, refreshContentEnhancements, {
+    immediate: true,
+    flush: 'post',
 })
 onBeforeUnmount(() => {
     cleanupImageListeners()
     cleanupAnimations()
     contentRef.value?.removeEventListener('click', handleArticleImageClick)
     contentRef.value?.removeEventListener('keydown', handleArticleImageKeydown)
-    detachPinchListeners()
 })
 </script>
 
 <template>
     <article class="article-content">
-        <div ref="contentRef" v-html="htmlContent" class="markdown-content">
-        </div>
-        <ElImageViewer
+        <div
+            ref="contentRef"
+            v-html="htmlContent"
+            class="markdown-content"
+        ></div>
+        <ImageViewer
             v-if="lightbox"
-            :url-list="lightboxImages.map((image) => image.src)"
+            :images="lightboxImages.map((image) => image.src)"
             :initial-index="lightboxIndex"
-            teleported
-            show-progress
+            hide-mobile-arrows
             @close="closeImage"
             @switch="handleLightboxSwitch"
         />
@@ -291,8 +246,12 @@ onBeforeUnmount(() => {
             font-size: 1.1rem;
         }
 
-        h1, h2, h3, h4, h5, h6 
-        {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             color: var(--blue);
             margin: 1.5em 0 0.8em;
             font-weight: 600;
@@ -315,7 +274,8 @@ onBeforeUnmount(() => {
             margin: 2em 0;
         }
 
-        b, strong {
+        b,
+        strong {
             color: var(--b-color);
         }
 
@@ -324,12 +284,13 @@ onBeforeUnmount(() => {
             font-size: 1rem;
         }
 
-        p[align="center"] {
+        p[align='center'] {
             font-size: 0.8rem;
             color: var(--quote-color);
         }
 
-        ul, ol {
+        ul,
+        ol {
             padding-left: 2em;
             margin: 1em 0;
 
@@ -343,7 +304,6 @@ onBeforeUnmount(() => {
             color: var(--skyblue);
             text-decoration: none;
             word-break: break-word; // 文字折行
-
         }
 
         .article-image-frame {
@@ -363,7 +323,11 @@ onBeforeUnmount(() => {
             &.is-loading {
                 position: relative;
                 min-height: clamp(180px, 32vw, 320px);
-                background: color-mix(in srgb, var(--light-dark) 8%, transparent);
+                background: color-mix(
+                    in srgb,
+                    var(--light-dark) 8%,
+                    transparent
+                );
 
                 img {
                     opacity: 0;
@@ -375,7 +339,8 @@ onBeforeUnmount(() => {
                     left: 50%;
                     width: 32px;
                     height: 32px;
-                    border: 3px solid color-mix(in srgb, var(--quote-color) 28%, transparent);
+                    border: 3px solid
+                        color-mix(in srgb, var(--quote-color) 28%, transparent);
                     border-top-color: var(--skyblue);
                     border-radius: 50%;
                     content: '';
@@ -384,14 +349,30 @@ onBeforeUnmount(() => {
             }
         }
 
-        .article-image-frame[data-image-width="25"] { width: 25%; }
-        .article-image-frame[data-image-width="50"] { width: 50%; }
-        .article-image-frame[data-image-width="75"] { width: 75%; }
-        .article-image-frame[data-image-width="100"] { width: 100%; }
-        .article-image-placeholder[data-image-width="25"] { width: 25%; }
-        .article-image-placeholder[data-image-width="50"] { width: 50%; }
-        .article-image-placeholder[data-image-width="75"] { width: 75%; }
-        .article-image-placeholder[data-image-width="100"] { width: 100%; }
+        .article-image-frame[data-image-width='25'] {
+            width: 25%;
+        }
+        .article-image-frame[data-image-width='50'] {
+            width: 50%;
+        }
+        .article-image-frame[data-image-width='75'] {
+            width: 75%;
+        }
+        .article-image-frame[data-image-width='100'] {
+            width: 100%;
+        }
+        .article-image-placeholder[data-image-width='25'] {
+            width: 25%;
+        }
+        .article-image-placeholder[data-image-width='50'] {
+            width: 50%;
+        }
+        .article-image-placeholder[data-image-width='75'] {
+            width: 75%;
+        }
+        .article-image-placeholder[data-image-width='100'] {
+            width: 100%;
+        }
 
         .article-image-placeholder {
             display: flex;
@@ -403,7 +384,8 @@ onBeforeUnmount(() => {
             justify-content: center;
             flex-direction: column;
             gap: 6px;
-            border: 1px dashed color-mix(in srgb, var(--quote-color) 55%, transparent);
+            border: 1px dashed
+                color-mix(in srgb, var(--quote-color) 55%, transparent);
             border-radius: 6px;
             color: var(--quote-color);
             background: color-mix(in srgb, var(--light-dark) 4%, transparent);
@@ -436,7 +418,8 @@ onBeforeUnmount(() => {
             margin: 1em 0;
             border: 1px solid var(--submit-button);
 
-            th, td {
+            th,
+            td {
                 padding: 12px 15px;
                 text-align: left;
                 border: 1px solid var(--submit-button);
@@ -445,11 +428,17 @@ onBeforeUnmount(() => {
     }
 }
 
-.article-image-frame:not(.is-loading) img { cursor: zoom-in; }
+.article-image-frame:not(.is-loading) img {
+    cursor: zoom-in;
+}
 
 @keyframes article-image-loading-spin {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -464,20 +453,35 @@ onBeforeUnmount(() => {
         padding-bottom: 30px;
 
         .markdown-content {
+            h1 {
+                font-size: 1.4rem;
+            }
+            h2 {
+                font-size: 1.32rem;
+            }
+            h3 {
+                font-size: 1.24rem;
+            }
+            h4 {
+                font-size: 1.16rem;
+            }
+            h5 {
+                font-size: 1.08rem;
+            }
+            h6 {
+                font-size: 1rem;
+            }
 
-            h1 { font-size: 1.4rem; }
-            h2 { font-size: 1.32rem; }
-            h3 { font-size: 1.24rem; }
-            h4 { font-size: 1.16rem; }
-            h5 { font-size: 1.08rem; }
-            h6 { font-size: 1rem; }
-
-            p, ul, ol, li, code, pre, blockquote 
-            {
+            p,
+            ul,
+            ol,
+            li,
+            code,
+            pre,
+            blockquote {
                 font-size: 14px;
             }
         }
-
     }
 }
 </style>
