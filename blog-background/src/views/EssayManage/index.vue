@@ -1,6 +1,7 @@
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { toEssayTimeInput, fromEssayTimeInput } from '@/utils/essayTime.js'
 import { apiUploadImage } from '@/api/files.js'
 import AdminFileButton from '@/components/admin/AdminFileButton.vue'
 import { mdiPlus } from '@mdi/js'
@@ -22,7 +23,7 @@ import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog.vue'
 import AdminList from '@/components/admin/AdminList.vue'
 import AdminListItem from '@/components/admin/AdminListItem.vue'
 import AdminPage from '@/components/admin/AdminPage.vue'
-import MaterialTextField from '@/components/material/MaterialTextField.vue'
+import EssayFullscreenEditor from './components/EssayFullscreenEditor.vue'
 
 const essays = ref([])
 const drafts = ref([])
@@ -41,7 +42,10 @@ const draftId = ref('')
 const draftVersion = ref(0)
 const cloudSaveState = ref('')
 const contentError = ref('')
-const form = reactive({ title: '', content: '', images: [] })
+const fullscreenEditorOpen = ref(false)
+const contentInput = ref(null)
+const contentSelection = ref([0, 0])
+const form = reactive({ title: '', content: '', images: [], createTime: '' })
 const uploading = ref(false)
 const removingImage = ref(false)
 const imageList = ref(null)
@@ -81,6 +85,7 @@ const draftPayload = () => ({
     sourceEssayId: editingId.value,
     title: form.title,
     content: form.content,
+    createTime: fromEssayTimeInput(form.createTime),
     images: [...form.images],
 })
 
@@ -90,6 +95,7 @@ const persistCloudDraft = async () => {
         !form.title.trim() &&
         !form.content.trim() &&
         !form.images.length &&
+        !form.createTime &&
         !draftId.value
     )
         return null
@@ -152,6 +158,7 @@ const restoreCloudDraft = async () => {
         editingId.value = draft.sourceEssayId || ''
         form.title = draft.title || ''
         form.content = draft.content || ''
+        form.createTime = toEssayTimeInput(draft.createTime)
         form.images = [...(draft.images || [])]
         cloudSaveState.value = 'saved'
         await nextTick()
@@ -206,6 +213,7 @@ const resetForm = (afterSave = false) => {
     clearDraftReference()
     form.title = ''
     form.content = ''
+    form.createTime = ''
     form.images = []
     contentError.value = ''
     cloudSaveState.value = ''
@@ -222,6 +230,7 @@ const editEssay = (essay) => {
     editingId.value = essay.id
     form.title = essay.title
     form.content = essay.content
+    form.createTime = toEssayTimeInput(essay.createTime)
     form.images = [...(essay.images || [])]
     contentError.value = ''
     cloudSaveState.value = ''
@@ -243,6 +252,7 @@ const editDraft = async (summary) => {
         editingId.value = draft.sourceEssayId || ''
         form.title = draft.title || ''
         form.content = draft.content || ''
+        form.createTime = toEssayTimeInput(draft.createTime)
         form.images = [...(draft.images || [])]
         contentError.value = ''
         cloudSaveState.value = 'saved'
@@ -258,7 +268,12 @@ const editDraft = async (summary) => {
 
 const saveAsDraft = async () => {
     if (uploading.value || removingImage.value || saving.value) return
-    if (!form.title.trim() && !form.content.trim() && !form.images.length) {
+    if (
+        !form.title.trim() &&
+        !form.content.trim() &&
+        !form.images.length &&
+        !form.createTime
+    ) {
         ElMessage.warning('请先写一些内容')
         return
     }
@@ -282,6 +297,7 @@ const saveEssay = async () => {
         const data = {
             title: form.title.trim(),
             content: form.content.trim(),
+            createTime: fromEssayTimeInput(form.createTime),
             images: [...form.images],
         }
         if (editingId.value) {
@@ -451,7 +467,20 @@ const dropImage = (index) => {
     finishImageDrag()
 }
 
-watch(() => [form.title, form.content, ...form.images], scheduleCloudSave)
+const openFullscreenEditor = () => {
+    if (saving.value) return
+    const input = contentInput.value
+    contentSelection.value = [
+        input?.selectionStart || 0,
+        input?.selectionEnd || 0,
+    ]
+    fullscreenEditorOpen.value = true
+}
+
+watch(
+    () => [form.title, form.content, form.createTime, ...form.images],
+    scheduleCloudSave,
+)
 
 onMounted(async () => {
     await Promise.all([loadEssays(), loadDrafts(), restoreCloudDraft()])
@@ -470,17 +499,59 @@ onBeforeUnmount(() => {
             :title="editingId ? '编辑随笔' : draftId ? '编辑草稿' : '写随笔'"
         >
             <form class="essay-form" @submit.prevent="saveEssay">
-                <MaterialTextField
-                    v-model="form.title"
-                    :disabled="saving"
-                    label="标题（可选）"
-                    :maxlength="120"
-                    supporting-text="留空时，发布后自动使用日期作为标题"
-                />
-                <div class="essay-content-field">
-                    <label for="essay-content">正文</label>
+                <div class="essay-field">
+                    <label class="essay-field-label" for="essay-title"
+                        >标题<span>（可选）</span></label
+                    >
+                    <el-input
+                        id="essay-title"
+                        v-model="form.title"
+                        :disabled="saving"
+                        :maxlength="120"
+                        placeholder="输入随笔标题"
+                        clearable
+                        aria-describedby="essay-title-help"
+                    />
+                    <p id="essay-title-help" class="essay-field-help">
+                        留空时，发布后自动使用日期作为标题。
+                    </p>
+                </div>
+                <div class="essay-field essay-time-field">
+                    <label class="essay-field-label" for="essay-time"
+                        >日期和时间<span>（可选）</span></label
+                    >
+                    <el-date-picker
+                        id="essay-time"
+                        v-model="form.createTime"
+                        type="datetime"
+                        value-format="YYYY-MM-DDTHH:mm:ss.SSS"
+                        format="YYYY-MM-DD HH:mm:ss"
+                        placeholder="留空使用当前时间"
+                        :disabled="saving"
+                        clearable
+                        aria-describedby="essay-time-help"
+                    />
+                    <p id="essay-time-help" class="essay-field-help">
+                        北京时间。留空时使用发布或保存当下的时间。
+                    </p>
+                </div>
+                <div class="essay-field essay-content-field">
+                    <div class="essay-content-toolbar">
+                        <label class="essay-field-label" for="essay-content"
+                            >正文</label
+                        >
+                        <AdminButton
+                            class="essay-content-fullscreen-button"
+                            variant="text"
+                            :disabled="saving"
+                            aria-haspopup="dialog"
+                            @click="openFullscreenEditor"
+                            >全屏编辑</AdminButton
+                        >
+                    </div>
                     <textarea
                         id="essay-content"
+                        ref="contentInput"
                         v-model="form.content"
                         :disabled="saving"
                         rows="12"
@@ -499,9 +570,11 @@ onBeforeUnmount(() => {
                         {{ contentError }}
                     </p>
                 </div>
-                <div class="essay-image-field">
+                <div class="essay-field essay-image-field">
                     <div class="essay-image-toolbar">
-                        <span>图片（可选）</span>
+                        <span class="essay-field-label"
+                            >图片<span>（可选）</span></span
+                        >
                         <AdminFileButton
                             accept="image/*"
                             multiple
@@ -510,7 +583,7 @@ onBeforeUnmount(() => {
                             @select="uploadImages"
                         />
                     </div>
-                    <p class="essay-image-help">
+                    <p class="essay-field-help">
                         拖动图片调整展示顺序，点击图片可放大查看。也可选中排序按钮后按左右方向键调整。
                     </p>
                     <div
@@ -693,6 +766,14 @@ onBeforeUnmount(() => {
             </AdminList>
         </AdminCard>
 
+        <EssayFullscreenEditor
+            v-model="form.content"
+            v-model:open="fullscreenEditorOpen"
+            :save-state="cloudSaveState"
+            :selection="contentSelection"
+            @input="contentError = ''"
+        />
+
         <AdminConfirmDialog
             v-model="deleteDialogVisible"
             title="删除随笔"
@@ -716,23 +797,58 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.essay-image-field {
-    display: grid;
+.essay-content-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 12px;
+}
+.essay-content-toolbar .essay-content-fullscreen-button {
+    display: none;
+}
+@media (max-width: 768px) {
+    .essay-content-toolbar .essay-content-fullscreen-button {
+        display: inline-flex;
+    }
+}
+.essay-field {
+    display: grid;
+    gap: 8px;
     min-width: 0;
 }
+.essay-field-label {
+    margin: 0;
+    color: var(--md-sys-color-on-surface);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+}
+.essay-field-label > span {
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 400;
+}
+.essay-field-help {
+    margin: 0;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 12px;
+    line-height: 1.5;
+}
+.essay-field :deep(.el-input) {
+    /* Match the 48px input wrapper used by the admin theme, so the grid
+       reserves its full height instead of the date picker's default 32px. */
+    --el-input-height: 48px;
+    height: 48px;
+}
+.essay-time-field :deep(.el-date-editor) {
+    width: 100%;
+    max-width: 360px;
+}
+
 .essay-image-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    font-size: 14px;
-    font-weight: 600;
-}
-.essay-image-help {
-    margin: 0;
-    color: var(--md-sys-color-on-surface-variant);
-    font-size: 12px;
 }
 .essay-image-list {
     display: flex;
@@ -794,15 +910,6 @@ onBeforeUnmount(() => {
     display: grid;
     max-width: 900px;
     gap: 24px;
-}
-.essay-content-field {
-    display: grid;
-    gap: 8px;
-}
-.essay-content-field label {
-    color: var(--md-sys-color-on-surface);
-    font-size: 14px;
-    font-weight: 600;
 }
 .essay-content-field textarea {
     width: 100%;

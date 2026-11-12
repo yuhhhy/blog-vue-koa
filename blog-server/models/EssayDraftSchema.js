@@ -7,6 +7,7 @@ const EssayDraftSchema = new mongoose.Schema(
         title: { type: String, default: '', maxlength: 120 },
         content: { type: String, default: '' },
         images: { type: [String], default: [] },
+        createTime: { type: Date, default: null },
         version: { type: Number, default: 1 },
     },
     {

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { essayImageStorage } from '../services/essayImages.js'
 import { Essay } from '../models/EssaySchema.js'
-import { normalizeEssayInput } from '../utils/essay.js'
+import { normalizeEssayInput, normalizeEssayTime } from '../utils/essay.js'
 import { getIp, parseIpSolarLocation } from '../utils/index.js'
 
 export const getEssays = async (ctx) => {
@@ -10,7 +10,9 @@ export const getEssays = async (ctx) => {
 
 export const createEssay = async (ctx) => {
     const now = new Date()
-    const values = normalizeEssayInput(ctx.request.body, now)
+    const time = normalizeEssayTime(ctx.request.body?.createTime, now)
+    if (time.error) ctx.throw(422, time.error)
+    const values = normalizeEssayInput(ctx.request.body, time.createTime)
     if (values.error) ctx.throw(422, values.error)
     const solarLocation = parseIpSolarLocation(getIp(ctx))
 
@@ -18,7 +20,7 @@ export const createEssay = async (ctx) => {
         id: randomUUID(),
         ...values,
         ...(solarLocation ? { solarLocation } : {}),
-        createTime: now,
+        createTime: time.createTime,
         updateTime: now,
     })
     ctx.status = 201
@@ -29,18 +31,26 @@ export const updateEssay = async (ctx) => {
     const essay = await Essay.findOne({ id: ctx.params.id })
     if (!essay) ctx.throw(404, '随笔不存在')
 
+    const now = new Date()
+    const time = normalizeEssayTime(
+        ctx.request.body?.createTime === undefined
+            ? essay.createTime
+            : ctx.request.body.createTime,
+        now,
+    )
+    if (time.error) ctx.throw(422, time.error)
     const values = normalizeEssayInput(
         {
             title: ctx.request.body?.title ?? essay.title,
             content: ctx.request.body?.content ?? essay.content,
             images: ctx.request.body?.images ?? essay.images,
         },
-        essay.createTime,
+        time.createTime,
     )
     if (values.error) ctx.throw(422, values.error)
 
     const previousImages = [...(essay.images || [])]
-    Object.assign(essay, values, { updateTime: new Date() })
+    Object.assign(essay, values, time, { updateTime: now })
     await essay.save()
     await essayImageStorage.cleanup(previousImages, essay.images)
     ctx.body = essay

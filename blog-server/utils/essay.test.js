@@ -4,6 +4,7 @@ import {
     defaultEssayTitle,
     normalizeEssayImages,
     normalizeEssayInput,
+    normalizeEssayTime,
 } from './essay.js'
 
 test('untitled essays use the publishing date in China', () => {
@@ -17,6 +18,32 @@ test('untitled essays use the publishing date in China', () => {
             images: [],
         },
     )
+})
+
+test('validates selected timestamps and keeps empty draft times unset', () => {
+    const now = new Date('2026-11-12T07:00:00Z')
+    assert.equal(
+        normalizeEssayTime(null, now).createTime.valueOf(),
+        now.valueOf(),
+    )
+    assert.equal(normalizeEssayTime(null, null).createTime, null)
+    assert.equal(
+        normalizeEssayTime(
+            '2026-11-12T15:30:00+08:00',
+        ).createTime.toISOString(),
+        '2026-11-12T07:30:00.000Z',
+    )
+    for (const invalid of [
+        'not-a-date',
+        '2026-02-30T12:00:00Z',
+        '2026-11-12T24:00:00Z',
+        '2026-11-12T15:00:00',
+        0,
+        {},
+        true,
+    ]) {
+        assert.equal(normalizeEssayTime(invalid).error, '随笔日期和时间无效')
+    }
 })
 
 test('essay content is required and custom titles are kept', () => {

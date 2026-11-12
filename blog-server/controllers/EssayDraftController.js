@@ -1,14 +1,20 @@
 import { randomUUID } from 'node:crypto'
 import { essayImageStorage } from '../services/essayImages.js'
 import { EssayDraft } from '../models/EssayDraftSchema.js'
-import { normalizeEssayImages } from '../utils/essay.js'
+import { normalizeEssayImages, normalizeEssayTime } from '../utils/essay.js'
 
 const draftFields = (body = {}, ctx) => {
     const images =
         body.images === undefined ? {} : normalizeEssayImages(body.images)
     if (images.error) ctx.throw(422, images.error)
+    const time =
+        body.createTime === undefined
+            ? {}
+            : normalizeEssayTime(body.createTime, null)
+    if (time.error) ctx.throw(422, time.error)
     return {
         ...images,
+        ...time,
         ...(body.sourceEssayId !== undefined && {
             sourceEssayId: String(body.sourceEssayId || ''),
         }),

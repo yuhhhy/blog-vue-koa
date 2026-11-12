@@ -8,7 +8,11 @@ import jwt from 'jsonwebtoken'
 import { randomUUID } from 'node:crypto'
 import KEY from '../config/key.js'
 import { requireAdmin } from '../middlewares/auth.js'
-import { normalizeEssayImages, normalizeEssayInput } from '../utils/essay.js'
+import {
+    normalizeEssayImages,
+    normalizeEssayInput,
+    normalizeEssayTime,
+} from '../utils/essay.js'
 import {
     getNextLinkSortOrder,
     normalizeLinkSortOrder,
@@ -156,7 +160,9 @@ router.get('/essays', (ctx) => {
 
 router.post('/essays', requireAdmin, (ctx) => {
     const now = new Date()
-    const values = normalizeEssayInput(ctx.request.body, now)
+    const time = normalizeEssayTime(ctx.request.body?.createTime, now)
+    if (time.error) ctx.throw(422, time.error)
+    const values = normalizeEssayInput(ctx.request.body, time.createTime)
     if (values.error) ctx.throw(422, values.error)
     const solarLocation = parseIpSolarLocation(getIp(ctx))
 
@@ -164,7 +170,7 @@ router.post('/essays', requireAdmin, (ctx) => {
         id: randomUUID(),
         ...values,
         ...(solarLocation ? { solarLocation } : {}),
-        createTime: now.toISOString(),
+        createTime: time.createTime.toISOString(),
         updateTime: now.toISOString(),
     }
     state.essays.push(essay)
@@ -176,18 +182,29 @@ router.put('/essays/:id', requireAdmin, async (ctx) => {
     const essay = findById(state.essays, ctx.params.id)
     if (!essay) return notFound(ctx, '随笔不存在')
 
+    const now = new Date()
+    const time = normalizeEssayTime(
+        ctx.request.body?.createTime === undefined
+            ? essay.createTime
+            : ctx.request.body.createTime,
+        now,
+    )
+    if (time.error) ctx.throw(422, time.error)
     const values = normalizeEssayInput(
         {
             title: ctx.request.body?.title ?? essay.title,
             content: ctx.request.body?.content ?? essay.content,
             images: ctx.request.body?.images ?? essay.images,
         },
-        new Date(essay.createTime),
+        time.createTime,
     )
     if (values.error) ctx.throw(422, values.error)
 
     const previousImages = [...(essay.images || [])]
-    Object.assign(essay, values, { updateTime: new Date().toISOString() })
+    Object.assign(essay, values, {
+        createTime: time.createTime.toISOString(),
+        updateTime: now.toISOString(),
+    })
     await cleanupMockEssayImages(previousImages, essay.images)
     ctx.body = clone(essay)
 })
@@ -207,12 +224,15 @@ router.get('/essay-drafts', requireAdmin, (ctx) => {
 })
 
 router.post('/essay-drafts', requireAdmin, (ctx) => {
+    const time = normalizeEssayTime(ctx.request.body?.createTime, null)
+    if (time.error) ctx.throw(422, time.error)
     const images = normalizeEssayImages(ctx.request.body?.images)
     if (images.error) ctx.throw(422, images.error)
     const now = new Date().toISOString()
     const draft = {
         id: randomUUID(),
         ...images,
+        createTime: time.createTime?.toISOString() || null,
         sourceEssayId: String(ctx.request.body?.sourceEssayId || ''),
         title: String(ctx.request.body?.title || '').slice(0, 120),
         content: String(ctx.request.body?.content || ''),
@@ -243,9 +263,17 @@ router.put('/essay-drafts/:id', requireAdmin, async (ctx) => {
         ctx.request.body?.images ?? draft.images,
     )
     if (images.error) ctx.throw(422, images.error)
+    const time = normalizeEssayTime(
+        ctx.request.body?.createTime === undefined
+            ? draft.createTime
+            : ctx.request.body.createTime,
+        null,
+    )
+    if (time.error) ctx.throw(422, time.error)
     const previousImages = [...(draft.images || [])]
     Object.assign(draft, {
         ...images,
+        createTime: time.createTime?.toISOString() || null,
         sourceEssayId: String(
             ctx.request.body?.sourceEssayId ?? draft.sourceEssayId,
         ),
