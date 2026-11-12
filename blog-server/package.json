@@ -4,8 +4,7 @@
     "version": "1.0.0",
     "scripts": {
         "serve": "nodemon app.js",
-        "seed": "node scripts/seed.js",
-        "generate:image-variants": "node scripts/generate-image-variants.js"
+        "seed": "node scripts/seed.js"
     },
     "dependencies": {
         "@koa/multer": "^3.1.0",
