@@ -1,21 +1,103 @@
 import Router from '@koa/router'
 import multer from '@koa/multer'
-import { getBlogList, getBlogById, createBlog, deleteBlog, deleteAllBlogs, updateBlog } from '../controllers/BlogController.js'
-import { createBlogContent, getBlogContent, getBlogContentList, deleteBlogContent, deleteAllBlogContents, UpdateBlogContent, updateBlogViewCount, updateBlogLikeCount } from '../controllers/BlogContentController.js'
-import { createArticleDraft, deleteArticleDraft, getArticleDraft, getArticleDrafts, publishArticleDraft, updateArticleDraft } from '../controllers/ArticleDraftController.js'
-import { getWebsiteData, getWebsiteDataCount, updateWebsiteVisit, updateWebsiteView, updateWebsiteComment, updateWebsiteArticle, updateWebsiteLastUpdate, updataWebsitetotalWordCount } from '../controllers/WebsiteDataController.js'
-import { getAllComments, getComments, createComment, reviewComment, deleteComment, updateComment, getPendingComments, sendEmailNotification } from '../controllers/CommentController.js'
-import { userLogin, getuserList, getUser, createUser, deleteUser, updateUser } from '../controllers/UserController.js'
-import { createVisitor, deleteVisitor, getVisitorList } from '../controllers/VisitorController.js'
-import { getLinks, createLink, deleteLink, updateLink, getLinkAvatar } from '../controllers/LinksController.js'
-import { getImageFiles, deleteImageFile, reuploadImageFile, generateImageFileVariants } from "../controllers/FilesController.js"
-import { deleteLargeFile, downloadLargeFile, getLargeFiles, getLargeUploadStatus, initLargeUpload, mergeLargeFile, uploadLargeChunk, verifyLargeFile } from '../controllers/LargeFilesController.js'
+import {
+    getBlogList,
+    getBlogById,
+    createBlog,
+    deleteBlog,
+    deleteAllBlogs,
+    updateBlog,
+} from '../controllers/BlogController.js'
+import {
+    createBlogContent,
+    getBlogContent,
+    getBlogContentList,
+    deleteBlogContent,
+    deleteAllBlogContents,
+    UpdateBlogContent,
+    updateBlogViewCount,
+    updateBlogLikeCount,
+} from '../controllers/BlogContentController.js'
+import {
+    createArticleDraft,
+    deleteArticleDraft,
+    getArticleDraft,
+    getArticleDrafts,
+    publishArticleDraft,
+    updateArticleDraft,
+} from '../controllers/ArticleDraftController.js'
+import {
+    getWebsiteData,
+    getWebsiteDataCount,
+    updateWebsiteVisit,
+    updateWebsiteView,
+    updateWebsiteComment,
+    updateWebsiteArticle,
+    updateWebsiteLastUpdate,
+    updataWebsitetotalWordCount,
+} from '../controllers/WebsiteDataController.js'
+import {
+    getAllComments,
+    getComments,
+    createComment,
+    reviewComment,
+    deleteComment,
+    updateComment,
+    getPendingComments,
+    sendEmailNotification,
+} from '../controllers/CommentController.js'
+import {
+    userLogin,
+    getuserList,
+    getUser,
+    createUser,
+    deleteUser,
+    updateUser,
+} from '../controllers/UserController.js'
+import {
+    createVisitor,
+    deleteVisitor,
+    getVisitorList,
+} from '../controllers/VisitorController.js'
+import {
+    getLinks,
+    createLink,
+    deleteLink,
+    updateLink,
+    getLinkAvatar,
+} from '../controllers/LinksController.js'
+import {
+    getImageFiles,
+    deleteImageFile,
+    reuploadImageFile,
+} from '../controllers/FilesController.js'
+import {
+    deleteLargeFile,
+    downloadLargeFile,
+    getLargeFiles,
+    getLargeUploadStatus,
+    initLargeUpload,
+    mergeLargeFile,
+    uploadLargeChunk,
+    verifyLargeFile,
+} from '../controllers/LargeFilesController.js'
 import { requireAdmin } from '../middlewares/auth.js'
 import { storage } from '../config/upload.js'
-import { convertImageToAvif, generateImageVariants } from '../utils/imageVariants.js'
+import { convertImageToAvif } from '../utils/imageVariants.js'
 import { checkReadiness } from '../utils/readiness.js'
-import { getEssays, createEssay, updateEssay, deleteEssay } from '../controllers/EssayController.js'
-import { createEssayDraft, deleteEssayDraft, getEssayDraft, getEssayDrafts, updateEssayDraft } from '../controllers/EssayDraftController.js'
+import {
+    getEssays,
+    createEssay,
+    updateEssay,
+    deleteEssay,
+} from '../controllers/EssayController.js'
+import {
+    createEssayDraft,
+    deleteEssayDraft,
+    getEssayDraft,
+    getEssayDrafts,
+    updateEssayDraft,
+} from '../controllers/EssayDraftController.js'
 
 const router = new Router({ prefix: '/api' })
 const upload = multer({ storage })
@@ -115,7 +197,6 @@ router.get('/essay-drafts/:id', requireAdmin, getEssayDraft)
 router.put('/essay-drafts/:id', requireAdmin, updateEssayDraft)
 router.delete('/essay-drafts/:id', requireAdmin, deleteEssayDraft)
 
-
 /**
  * Website Data API
  */
@@ -172,8 +253,6 @@ router.delete('/comment/:id', requireAdmin, deleteComment)
 // 更新评论
 router.put('/comment/:id', requireAdmin, updateComment)
 
-
-
 /**
  * User API
  */
@@ -194,7 +273,6 @@ router.delete('/user/:id', requireAdmin, deleteUser)
 
 // 更新用户
 router.put('/user/:id', requireAdmin, updateUser)
-
 
 /**
  * Visitor API
@@ -228,65 +306,83 @@ router.put('/links/:id', requireAdmin, updateLink)
  * Files API
  */
 // 获取图片列表
-router.get('/files/images', requireAdmin, getImageFiles);
+router.get('/files/images', requireAdmin, getImageFiles)
 
 // 重传图片，保持文件名和访问地址不变
-router.put('/files/images/:filename(.+)', requireAdmin, upload.single('file'), reuploadImageFile);
-
-// 为指定图片生成缩略图
-router.post('/files/images/:filename(.+)/variants', requireAdmin, generateImageFileVariants);
+router.put(
+    '/files/images/:filename(.+)',
+    requireAdmin,
+    upload.single('file'),
+    reuploadImageFile,
+)
 
 // 删除图片文件
-router.delete('/files/images/:filename(.+)', requireAdmin, deleteImageFile);
+router.delete('/files/images/:filename(.+)', requireAdmin, deleteImageFile)
 
 // 获取大文件列表
-router.get('/files/large', requireAdmin, getLargeFiles);
+router.get('/files/large', requireAdmin, getLargeFiles)
 
 // 删除大文件
-router.delete('/files/large/:type/:filename', requireAdmin, deleteLargeFile);
+router.delete('/files/large/:type/:filename', requireAdmin, deleteLargeFile)
 
 // 下载大文件
-router.get('/files/large/:type/:filename/download', requireAdmin, downloadLargeFile);
+router.get(
+    '/files/large/:type/:filename/download',
+    requireAdmin,
+    downloadLargeFile,
+)
 
 /**
  * Upload API
  */
 
 // 上传单张图片
-router.post('/upload/image', requireAdmin, upload.single('file'), async (ctx) => {
-    const file = ctx.request.file
+router.post(
+    '/upload/image',
+    requireAdmin,
+    upload.single('file'),
+    async (ctx) => {
+        const file = ctx.request.file
 
-    if (file?.mimetype?.startsWith('image/')) {
-        const shouldConvertToAvif = ctx.request.body?.convertToAvif === 'true'
+        if (file?.mimetype?.startsWith('image/')) {
+            const shouldConvertToAvif =
+                ctx.request.body?.convertToAvif === 'true'
 
-        if (shouldConvertToAvif) {
-            const convertedFile = await convertImageToAvif(file.path, file.filename)
-            file.path = convertedFile.path
-            file.filename = convertedFile.filename
-            file.originalname = convertedFile.filename
-            file.mimetype = 'image/avif'
+            if (shouldConvertToAvif) {
+                const convertedFile = await convertImageToAvif(
+                    file.path,
+                    file.filename,
+                )
+                file.path = convertedFile.path
+                file.filename = convertedFile.filename
+                file.originalname = convertedFile.filename
+                file.mimetype = 'image/avif'
+            }
         }
 
-        await generateImageVariants(file.path, file.filename, file.destination)
-    }
-
-    ctx.status = 200
-    ctx.body = file
-})
+        ctx.status = 200
+        ctx.body = file
+    },
+)
 
 // 查询大文件分片上传状态
-router.get('/upload/large/status', requireAdmin, getLargeUploadStatus);
+router.get('/upload/large/status', requireAdmin, getLargeUploadStatus)
 
 // 校验大文件是否已上传
-router.get('/upload/large/verify', requireAdmin, verifyLargeFile);
+router.get('/upload/large/verify', requireAdmin, verifyLargeFile)
 
 // 初始化大文件上传，返回秒传和断点续传信息
-router.post('/upload/large/init', requireAdmin, initLargeUpload);
+router.post('/upload/large/init', requireAdmin, initLargeUpload)
 
 // 上传大文件分片
-router.post('/upload/large/chunk', requireAdmin, largeChunkUpload.single('file'), uploadLargeChunk);
+router.post(
+    '/upload/large/chunk',
+    requireAdmin,
+    largeChunkUpload.single('file'),
+    uploadLargeChunk,
+)
 
 // 合并大文件分片
-router.post('/upload/large/merge', requireAdmin, mergeLargeFile);
+router.post('/upload/large/merge', requireAdmin, mergeLargeFile)
 
 export default router

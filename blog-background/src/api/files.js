@@ -40,16 +40,6 @@ export function apiReuploadImage(filename, formData) {
     })
 }
 
-// 为指定图片生成缩略图
-export function apiGenerateImageVariants(filename) {
-    return request({
-        url: `/files/images/${encodeURIComponent(filename)}/variants`,
-        method: 'POST',
-        requireAuth: true,
-        timeout: 0,
-    })
-}
-
 export function apiGetLargeFileList() {
     return request({
         url: '/files/large',
