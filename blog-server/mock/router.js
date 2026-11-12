@@ -1,12 +1,23 @@
+import {
+    cleanupEssayImages,
+    getImageReferencePattern,
+} from '../services/essayImages.js'
 import { respondLinkAvatar } from '../utils/linkAvatar.js'
 import Router from '@koa/router'
 import jwt from 'jsonwebtoken'
 import { randomUUID } from 'node:crypto'
 import KEY from '../config/key.js'
 import { requireAdmin } from '../middlewares/auth.js'
-import { normalizeEssayInput } from '../utils/essay.js'
-import { getNextLinkSortOrder, normalizeLinkSortOrder } from '../utils/linkSort.js'
-import { getIp, parseBrowserAndOS, parseIpSolarLocation } from '../utils/index.js'
+import { normalizeEssayImages, normalizeEssayInput } from '../utils/essay.js'
+import {
+    getNextLinkSortOrder,
+    normalizeLinkSortOrder,
+} from '../utils/linkSort.js'
+import {
+    getIp,
+    parseBrowserAndOS,
+    parseIpSolarLocation,
+} from '../utils/index.js'
 import {
     createMockWebsiteData,
     mockComments,
@@ -33,10 +44,13 @@ const createExcerpt = (content = '', maxLength = 96) => {
 
     const characters = Array.from(text)
     const excerpt = characters.slice(0, maxLength).join('')
-    return characters.length > maxLength ? `${excerpt}...` : excerpt || '暂无摘要'
+    return characters.length > maxLength
+        ? `${excerpt}...`
+        : excerpt || '暂无摘要'
 }
 
-const countWords = (content = '') => Array.from(content.replace(/\s+/g, '')).length
+const countWords = (content = '') =>
+    Array.from(content.replace(/\s+/g, '')).length
 
 const createBlog = (post) => ({
     id: post.id,
@@ -66,6 +80,12 @@ const state = {
     website: createMockWebsiteData(),
 }
 
+const cleanupMockEssayImages = (previous, current) =>
+    cleanupEssayImages(previous, current, {
+        isReferenced: (filename) =>
+            getImageReferencePattern(filename).test(JSON.stringify(state)),
+    })
+
 const findById = (items, id) => items.find((item) => item.id === id)
 
 const notFound = (ctx, message) => {
@@ -83,7 +103,10 @@ const addDailyCount = (metric) => {
     today.setHours(0, 0, 0, 0)
     const key = today.toISOString()
     const daily = state.website[metric].dailyData
-    const item = daily.find((entry) => new Date(entry.date).setHours(0, 0, 0, 0) === today.getTime())
+    const item = daily.find(
+        (entry) =>
+            new Date(entry.date).setHours(0, 0, 0, 0) === today.getTime(),
+    )
 
     if (item) item.count += 1
     else daily.push({ date: key, count: 1 })
@@ -92,17 +115,19 @@ const addDailyCount = (metric) => {
 }
 
 const publicComments = (blogId) => {
-    const visible = state.comments.filter((comment) => (
-        comment.blogId === blogId
-        && (!comment.reviewed || comment.reviewPassed !== false)
-    ))
+    const visible = state.comments.filter(
+        (comment) =>
+            comment.blogId === blogId &&
+            (!comment.reviewed || comment.reviewPassed !== false),
+    )
 
-    const buildTree = (parentId = '-1') => visible
-        .filter((comment) => comment.parentId === parentId)
-        .map((comment) => ({
-            ...clone(comment),
-            replies: buildTree(comment.id),
-        }))
+    const buildTree = (parentId = '-1') =>
+        visible
+            .filter((comment) => comment.parentId === parentId)
+            .map((comment) => ({
+                ...clone(comment),
+                replies: buildTree(comment.id),
+            }))
 
     return buildTree()
 }
@@ -112,10 +137,15 @@ router.get('/health', (ctx) => {
 })
 
 router.get('/blog/bloglist', (ctx) => {
-    const contentMap = new Map(state.contents.map((item) => [item.id, item.content]))
+    const contentMap = new Map(
+        state.contents.map((item) => [item.id, item.content]),
+    )
     ctx.body = [...state.blogs]
         .sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
-        .map((blog) => ({ ...clone(blog), excerpt: createExcerpt(contentMap.get(blog.id)) }))
+        .map((blog) => ({
+            ...clone(blog),
+            excerpt: createExcerpt(contentMap.get(blog.id)),
+        }))
 })
 
 router.get('/essays', (ctx) => {
@@ -142,23 +172,31 @@ router.post('/essays', requireAdmin, (ctx) => {
     ctx.body = clone(essay)
 })
 
-router.put('/essays/:id', requireAdmin, (ctx) => {
+router.put('/essays/:id', requireAdmin, async (ctx) => {
     const essay = findById(state.essays, ctx.params.id)
     if (!essay) return notFound(ctx, '随笔不存在')
 
-    const values = normalizeEssayInput({
-        title: ctx.request.body?.title ?? essay.title,
-        content: ctx.request.body?.content ?? essay.content,
-    }, new Date(essay.createTime))
+    const values = normalizeEssayInput(
+        {
+            title: ctx.request.body?.title ?? essay.title,
+            content: ctx.request.body?.content ?? essay.content,
+            images: ctx.request.body?.images ?? essay.images,
+        },
+        new Date(essay.createTime),
+    )
     if (values.error) ctx.throw(422, values.error)
 
+    const previousImages = [...(essay.images || [])]
     Object.assign(essay, values, { updateTime: new Date().toISOString() })
+    await cleanupMockEssayImages(previousImages, essay.images)
     ctx.body = clone(essay)
 })
 
-router.delete('/essays/:id', requireAdmin, (ctx) => {
-    if (!findById(state.essays, ctx.params.id)) return notFound(ctx, '随笔不存在')
+router.delete('/essays/:id', requireAdmin, async (ctx) => {
+    const essay = findById(state.essays, ctx.params.id)
+    if (!essay) return notFound(ctx, '随笔不存在')
     state.essays = state.essays.filter((essay) => essay.id !== ctx.params.id)
+    await cleanupMockEssayImages(essay.images)
     setNoContent(ctx)
 })
 
@@ -169,9 +207,12 @@ router.get('/essay-drafts', requireAdmin, (ctx) => {
 })
 
 router.post('/essay-drafts', requireAdmin, (ctx) => {
+    const images = normalizeEssayImages(ctx.request.body?.images)
+    if (images.error) ctx.throw(422, images.error)
     const now = new Date().toISOString()
     const draft = {
         id: randomUUID(),
+        ...images,
         sourceEssayId: String(ctx.request.body?.sourceEssayId || ''),
         title: String(ctx.request.body?.title || '').slice(0, 120),
         content: String(ctx.request.body?.content || ''),
@@ -190,7 +231,7 @@ router.get('/essay-drafts/:id', requireAdmin, (ctx) => {
     ctx.body = clone(draft)
 })
 
-router.put('/essay-drafts/:id', requireAdmin, (ctx) => {
+router.put('/essay-drafts/:id', requireAdmin, async (ctx) => {
     const draft = findById(state.essayDrafts, ctx.params.id)
     if (!draft) return notFound(ctx, '随笔草稿不存在')
     if (Number(ctx.request.body?.version) !== draft.version) {
@@ -198,19 +239,32 @@ router.put('/essay-drafts/:id', requireAdmin, (ctx) => {
         ctx.body = { message: '云端随笔草稿已有更新', draft: clone(draft) }
         return
     }
+    const images = normalizeEssayImages(
+        ctx.request.body?.images ?? draft.images,
+    )
+    if (images.error) ctx.throw(422, images.error)
+    const previousImages = [...(draft.images || [])]
     Object.assign(draft, {
-        sourceEssayId: String(ctx.request.body?.sourceEssayId ?? draft.sourceEssayId),
+        ...images,
+        sourceEssayId: String(
+            ctx.request.body?.sourceEssayId ?? draft.sourceEssayId,
+        ),
         title: String(ctx.request.body?.title ?? draft.title).slice(0, 120),
         content: String(ctx.request.body?.content ?? draft.content),
         version: draft.version + 1,
         updatedAt: new Date().toISOString(),
     })
+    await cleanupMockEssayImages(previousImages, draft.images)
     ctx.body = clone(draft)
 })
 
-router.delete('/essay-drafts/:id', requireAdmin, (ctx) => {
-    if (!findById(state.essayDrafts, ctx.params.id)) return notFound(ctx, '随笔草稿不存在')
-    state.essayDrafts = state.essayDrafts.filter((draft) => draft.id !== ctx.params.id)
+router.delete('/essay-drafts/:id', requireAdmin, async (ctx) => {
+    const draft = findById(state.essayDrafts, ctx.params.id)
+    if (!draft) return notFound(ctx, '随笔草稿不存在')
+    state.essayDrafts = state.essayDrafts.filter(
+        (draft) => draft.id !== ctx.params.id,
+    )
+    await cleanupMockEssayImages(draft.images)
     setNoContent(ctx)
 })
 
@@ -221,7 +275,10 @@ router.get('/blog/:id', (ctx) => {
 })
 
 router.post('/blog', (ctx) => {
-    const blog = createBlog({ ...ctx.request.body, updateTime: ctx.request.body.updateTime || new Date().toISOString() })
+    const blog = createBlog({
+        ...ctx.request.body,
+        updateTime: ctx.request.body.updateTime || new Date().toISOString(),
+    })
     state.blogs.push(blog)
     ctx.status = 201
     ctx.body = { message: '博客创建成功', blog: clone(blog) }
@@ -230,7 +287,9 @@ router.post('/blog', (ctx) => {
 router.put('/blog/:id', (ctx) => {
     const blog = findById(state.blogs, ctx.params.id)
     if (!blog) return notFound(ctx, '博客不存在')
-    Object.assign(blog, clone(ctx.request.body), { updateTime: new Date().toISOString() })
+    Object.assign(blog, clone(ctx.request.body), {
+        updateTime: new Date().toISOString(),
+    })
     ctx.body = { message: '博客更新成功', blog: clone(blog) }
 })
 
@@ -245,14 +304,16 @@ router.delete('/blog', (ctx) => {
 })
 
 router.get('/blogcontent/search-index', (ctx) => {
-    ctx.body = state.contents.map(({ id, title, tags, content, createTime }) => ({
-        id,
-        title,
-        tags: clone(tags),
-        content,
-        createTime,
-        link: `/blog/${id}`,
-    }))
+    ctx.body = state.contents.map(
+        ({ id, title, tags, content, createTime }) => ({
+            id,
+            title,
+            tags: clone(tags),
+            content,
+            createTime,
+            link: `/blog/${id}`,
+        }),
+    )
 })
 
 router.get('/blogcontent', (ctx) => {
@@ -299,7 +360,9 @@ router.put('/blogcontent/:id', (ctx) => {
 })
 
 router.delete('/blogcontent/:id', (ctx) => {
-    state.contents = state.contents.filter((content) => content.id !== ctx.params.id)
+    state.contents = state.contents.filter(
+        (content) => content.id !== ctx.params.id,
+    )
     setNoContent(ctx)
 })
 
@@ -326,7 +389,9 @@ router.post('/comment', (ctx) => {
         id: ctx.request.body.id || randomUUID(),
         blogId: ctx.request.body.blogId,
         parentId: ctx.request.body.parentId || '-1',
-        avatar: ctx.request.body.avatar || 'https://api.dicebear.com/9.x/thumbs/svg?seed=Anonymous',
+        avatar:
+            ctx.request.body.avatar ||
+            'https://api.dicebear.com/9.x/thumbs/svg?seed=Anonymous',
         username: ctx.request.body.username || '匿名读者',
         email: ctx.request.body.email || 'anonymous@example.com',
         website: ctx.request.body.website || '',
@@ -402,13 +467,21 @@ const getMetricValues = (metric, timeRange) => {
 
     if (timeRange === 'week') {
         return Array.from({ length: 7 }, (_, index) => {
-            const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (6 - index))
+            const date = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate() - (6 - index),
+            )
             return countsByDate.get(getLocalDateKey(date)) || 0
         })
     }
 
     if (timeRange === 'month') {
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+        const daysInMonth = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            0,
+        ).getDate()
         return Array.from({ length: daysInMonth }, (_, index) => {
             const date = new Date(now.getFullYear(), now.getMonth(), index + 1)
             return countsByDate.get(getLocalDateKey(date)) || 0
@@ -416,11 +489,15 @@ const getMetricValues = (metric, timeRange) => {
     }
 
     if (timeRange === 'year') {
-        return Array.from({ length: 12 }, (_, month) => dailyData.reduce((total, item) => {
-            const date = new Date(item.date)
-            const isCurrentMonth = date.getFullYear() === now.getFullYear() && date.getMonth() === month
-            return total + (isCurrentMonth ? item.count : 0)
-        }, 0))
+        return Array.from({ length: 12 }, (_, month) =>
+            dailyData.reduce((total, item) => {
+                const date = new Date(item.date)
+                const isCurrentMonth =
+                    date.getFullYear() === now.getFullYear() &&
+                    date.getMonth() === month
+                return total + (isCurrentMonth ? item.count : 0)
+            }, 0),
+        )
     }
 
     return dailyData.map((item) => item.count)
@@ -432,8 +509,14 @@ const websiteResponse = (timeRange = 'all') => {
     return {
         view: { total: state.website.view.total, data: values('view') },
         visit: { total: state.website.visit.total, data: values('visit') },
-        comment: { total: state.website.comment.total, data: values('comment') },
-        article: { total: state.website.article.total, data: clone(state.website.article.dailyData) },
+        comment: {
+            total: state.website.comment.total,
+            data: values('comment'),
+        },
+        article: {
+            total: state.website.article.total,
+            data: clone(state.website.article.dailyData),
+        },
         updateTime: state.website.updateTime,
         totalWordCount: state.website.totalWordCount,
     }
@@ -466,7 +549,10 @@ router.put('/website/lastupdate', (ctx) => {
 })
 
 router.put('/website/totalwordcount', (ctx) => {
-    state.website.totalWordCount = state.contents.reduce((total, item) => total + (item.wordCount || 0), 0)
+    state.website.totalWordCount = state.contents.reduce(
+        (total, item) => total + (item.wordCount || 0),
+        0,
+    )
     ctx.body = clone(state.website)
 })
 
@@ -475,7 +561,10 @@ router.get('/links', (ctx) => {
 })
 
 router.get('/links/:id/avatar', async (ctx) => {
-    await respondLinkAvatar(ctx, state.links.find(link => link.id === ctx.params.id))
+    await respondLinkAvatar(
+        ctx,
+        state.links.find((link) => link.id === ctx.params.id),
+    )
 })
 
 router.post('/links', (ctx) => {
@@ -514,7 +603,10 @@ router.post('/visitor', (ctx) => {
     }
     state.visitors.unshift(visitor)
     ctx.status = 201
-    ctx.body = { message: 'Visitor created successfully', visitor: clone(visitor) }
+    ctx.body = {
+        message: 'Visitor created successfully',
+        visitor: clone(visitor),
+    }
 })
 
 router.get('/visitor', (ctx) => {
@@ -540,13 +632,18 @@ router.delete('/visitor/:id', (ctx) => {
 
 router.post('/user/login', (ctx) => {
     const username = String(ctx.request.body?.username || 'admin')
-    const user = state.users.find((item) => item.username === username) || state.users[0]
-    const token = jwt.sign({
-        username: user.username,
-        userid: user.userId,
-        email: user.email,
-        role: 'admin',
-    }, KEY, { expiresIn: '30d' })
+    const user =
+        state.users.find((item) => item.username === username) || state.users[0]
+    const token = jwt.sign(
+        {
+            username: user.username,
+            userid: user.userId,
+            email: user.email,
+            role: 'admin',
+        },
+        KEY,
+        { expiresIn: '30d' },
+    )
 
     ctx.body = {
         code: 200,
@@ -572,7 +669,10 @@ router.get('/user/:id', (ctx) => {
 })
 
 router.post('/user', (ctx) => {
-    const user = { ...clone(ctx.request.body), role: ctx.request.body.role || 'user' }
+    const user = {
+        ...clone(ctx.request.body),
+        role: ctx.request.body.role || 'user',
+    }
     state.users.push(user)
     ctx.status = 201
     ctx.body = { message: '用户创建成功', data: clone(user) }
@@ -657,8 +757,9 @@ router.post('/drafts/:id/publish', (ctx) => {
         return
     }
 
-    const missingFields = ['title', 'author', 'content']
-        .filter((field) => !String(draft[field] || '').trim())
+    const missingFields = ['title', 'author', 'content'].filter(
+        (field) => !String(draft[field] || '').trim(),
+    )
     if (!draft.tags?.length) missingFields.push('tags')
     if (missingFields.length) {
         ctx.status = 422
@@ -667,7 +768,11 @@ router.post('/drafts/:id/publish', (ctx) => {
     }
 
     const now = new Date().toISOString()
-    const content = createContent({ ...draft, createTime: now, updateTime: now })
+    const content = createContent({
+        ...draft,
+        createTime: now,
+        updateTime: now,
+    })
     state.contents.push(content)
     state.blogs.push(createBlog(content))
     state.drafts = state.drafts.filter((item) => item.id !== draft.id)

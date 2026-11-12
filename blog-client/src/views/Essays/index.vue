@@ -3,10 +3,12 @@ import { onMounted } from 'vue'
 import { useEssays } from '@/composables/useEssays.js'
 import { getFormatDateTimeToMinute } from '@/utils/date.js'
 import CommentEnvironmentIcon from '@/views/Blog/components/CommentEnvironmentIcon.vue'
+import EssayImages from './components/EssayImages.vue'
 
 const { essays, loading, loadError, loadEssays } = useEssays()
 const retryLoadEssays = () => loadEssays({ force: true }).catch(() => {})
-const getEssayDisplayTitle = (title) => title.replace(/^\d{4}年(?=\d{1,2}月\d{1,2}日随笔$)/, '')
+const getEssayDisplayTitle = (title) =>
+    title.replace(/^\d{4}年(?=\d{1,2}月\d{1,2}日随笔$)/, '')
 
 onMounted(() => loadEssays().catch(() => {}))
 </script>
@@ -20,7 +22,9 @@ onMounted(() => loadEssays().catch(() => {}))
 
         <div v-if="loading" class="essay-status">正在加载随笔…</div>
         <div v-else-if="loadError" class="essay-status">
-            随笔加载失败，<button type="button" @click="retryLoadEssays">点击重试</button>
+            随笔加载失败，<button type="button" @click="retryLoadEssays">
+                点击重试
+            </button>
         </div>
         <div v-else-if="!essays.length" class="essay-status">暂无随笔</div>
         <div v-else class="essay-list">
@@ -42,6 +46,10 @@ onMounted(() => loadEssays().catch(() => {}))
                     />
                 </div>
                 <p>{{ essay.content }}</p>
+                <EssayImages
+                    v-if="essay.images?.length"
+                    :images="essay.images"
+                />
             </article>
         </div>
     </section>

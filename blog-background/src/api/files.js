@@ -1,7 +1,7 @@
-import request from "@/utils/request.js";
+import request from '@/utils/request.js'
 
 /**
- * 
+ *
  * File API
  * @returns {Promise}
  */
@@ -13,115 +13,125 @@ export function apiGetImageList() {
     return request({
         url: '/files/images',
         method: 'GET',
-        requireAuth: true
-    });
-};
+        requireAuth: true,
+    })
+}
 
 /**
  * 删除图片
  * @param {string} filename - 文件名
  */
 export function apiDeleteImage(filename) {
-  return request({
-    url: `/files/images/${encodeURIComponent(filename)}`,
-    method: "DELETE",
-    requireAuth: true,
-  });
-};
+    return request({
+        url: `/files/images/${encodeURIComponent(filename)}`,
+        method: 'DELETE',
+        requireAuth: true,
+    })
+}
 
 // 重传图片，保持原文件名和访问地址不变
 export function apiReuploadImage(filename, formData) {
-  return request({
-    url: `/files/images/${encodeURIComponent(filename)}`,
-    method: "PUT",
-    data: formData,
-    requireAuth: true,
-    timeout: 0,
-  });
+    return request({
+        url: `/files/images/${encodeURIComponent(filename)}`,
+        method: 'PUT',
+        data: formData,
+        requireAuth: true,
+        timeout: 0,
+    })
 }
 
 // 为指定图片生成缩略图
 export function apiGenerateImageVariants(filename) {
-  return request({
-    url: `/files/images/${encodeURIComponent(filename)}/variants`,
-    method: "POST",
-    requireAuth: true,
-    timeout: 0,
-  });
+    return request({
+        url: `/files/images/${encodeURIComponent(filename)}/variants`,
+        method: 'POST',
+        requireAuth: true,
+        timeout: 0,
+    })
 }
 
 export function apiGetLargeFileList() {
-  return request({
-    url: '/files/large',
-    method: 'GET',
-    requireAuth: true,
-  });
+    return request({
+        url: '/files/large',
+        method: 'GET',
+        requireAuth: true,
+    })
 }
 
 export function apiDeleteLargeFile(type, filename) {
-  return request({
-    url: `/files/large/${type}/${encodeURIComponent(filename)}`,
-    method: 'DELETE',
-    requireAuth: true,
-  });
+    return request({
+        url: `/files/large/${type}/${encodeURIComponent(filename)}`,
+        method: 'DELETE',
+        requireAuth: true,
+    })
 }
 
 export function apiDownloadLargeFile(type, filename, onDownloadProgress) {
-  return request({
-    url: `/files/large/${type}/${encodeURIComponent(filename)}/download`,
-    method: 'GET',
-    requireAuth: true,
-    responseType: 'blob',
-    timeout: 0,
-    onDownloadProgress,
-  });
+    return request({
+        url: `/files/large/${type}/${encodeURIComponent(filename)}/download`,
+        method: 'GET',
+        requireAuth: true,
+        responseType: 'blob',
+        timeout: 0,
+        onDownloadProgress,
+    })
 }
 
 export function apiGetLargeUploadStatus(fileHash) {
-  return request({
-    url: '/upload/large/status',
-    method: 'GET',
-    params: { fileHash },
-    requireAuth: true,
-  });
+    return request({
+        url: '/upload/large/status',
+        method: 'GET',
+        params: { fileHash },
+        requireAuth: true,
+    })
 }
 
 export function apiVerifyLargeFile(params) {
-  return request({
-    url: '/upload/large/verify',
-    method: 'GET',
-    params,
-    requireAuth: true,
-  });
+    return request({
+        url: '/upload/large/verify',
+        method: 'GET',
+        params,
+        requireAuth: true,
+    })
 }
 
 export function apiInitLargeUpload(data) {
-  return request({
-    url: '/upload/large/init',
-    method: 'POST',
-    data,
-    requireAuth: true,
-  });
+    return request({
+        url: '/upload/large/init',
+        method: 'POST',
+        data,
+        requireAuth: true,
+    })
 }
 
 export function apiUploadLargeChunk(formData, onUploadProgress, signal) {
-  return request({
-    url: '/upload/large/chunk',
-    method: 'POST',
-    data: formData,
-    requireAuth: true,
-    timeout: 0,
-    signal,
-    onUploadProgress,
-  });
+    return request({
+        url: '/upload/large/chunk',
+        method: 'POST',
+        data: formData,
+        requireAuth: true,
+        timeout: 0,
+        signal,
+        onUploadProgress,
+    })
 }
 
 export function apiMergeLargeFile(data) {
-  return request({
-    url: '/upload/large/merge',
-    method: 'POST',
-    data,
-    requireAuth: true,
-    timeout: 0,
-  });
+    return request({
+        url: '/upload/large/merge',
+        method: 'POST',
+        data,
+        requireAuth: true,
+        timeout: 0,
+    })
 }
+
+export const apiUploadImage = (data, signal) =>
+    request({
+        url: '/upload/image',
+        method: 'POST',
+        data,
+        signal,
+        requireAuth: true,
+        timeout: 0,
+    })
